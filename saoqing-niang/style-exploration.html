@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>掃晴娘 Style Exploration</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0c0c10;color:#f0f0f4;font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;padding:20px 16px 60px}
+h1{font-family:'Instrument Serif',serif;font-size:28px;text-align:center;margin:20px 0 6px}
+.sub{text-align:center;color:#888;font-size:14px;margin-bottom:30px}
+.grid{display:flex;flex-direction:column;gap:24px;max-width:400px;margin:0 auto}
+.card{background:#18181f;border-radius:24px;overflow:hidden;border:1px solid #2a2a35}
+.card-preview{height:320px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.card-info{padding:16px 20px 20px}
+.card-title{font-size:18px;font-weight:600;margin-bottom:4px}
+.card-desc{font-size:13px;color:#888;line-height:1.5}
+.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-top:8px}
+
+/* Style 1: Paper Cut */
+.bg-paper{background:linear-gradient(180deg,#c62828 0%,#b71c1c 100%)}
+/* Style 2: Ink Wash */
+.bg-ink{background:linear-gradient(180deg,#f5f0e8 0%,#e8e0d0 100%)}
+/* Style 3: Kawaii */
+.bg-kawaii{background:linear-gradient(180deg,#ffe4ec 0%,#ffd6e0 100%)}
+/* Style 4: Ghibli */
+.bg-ghibli{background:linear-gradient(180deg,#87a8c4 0%,#6b93ad 100%)}
+/* Style 5: Modern Flat */
+.bg-flat{background:linear-gradient(180deg,#e8f0fe 0%,#d4e4fc 100%)}
+/* Style 6: Hanging Doll */
+.bg-hanging{background:linear-gradient(180deg,#c9b99a 0%,#b5a589 50%,#8ca0b0 100%)}
+
+@keyframes sway{
+  0%,100%{transform:rotate(-3deg)}
+  50%{transform:rotate(3deg)}
+}
+@keyframes gentleSway{
+  0%,100%{transform:rotate(-2deg)}
+  50%{transform:rotate(2deg)}
+}
+@keyframes rain{
+  0%{transform:translateY(-20px);opacity:0}
+  50%{opacity:0.6}
+  100%{transform:translateY(320px);opacity:0}
+}
+</style>
+</head>
+<body>
+
+<h1>掃晴娘 · Style Guide</h1>
+<div class="sub">Tap to see weather states</div>
+
+<div class="grid">
+
+<!-- 1. Paper Cut-Out 剪纸风 -->
+<div class="card">
+  <div class="card-preview bg-paper">
+    <svg width="160" height="260" viewBox="0 0 160 260" style="animation:sway 4s ease-in-out infinite;transform-origin:top center">
+      <!-- String -->
+      <line x1="80" y1="0" x2="80" y2="60" stroke="#222" stroke-width="1.5"/>
+      <!-- Head -->
+      <circle cx="80" cy="85" r="28" fill="#fff" stroke="#222" stroke-width="2"/>
+      <!-- Face - simple paper cut style -->
+      <circle cx="72" cy="82" r="3" fill="#c62828"/>
+      <circle cx="88" cy="82" r="3" fill="#c62828"/>
+      <path d="M73 92 Q80 98 87 92" stroke="#c62828" stroke-width="1.5" fill="none"/>
+      <!-- Body - angular paper cut style -->
+      <polygon points="80,110 50,200 38,210 80,195 122,210 110,200" fill="#fff" stroke="#222" stroke-width="2"/>
+      <!-- Paper cut decorative pattern -->
+      <circle cx="80" cy="150" r="8" fill="none" stroke="#c62828" stroke-width="1" stroke-dasharray="2,2"/>
+      <circle cx="80" cy="150" r="4" fill="#c62828" opacity="0.3"/>
+      <!-- Neck tie -->
+      <circle cx="80" cy="112" r="4" fill="none" stroke="#c62828" stroke-width="1.5"/>
+    </svg>
+  </div>
+  <div class="card-info">
+    <div class="card-title">1. Paper Cut-Out · 剪纸风</div>
+    <div class="card-desc">Traditional Chinese paper cutting art. Red & white, flat silhouettes, geometric patterns. Authentic folk art feel.</div>
+    <span class="tag" style="background:#c6282830;color:#ef5350">Traditional</span>
+  </div>
+</div>
+
+<!-- 2. Ink Wash 水墨风 -->
+<div class="card">
+  <div class="card-preview bg-ink">
+    <svg width="160" height="260" viewBox="0 0 160 260" style="animation:gentleSway 5s ease-in-out infinite;transform-origin:top center">
+      <!-- String -->
+      <line x1="80" y1="0" x2="80" y2="55" stroke="#5d4e37" stroke-width="1" opacity="0.6"/>
+      <!-- Head - soft brush stroke feel -->
+      <circle cx="80" cy="82" r="27" fill="#faf8f4" stroke="#4a3c2e" stroke-width="1.5" opacity="0.9"/>
+      <!-- Ink wash shadow -->
+      <ellipse cx="80" cy="85" rx="24" ry="22" fill="url(#inkGrad)" opacity="0.1"/>
+      <!-- Face - minimal ink dots -->
+      <circle cx="73" cy="80" r="2.5" fill="#2c1810"/>
+      <circle cx="87" cy="80" r="2.5" fill="#2c1810"/>
+      <path d="M74 90 Q80 95 86 90" stroke="#2c1810" stroke-width="1" fill="none" opacity="0.7"/>
+      <!-- Body - flowing brush stroke -->
+      <path d="M60,108 Q52,160 45,210 Q80,195 115,210 Q108,160 100,108" fill="#faf8f4" stroke="#4a3c2e" stroke-width="1.2" opacity="0.85"/>
+      <!-- Ink wash drip effect -->
+      <path d="M65,180 Q66,195 64,210" stroke="#4a3c2e" stroke-width="0.5" fill="none" opacity="0.2"/>
+      <path d="M95,175 Q96,190 97,208" stroke="#4a3c2e" stroke-width="0.5" fill="none" opacity="0.15"/>
+      <!-- Neck -->
+      <path d="M68,107 Q80,114 92,107" stroke="#4a3c2e" stroke-width="1" fill="none" opacity="0.5"/>
+      <defs>
+        <radialGradient id="inkGrad"><stop offset="0%" stop-color="#2c1810"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+      </defs>
+    </svg>
+  </div>
+  <div class="card-info">
+    <div class="card-title">2. Ink Wash · 水墨风</div>
+    <div class="card-desc">Chinese brush painting aesthetic. Soft, misty, elegant. Ink bleeds in rain, golden washes in sun. Premium & serene.</div>
+    <span class="tag" style="background:#8d6e4630;color:#a08060">Elegant</span>
+  </div>
+</div>
+
+<!-- 3. Kawaii Chibi -->
+<div class="card">
+  <div class="card-preview bg-kawaii">
+    <svg width="180" height="260" viewBox="0 0 180 260" style="animation:sway 3.5s ease-in-out infinite;transform-origin:top center">
+      <!-- String with bow -->
+      <line x1="90" y1="0" x2="90" y2="45" stroke="#e91e63" stroke-width="2"/>
+      <circle cx="90" cy="45" r="5" fill="#e91e63"/>
+      <!-- Head - big kawaii style -->
+      <circle cx="90" cy="80" r="35" fill="#fff" stroke="#333" stroke-width="2.5"/>
+      <!-- Blush -->
+      <ellipse cx="65" cy="88" rx="8" ry="5" fill="#ffb3c1" opacity="0.6"/>
+      <ellipse cx="115" cy="88" rx="8" ry="5" fill="#ffb3c1" opacity="0.6"/>
+      <!-- Eyes - big kawaii -->
+      <ellipse cx="76" cy="78" rx="5" ry="6" fill="#333"/>
+      <circle cx="78" cy="76" r="2" fill="#fff"/>
+      <ellipse cx="104" cy="78" rx="5" ry="6" fill="#333"/>
+      <circle cx="106" cy="76" r="2" fill="#fff"/>
+      <!-- Smile -->
+      <path d="M82 92 Q90 100 98 92" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Body -->
+      <path d="M62,112 Q50,170 40,220 Q90,205 140,220 Q130,170 118,112" fill="#fff" stroke="#333" stroke-width="2.5"/>
+      <!-- Neck ribbon -->
+      <path d="M72,112 Q90,120 108,112" stroke="#e91e63" stroke-width="3" fill="none"/>
+      <!-- Little star decorations -->
+      <text x="78" y="160" font-size="14" fill="#e91e63" opacity="0.4">✦</text>
+      <text x="95" y="175" font-size="10" fill="#e91e63" opacity="0.3">✦</text>
+    </svg>
+  </div>
+  <div class="card-info">
+    <div class="card-title">3. Kawaii Chibi</div>
+    <div class="card-desc">Big eyes, rosy cheeks, adorable proportions. Pink ribbon tie. Bonnie would love it. Maximum cuteness factor.</div>
+    <span class="tag" style="background:#e91e6330;color:#f06292">Cute</span>
+  </div>
+</div>
+
+<!-- 4. Ghibli-Inspired -->
+<div class="card">
+  <div class="card-preview bg-ghibli" style="position:relative">
+    <!-- Rain -->
+    <line x1="30" y1="0" x2="25" y2="320" stroke="#fff" stroke-width="0.5" opacity="0.15"/>
+    <line x1="60" y1="0" x2="55" y2="320" stroke="#fff" stroke-width="0.5" opacity="0.1"/>
+    <line x1="100" y1="0" x2="95" y2="320" stroke="#fff" stroke-width="0.5" opacity="0.12"/>
+    <line x1="140" y1="0" x2="135" y2="320" stroke="#fff" stroke-width="0.5" opacity="0.08"/>
+    <svg width="160" height="260" viewBox="0 0 160 260" style="animation:gentleSway 4.5s ease-in-out infinite;transform-origin:top center">
+      <!-- String -->
+      <line x1="80" y1="0" x2="80" y2="55" stroke="#445" stroke-width="1.5"/>
+      <!-- Head - Ghibli soft -->
+      <circle cx="80" cy="82" r="28" fill="#fefefe" stroke="#334" stroke-width="1.8"/>
+      <!-- Face - warm, hand-drawn feel -->
+      <circle cx="72" cy="79" r="3.5" fill="#223"/>
+      <circle cx="88" cy="79" r="3.5" fill="#223"/>
+      <path d="M73 91 Q80 97 87 91" stroke="#334" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Body - organic, cloth-like -->
+      <path d="M58,108 Q48,165 42,215 Q80,200 118,215 Q112,165 102,108" fill="#fefefe" stroke="#334" stroke-width="1.8"/>
+      <!-- Soft cloth folds -->
+      <path d="M70,130 Q72,165 68,200" stroke="#aab" stroke-width="0.8" fill="none" opacity="0.4"/>
+      <path d="M90,128 Q88,160 92,198" stroke="#aab" stroke-width="0.8" fill="none" opacity="0.3"/>
+      <!-- Neck gather -->
+      <path d="M65,108 Q80,115 95,108" stroke="#556" stroke-width="1.2" fill="none"/>
+      <!-- Subtle warm glow -->
+      <circle cx="80" cy="140" r="40" fill="#ffd" opacity="0.05"/>
+    </svg>
+  </div>
+  <div class="card-info">
+    <div class="card-title">4. Ghibli-Inspired</div>
+    <div class="card-desc">Exactly like your reference! Soft hand-drawn lines, gentle cloth folds, simple warm face. Rain falls behind her. Nostalgic & dreamy.</div>
+    <span class="tag" style="background:#5ba3f530;color:#7bb8f0">Dreamy</span>
+  </div>
+</div>
+
+<!-- 5. Modern Flat / Geometric -->
+<div class="card">
+  <div class="card-preview bg-flat">
+    <svg width="160" height="260" viewBox="0 0 160 260" style="animation:sway 4s ease-in-out infinite;transform-origin:top center">
+      <!-- String -->
+      <line x1="80" y1="0" x2="80" y2="55" stroke="#5f6368" stroke-width="2" stroke-linecap="round"/>
+      <!-- Head - perfect circle -->
+      <circle cx="80" cy="82" r="30" fill="#fff" stroke="none"/>
+      <circle cx="80" cy="82" r="30" fill="none" stroke="#e0e4ea" stroke-width="2"/>
+      <!-- Face - geometric dots -->
+      <circle cx="72" cy="79" r="3" fill="#3c4043"/>
+      <circle cx="88" cy="79" r="3" fill="#3c4043"/>
+      <rect x="74" y="90" width="12" height="2" rx="1" fill="#3c4043" opacity="0.5"/>
+      <!-- Body - clean triangle -->
+      <path d="M56,110 L44,215 Q80,205 116,215 L104,110" fill="#fff" stroke="#e0e4ea" stroke-width="2" stroke-linejoin="round"/>
+      <!-- Accent dot -->
+      <circle cx="80" cy="112" r="5" fill="#4285f4"/>
+      <!-- Clean geometric pattern -->
+      <circle cx="80" cy="155" r="12" fill="none" stroke="#4285f4" stroke-width="1" opacity="0.15"/>
+      <circle cx="80" cy="155" r="6" fill="#4285f4" opacity="0.08"/>
+    </svg>
+  </div>
+  <div class="card-info">
+    <div class="card-title">5. Modern Flat · Geometric</div>
+    <div class="card-desc">Clean vectors, rounded shapes, Material Design language. Fits iOS perfectly. Minimalist but charming. Google Weather meets teru teru bōzu.</div>
+    <span class="tag" style="background:#4285f430;color:#5a9bf6">Modern</span>
+  </div>
+</div>
+
+<!-- 6. Hanging Cloth Doll (Window) -->
+<div class="card">
+  <div class="card-preview bg-hanging" style="position:relative">
+    <!-- Window frame -->
+    <rect x="15" y="10" width="170" height="300" rx="4" fill="none" stroke="#6b5d4f" stroke-width="6" opacity="0.6"/>
+    <line x1="100" y1="10" x2="100" y2="310" stroke="#6b5d4f" stroke-width="3" opacity="0.4"/>
+    <line x1="15" y1="155" x2="185" y2="155" stroke="#6b5d4f" stroke-width="3" opacity="0.4"/>
+    <!-- Sky gradient through window -->
+    <rect x="18" y="13" width="164" height="294" rx="2" fill="url(#skyGrad)" opacity="0.3"/>
+    <!-- Clouds -->
+    <ellipse cx="50" cy="60" rx="25" ry="12" fill="#fff" opacity="0.25"/>
+    <ellipse cx="145" cy="45" rx="20" ry="10" fill="#fff" opacity="0.2"/>
+    <svg width="140" height="240" x="30" y="20" viewBox="0 0 140 240" style="animation:gentleSway 5s ease-in-out infinite;transform-origin:top center">
+      <!-- String from top of window -->
+      <line x1="70" y1="0" x2="70" y2="50" stroke="#5d4e37" stroke-width="1.2"/>
+      <!-- Head -->
+      <circle cx="70" cy="75" r="25" fill="#faf6f0" stroke="#4a3c2e" stroke-width="1.5"/>
+      <!-- Face -->
+      <circle cx="63" cy="73" r="2.5" fill="#2c1810"/>
+      <circle cx="77" cy="73" r="2.5" fill="#2c1810"/>
+      <path d="M64 83 Q70 88 76 83" stroke="#2c1810" stroke-width="1.2" fill="none"/>
+      <!-- Body - textured cloth -->
+      <path d="M50,98 Q40,150 35,200 Q70,188 105,200 Q100,150 90,98" fill="#faf6f0" stroke="#4a3c2e" stroke-width="1.5"/>
+      <!-- Cloth texture lines -->
+      <path d="M58,115 Q60,155 55,190" stroke="#c9b99a" stroke-width="0.6" fill="none" opacity="0.5"/>
+      <path d="M82,113 Q80,150 85,188" stroke="#c9b99a" stroke-width="0.6" fill="none" opacity="0.4"/>
+      <!-- Neck gather with string -->
+      <path d="M55,98 Q70,105 85,98" stroke="#8b7355" stroke-width="1.5" fill="none"/>
+    </svg>
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#87CEEB"/>
+        <stop offset="100%" stop-color="#b0c4de"/>
+      </linearGradient>
+    </defs>
+  </div>
+  <div class="card-info">
+    <div class="card-title">6. Window Doll · 窗前掃晴娘</div>
+    <div class="card-desc">She hangs in a window frame looking out at the real sky. Most true to origin — your phone IS the window. Weather shows through behind her.</div>
+    <span class="tag" style="background:#8b735530;color:#a89070">Authentic</span>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

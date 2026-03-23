@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>掃晴娘 · 66 Style Explorations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#08080c;color:#e8e6f0;font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;padding:0 0 80px}
+.hero{text-align:center;padding:56px 24px 40px;background:linear-gradient(180deg,#1a1028 0%,#08080c 100%)}
+.hero h1{font-family:'Noto Serif SC','Instrument Serif',serif;font-size:42px;font-weight:400;background:linear-gradient(135deg,#e8d5b7,#f0c8a0,#d4a574);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px}
+.hero .en{font-family:'Instrument Serif',serif;font-size:18px;color:#887868;margin-top:4px;font-style:italic}
+.hero .sub{font-size:13px;color:#665e56;margin-top:16px;line-height:1.6;max-width:340px;margin-left:auto;margin-right:auto}
+.grid{max-width:430px;margin:0 auto;padding:0 16px;display:flex;flex-direction:column;gap:20px}
+.card{border-radius:20px;overflow:hidden;border:1px solid #1e1e28;background:#111118}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0}
+.card-num{font-size:11px;font-weight:700;letter-spacing:2px;color:#555}
+.card-tag{padding:4px 10px;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:0.5px}
+.card-body{padding:12px 20px 20px}
+.card-title{font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:2px}
+.card-zh{font-family:'Noto Serif SC',serif;font-size:13px;color:#887060;margin-bottom:12px}
+.prompt-box{
+  background:#0c0c14;
+  border:1px solid #222233;
+  border-radius:12px;
+  padding:14px 16px;
+  font-size:13px;
+  color:#c8c0d8;
+  line-height:1.65;
+  position:relative;
+  cursor:pointer;
+  transition:border-color .2s;
+}
+.prompt-box:hover{border-color:#7a6aa0}
+.prompt-box::after{
+  content:'📋 Tap to copy';
+  position:absolute;
+  top:8px;
+  right:10px;
+  font-size:10px;
+  color:#555;
+  pointer-events:none;
+}
+.prompt-box.copied{border-color:#4ade80}
+.prompt-box.copied::after{content:'✓ Copied!';color:#4ade80}
+.refs{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.ref-link{font-size:11px;color:#7a6aa0;text-decoration:none;padding:3px 10px;border-radius:8px;background:#1a1624}
+.divider{text-align:center;padding:30px 0;font-size:12px;letter-spacing:4px;color:#333}
+
+/* Generated images gallery */
+.gen-images{display:flex;gap:8px;margin-top:14px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
+.gen-item{flex-shrink:0;width:140px;scroll-snap-align:start}
+.gen-item img,.gen-item video{width:140px;height:100px;object-fit:cover;border-radius:10px;border:1px solid #222;display:block}
+.gen-item video{cursor:pointer}
+.gen-label{font-size:10px;color:#666;text-align:center;margin-top:4px;font-weight:600;letter-spacing:0.5px}
+.gen-images::-webkit-scrollbar{display:none}
+
+/* Chips nav */
+.chips{
+  position:sticky;
+  top:0;
+  z-index:100;
+  display:flex;
+  gap:8px;
+  padding:12px 16px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  background:rgba(8,8,12,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid #1a1a24;
+  max-width:430px;
+  margin:0 auto;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex-shrink:0;
+  padding:6px 14px;
+  border-radius:20px;
+  border:1px solid #2a2a35;
+  background:transparent;
+  color:#888;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.chip:active{transform:scale(0.95)}
+.chip.active{background:#7a6aa0;border-color:#7a6aa0;color:#fff}
+.chip .chip-num{opacity:0.5;margin-right:4px;font-size:10px}
+
+/* Fullscreen lightbox */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column}
+.lightbox.show{display:flex}
+.lightbox img,.lightbox video{max-width:100%;max-height:80vh;object-fit:contain;border-radius:12px}
+.lightbox-label{color:#888;font-size:13px;margin-top:12px;font-weight:500}
+.lightbox-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lightbox-prev{left:12px}
+.lightbox-next{right:12px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>掃晴娘</h1>
+  <div class="en">Saoqing Niang · 66 Style Explorations</div>
+  <div class="sub">Tap any prompt to copy it. Paste into ChatGPT, Midjourney, or Claude to generate the image.</div>
+</div>
+
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLB()">
+  <button class="lightbox-close" onclick="closeLB()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="navLB(-1)">‹</button>
+  <button class="lightbox-nav lightbox-next" onclick="navLB(1)">›</button>
+  <div id="lbContent"></div>
+  <div class="lightbox-label" id="lbLabel"></div>
+</div>
+<div class="divider">· · · ☁️ · · ·</div>
+
+<script>
+const STYLES = [
+  {
+    title: "Tactile Frutiger Aero",
+    zh: "觸感水晶風",
+    tag: "CAROL'S TASTE", tagBg: "#00d4ff20", tagColor: "#00d4ff",
+    prompt: "A 掃晴娘 weather doll in Frutiger Aero aesthetic — the glossy, translucent, nature-infused Y2K digital style. She is rendered as a semi-transparent glossy white figure with visible internal light refracting through her body like frosted glass. Water droplets bead on her smooth surface. Behind her, a lush green leaf with visible veins and dew. The entire scene has that characteristic Frutiger Aero glow — soft white gradients, nature elements combined with digital perfection, lens flare from sunlight catching her glossy surface. Her cloth body has a jelly-like translucency — you can see light passing through the edges with a warm amber glow. The background blends a real sky photograph with smooth UI gradient overlays. Think Windows Vista wallpaper meets physical product render. Warm, glowing, touchable, alive.",
+    refs: [["Pinterest", "https://www.pinterest.com/carollmy828/frutiger-aero/"]],
+    images: [
+      { src: "images/01-frutiger-gemini.png", label: "Gemini" },
+      { src: "images/01-frutiger-chatgpt.png", label: "ChatGPT" }
+    ]
+  },
+  {
+    title: "AI-Native UI Object",
+    zh: "AI原生介面風",
+    tag: "CAROL'S TASTE", tagBg: "#a78bfa20", tagColor: "#a78bfa",
+    prompt: "A 掃晴娘 weather doll as a premium AI-native UI element — she exists as a 3D interactive widget floating in a clean dark interface. Her form is a soft white 3D object with smooth subdivision surfaces, sitting on a frosted glass card component with rounded corners (24px radius). Real-time weather data streams as glowing particles around her. The interface shows subtle glassmorphism panels with live temperature, humidity, and wind data in SF Pro font. Her cloth body has a soft ambient occlusion glow. She reacts to the data — leaning slightly in wind direction, glowing warmer in sun. The design language matches modern AI apps — clean dark backgrounds (#1a1a2e), accent gradients (purple to blue), floating depth layers. The kind of widget that makes designers screenshot and post on Twitter. Figma-ready, production-quality UI.",
+    refs: [["Pinterest", "https://www.pinterest.com/carollmy828/ai-native/"]],
+    images: [
+      { src: "images/02-ainative-gemini.png", label: "Gemini" },
+      { src: "images/02-ainative-chatgpt.png", label: "ChatGPT" }
+    ]
+  },
+  {
+    title: "Warm Glow Amigurumi",
+    zh: "溫暖鈎織風",
+    tag: "CAROL'S TASTE", tagBg: "#f59e0b20", tagColor: "#f59e0b",
+    prompt: "A 掃晴娘 weather doll as a handmade crochet amigurumi figure photographed in warm golden hour light. She is crocheted in the softest cream-white organic cotton yarn with a subtle warm amber glow from the setting sun behind her. Every stitch is visible and perfectly even. Her face has tiny black safety eyes that catch the warm light with a sparkle, and a single pink thread smile. She wears a tiny crocheted hanfu-style vest in dusty rose with a miniature yarn broom. She sits on a wooden windowsill — the window is fogged with condensation from rain outside, and warm interior light makes her glow. Bokeh of rain drops on the glass behind her. The yarn has that soft cotton halo. Shot on a 50mm f/1.4 lens with creamy warm bokeh. The image feels like a hug. Cottagecore meets Chinese folklore, wrapped in golden light.",
+    refs: [["Pinterest", "https://www.pinterest.com/carollmy828/crochet/"]],
+    images: [
+      { src: "images/03-amigurumi-gemini.png", label: "Gemini" },
+      { src: "images/03-amigurumi-chatgpt.png", label: "ChatGPT" }
+    ]
+  },
+  {
+    title: "Glassmorphic Keycap",
+    zh: "毛玻璃鍵帽風",
+    tag: "CAROL'S TASTE", tagBg: "#ec489920", tagColor: "#ec4899",
+    prompt: "A 掃晴娘 weather doll as a designer artisan keycap — a tiny frosted glass figure embedded inside a translucent resin keycap for a mechanical keyboard. The keycap is clear resin with the miniature 掃晴娘 suspended inside, her white cloth body visible through the glass-like material. Tiny clouds and weather elements float around her inside the resin. The keycap sits on a dark mechanical keyboard with RGB backlighting — the light shines up through the translucent resin making her glow from below in soft purple and cyan. The resin has that characteristic clarity with tiny internal bubbles catching light. Macro photography, extremely shallow depth of field showing the exquisite miniature detail inside. The keyboard RGB creates a warm underglow. Shot on a dark desk setup. r/MechanicalKeyboards grail piece.",
+    refs: [["Pinterest", "https://www.pinterest.com/carollmy828/ai-native/"]],
+    images: [
+      { src: "images/04-keycap-gemini.png", label: "Gemini" },
+      { src: "images/04-keycap-chatgpt.png", label: "ChatGPT" }
+    ]
+  },
+  {
+    title: "Soft Neon Gradient",
+    zh: "柔光霓虹漸層風",
+    tag: "CAROL'S TASTE", tagBg: "#f472b620", tagColor: "#f472b6",
+    prompt: "A 掃晴娘 weather doll floating in a soft neon gradient space — the intersection of warm glow and digital dreaminess. She is a 3D rendered white cloth figure with subsurface scattering, floating against a background of smooth gradients that shift from warm peach to soft lavender to gentle cyan. Soft neon light tubes in pink and blue float around her casting colored shadows — but the neon is SOFT, not harsh. Not cyberpunk — more like a gentle dreamscape. Her cloth body catches the colored light — pink on one side, blue on the other. Floating particles of warm gold dust surround her like fireflies. The entire image has a slight Gaussian blur at the edges creating a dreamy vignette. Halftone dot pattern overlay at 5% opacity adds texture. The warmth of a sunset combined with the magic of neon. Frutiger Aero meets lo-fi bedroom aesthetic.",
+    refs: [["Pinterest", "https://www.pinterest.com/carollmy828/frutiger-aero/"]],
+    images: [
+      { src: "images/05-softneon-gemini.png", label: "Gemini" },
+      { src: "images/05-softneon-chatgpt.png", label: "ChatGPT" }
+    ]
+  },
+  {
+    title: "Designer Trinket Object",
+    zh: "設計師小物風",
+    tag: "CAROL'S TASTE", tagBg: "#10b98120", tagColor: "#10b981",
+    prompt: "A 掃晴娘 weather doll as a premium desktop trinket — a small physical object you'd keep on your desk next to a retro Nokia phone and a lava lamp. She is 3 inches tall, made of matte white ceramic with a soft-touch coating. She sits on a small wooden base with 'WEATHER' laser-engraved. Her face is two tiny indented dots and a pressed line — minimal but warm. A tiny red thread bow at her neck. The scene shows her on a carefully styled desk — vintage Nokia 3310, a mini lava lamp glowing amber, a succulent plant, scattered vintage stamps, and a mechanical keyboard visible at the edge. The lighting is warm and cozy — golden hour through a window. The photo has that Instagram-curator aesthetic — everything deliberately placed but feeling effortless. Shot on film (Portra 400 color). She's the centerpiece of a curated life. Kinfolk magazine meets Chinese folklore.",
+    refs: [["Pinterest", "https://www.pinterest.com/carollmy828/trinket/"]],
+    images: [
+      { src: "images/06-trinket-gemini.png", label: "Gemini" },
+      { src: "images/06-trinket-chatgpt.png", label: "ChatGPT" }
+    ]
+  },
+  {
+    title: "Ghibli Watercolor",
+    zh: "宮崎駿水彩風",
+    tag: "DREAMY", tagBg: "#ffffff20", tagColor: "#c8dae8",
+    prompt: "A delicate white cloth weather doll (掃晴娘 / teru teru bozu) hanging from a thin cotton string against a vast Studio Ghibli watercolor sky. The doll has a perfectly round head, two tiny black dot eyes, and a gentle curved smile. Her white cloth body flows softly in the breeze. The sky behind her is painted in wet-on-wet watercolor technique — cerulean blues pooling into warm peach and soft amber at the horizon. Visible pencil outlines beneath translucent paint. Paper texture grain showing through. Soft cumulus clouds with wet edges. The overall feeling is nostalgic, gentle, like a scene from My Neighbor Totoro. Watercolor illustration, children's book quality, warm natural lighting.",
+    refs: [["Pinterest", "https://www.pinterest.com/ideas/teru-teru-bozu/933386643011/"], ["Behance", "https://www.behance.net/gallery/208698787/TeruBozu"]],
+    images: [
+      { src: "images/01-ghibli-gemini.png", label: "Gemini" },
+      { src: "images/01-ghibli-chatgpt.png", label: "ChatGPT" },
+      { src: "images/01-ghibli-grok.jpg", label: "Grok" },
+      { src: "images/01-ghibli-grok.mov", label: "Grok Video", type: "video" }
+    ]
+  },
+  {
+    title: "Chinese Ink Wash",
+    zh: "水墨風",
+    tag: "SERENE", tagBg: "#4a3c2e20", tagColor: "#6b5840",
+    prompt: "A 掃晴娘 (Saoqing Niang) weather doll rendered entirely in traditional Chinese sumi ink wash (水墨畫) on rice paper. The doll is formed by a few confident, expressive brush strokes — thick and wet where the cloth gathers at the neck, thin and dry-brush where the body trails off into nothing. Simple round head with minimal ink dot eyes and a single-stroke smile. She hangs from a delicate ink line. Background is mostly negative space (留白) with a distant ink-wash mountain silhouette and a faint moon. A small red seal stamp (印章) in the corner. The ink feathers where it meets the wet paper. Xuan paper fiber texture visible. Monochrome with only the vermillion seal as color accent. Contemplative, scholarly, timeless.",
+    refs: [["Pixiv", "https://dic.pixiv.net/a/%E6%8E%83%E6%99%B4%E5%A8%98"]],
+    images: [
+      { src: "images/02-ink-gemini.png", label: "Gemini" },
+      { src: "images/02-ink-chatgpt.png", label: "ChatGPT" },
+      { src: "images/02-ink-grok.jpg", label: "Grok" },
+      { src: "images/02-ink-grok.mov", label: "Grok Video", type: "video" }
+    ]
+  },
+  {
+    title: "Chinese Paper Cut",
+    zh: "剪紙風",
+    tag: "FOLK", tagBg: "#ff444420", tagColor: "#ff8888",
+    prompt: "A 掃晴娘 weather doll as a traditional Chinese paper cutting art piece (剪紙). The doll is a flat vermillion red silhouette on white background, with intricate interior cutouts forming delicate patterns of clouds, rain drops, flowers, and auspicious symbols within her body and head. Sharp geometric edges with perfect symmetry. She holds a small broom with cutout leaf details. The string she hangs from has paper-cut cloud ornaments. Surrounding decorative border of traditional paper-cut motifs — double happiness patterns, lotus flowers, swallows. Crisp cut edges casting subtle shadows on the white background beneath. The feeling is festive, auspicious, deeply rooted in Chinese folk art tradition. Flat graphic, high contrast red on white.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=chinese+paper+cut+art+doll"]],
+    images: [
+      { src: "images/03-papercut-gemini.png", label: "Gemini" },
+      { src: "images/03-papercut-chatgpt.png", label: "ChatGPT" },
+      { src: "images/03-papercut-grok.jpg", label: "Grok" },
+      { src: "images/03-papercut-grok.mov", label: "Grok Video", type: "video" }
+    ]
+  },
+  {
+    title: "Kawaii Character",
+    zh: "可愛いキャラクター",
+    tag: "CUTE", tagBg: "#e91e6320", tagColor: "#f06292",
+    prompt: "An adorable kawaii-style 掃晴娘 weather doll character with a disproportionately large round head and small body. Huge sparkling eyes with white catch-light reflections, rosy pink blush circles on her cheeks. She wears a tiny traditional hanfu-inspired white dress with a pink ribbon bow at the neck. Her cloth body has subtle pleats. She's holding a miniature broom decorated with a star charm. She hangs from a string with a cute bow at the top. Soft pastel pink and cream background with floating sparkles and small hearts. Clean vector illustration style with subtle grain texture overlay. The expression is pure joy — closed happy eyes with a wide smile. Sticker-worthy, emoji-quality character design. Professional character illustration.",
+    refs: [["Dribbble", "https://dribbble.com/shots/5262694-Teru-teru-bozu"], ["Pinkoi", "https://en.pinkoi.com/product/1a2wXz2P"]],
+    images: [
+      { src: "images/04-kawaii-gemini.png", label: "Gemini" },
+      { src: "images/04-kawaii-chatgpt.png", label: "ChatGPT" },
+      { src: "images/04-kawaii-grok.jpg", label: "Grok" },
+      { src: "images/04-kawaii-grok.mov", label: "Grok Video", type: "video" }
+    ]
+  },
+  {
+    title: "Apple Minimalist",
+    zh: "蘋果極簡風",
+    tag: "MINIMAL", tagBg: "#00000020", tagColor: "#999",
+    prompt: "An ultra-minimalist weather doll icon in Apple's SF Symbols design language. The 掃晴娘 is reduced to her purest geometric form — a perfect circle head atop a softened triangular body, rendered in a single consistent stroke weight. Monochromatic warm grey on pure white. No face details — just the silhouette is enough. A single thin line connects her to the top edge. One subtle blue accent circle suggests a weather state. Enormous whitespace surrounds the figure. The composition follows Apple's Human Interface Guidelines — optically balanced, pixel-perfect on Retina display. Feels like it belongs in iOS Settings next to the Weather icon. Clean vector, no texture, mathematical precision.",
+    refs: [["Dribbble", "https://dribbble.com/tags/weather-widget"]],
+    images: [
+      { src: "images/05-apple-gemini.png", label: "Gemini" },
+      { src: "images/05-apple-chatgpt.png", label: "ChatGPT" },
+      { src: "images/05-apple-grok.jpg", label: "Grok" },
+      { src: "images/05-apple-grok.mov", label: "Grok Video", type: "video" }
+    ]
+  },
+  {
+    title: "3D Clay / Pixar",
+    zh: "黏土立體風",
+    tag: "TACTILE", tagBg: "#d4906020", tagColor: "#d4a060",
+    prompt: "A 掃晴娘 weather doll as a handmade clay figurine, photographed with soft studio lighting and shallow depth of field. The white clay has subtle subsurface scattering — light passes through the thin edges of her cloth body giving a warm translucent glow. Tiny fingerprint impressions visible in the clay surface. Her face has two small indented dot eyes and a pressed smile line. The string is real twisted cotton thread attached to a small wooden dowel at the top. She sits on a warm wooden shelf with soft bokeh background. The clay has a matte finish with occasional glossy spots where it was smoothed. Laika Studios / Pixar short film quality. Macro photography, f/2.8 depth of field, warm natural window light from the left.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=clay+character+3d+cute+soft"]],
+    images: [
+      { src: "images/06-clay-gemini.png", label: "Gemini" },
+      { src: "images/06-clay-chatgpt.png", label: "ChatGPT" },
+      { src: "images/06-clay-grok.jpg", label: "Grok" },
+      { src: "images/06-clay-grok.mov", label: "Grok Video", type: "video" }
+    ]
+  },
+  {
+    title: "Pixel Art 8-Bit",
+    zh: "像素復古風",
+    tag: "RETRO", tagBg: "#4ade8020", tagColor: "#4ade80",
+    prompt: "A 掃晴娘 weather doll in pixel art style, exactly 32x48 pixels, scaled up with nearest-neighbor filtering so each pixel is crisp and visible. Limited 8-color palette: two whites, two greys, black, sky blue, and warm amber. She hangs from a one-pixel-wide string. Her round head is an 8-pixel diameter circle. Two black pixel eyes and a 3-pixel curved smile. Her cloth body tapers to a point with slight pixel dithering for the cloth fold shadows. Behind her, a simple pixel sky with blocky clouds. Small pixel raindrops or sun rays depending on weather. The entire scene has Game Boy / Tamagotchi nostalgic energy. Dark background variant. No anti-aliasing, hard pixel edges only.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=pixel+art+weather+cute+character"]],
+    images: [
+      { src: "images/07-pixel-gemini.png", label: "Gemini" },
+      { src: "images/07-pixel-chatgpt.png", label: "ChatGPT" },
+      { src: "images/07-pixel-grok.jpg", label: "Grok" },
+      { src: "images/07-pixel-grok.mov", label: "Grok Video", type: "video" }
+    ]
+  },
+  {
+    title: "Ukiyo-e Woodblock",
+    zh: "浮世繪版畫風",
+    tag: "DRAMATIC", tagBg: "#9b59b620", tagColor: "#c8a8e8",
+    prompt: "A 掃晴娘 weather doll reimagined as a ukiyo-e woodblock print in the style of Hokusai or Hiroshige. Bold black outlines filled with flat indigo, ochre, and vermillion. Wood grain texture visible through the ink. The doll hangs against a dramatic sky — stylized scrolling clouds rendered in the classic Japanese wave pattern. Rain depicted as the famous diagonal parallel lines of Edo-period prints. A red cartouche (title block) in the upper corner contains Japanese text. The registration of color blocks is very slightly offset as in authentic multi-block printing. Washi paper background with visible fiber. The composition has the dramatic asymmetry and bold graphic quality of the great Japanese masters.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=ukiyo-e+modern+illustration"]],
+    images: [
+      { src: "images/08-ukiyoe-gemini.png", label: "Gemini" },
+      { src: "images/08-ukiyoe-chatgpt.png", label: "ChatGPT" },
+      { src: "images/08-ukiyoe-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Art Deco Glamour",
+    zh: "裝飾藝術風",
+    tag: "LUXE", tagBg: "#d4a06020", tagColor: "#d4a060",
+    prompt: "A 掃晴娘 weather doll reimagined as a 1920s Art Deco decorative motif. Her form is built from geometric symmetry — the head is a perfect gold circle, the body formed by nested chevrons and fan-shaped rays. Gold leaf lines radiate outward like sunbeams. The entire composition sits within an ornate Art Deco arch frame with stepped geometric borders. Sun rays are precise parallel gold lines. Rain is silver vertical pinstripes. Background is deep matte black with emerald green accent panels. The gold has the look of genuine foil stamping — slightly uneven metallic sheen. Typography in an authentic 1920s typeface. Gatsby meets goddess. Luxurious, architectural, poster-worthy.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=art+deco+character+gold+poster"]],
+    images: [
+      { src: "images/09-deco-gemini.png", label: "Gemini" },
+      { src: "images/09-deco-chatgpt.png", label: "ChatGPT" },
+      { src: "images/09-deco-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Single Line Drawing",
+    zh: "一筆畫風",
+    tag: "POETIC", tagBg: "#00000020", tagColor: "#999",
+    prompt: "A 掃晴娘 weather doll drawn in one single continuous line — the pen never leaves the paper. Starting from the string, the line flows down to form the round head, curves to suggest two eyes, swoops into a smile, continues down to create the flowing cloth body, and loops back up to complete. The line weight varies naturally with pen pressure — thicker at curves, thinner at speed. On pure white background. The line is warm dark brown ink, slightly imperfect with natural hand tremor. One section of the line is drawn in blue ink where it passes through a 'rain' area. Picasso single-line portrait meets Muji aesthetic. Intellectual, poetic, effortlessly elegant. High resolution on textured cotton rag paper.",
+    refs: [["Dribbble", "https://dribbble.com/tags/one-line-drawing"]],
+    images: [
+      { src: "images/10-line-gemini.png", label: "Gemini" },
+      { src: "images/10-line-chatgpt.png", label: "ChatGPT" },
+      { src: "images/10-line-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Children's Book",
+    zh: "繪本風",
+    tag: "WARM", tagBg: "#c8906020", tagColor: "#c8a060",
+    prompt: "A 掃晴娘 weather doll illustrated in the style of Oliver Jeffers or Beatrix Potter — soft colored pencil and gouache on cream textured paper. The doll hangs from the eave of a cozy cottage, her cloth body slightly rumpled and imperfect. Colored pencil outlines are wobbly and warm — the coloring goes slightly outside the lines. Behind her, a window glows with warm amber light from inside the house. The sky beyond shows gentle weather. A small bird perches nearby watching her. Muted sage green, dusty rose, warm yellow, and soft brown palette. The whole scene tells a story of home and protection. Bedtime-story warmth. Visible colored pencil grain and paper tooth texture throughout.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=oliver+jeffers+illustration+style"]],
+    images: [
+      { src: "images/11-book-gemini.png", label: "Gemini" },
+      { src: "images/11-book-chatgpt.png", label: "ChatGPT" },
+      { src: "images/11-book-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Blue & White Porcelain",
+    zh: "青花瓷風",
+    tag: "PRECIOUS", tagBg: "#2a508020", tagColor: "#5a8ac0",
+    prompt: "A 掃晴娘 weather doll painted in the style of Ming Dynasty blue-and-white porcelain (青花瓷). Her body is pure porcelain white with intricate cobalt blue hand-painted motifs — swirling clouds, peony flowers, and delicate wave patterns fill her cloth form. Her face is a simple blue brushwork: two dots and a curved line. She holds a broom with bamboo-joint detail painted in fine blue lines. The glaze surface has a subtle sheen with fine craquelure cracks. One crack is repaired with gold in kintsugi style. Background is porcelain white with a blue decorative border frame. Looks like a museum artifact brought to life. Precious, culturally rich, exhibition-quality ceramic art.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=blue+white+porcelain+character"]],
+    images: [
+      { src: "images/12-porcelain-gemini.png", label: "Gemini" },
+      { src: "images/12-porcelain-chatgpt.png", label: "ChatGPT" },
+      { src: "images/12-porcelain-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Glassmorphism",
+    zh: "毛玻璃風",
+    tag: "MODERN", tagBg: "#667eea30", tagColor: "#99aaff",
+    prompt: "A 掃晴娘 weather doll made of frosted glass, floating over a beautiful gradient sky. You can see the clouds and sky blurred through her translucent body — the glass refracts light at her edges creating subtle rainbow caustics. White border glow outlines her form. The background shifts from warm sunset orange to cool twilight purple. Tiny water droplets bead on her glass surface during rain. She has a soft inner glow. The overall aesthetic matches Apple's visionOS / iOS control center design language — frosted panels, depth, light play. Temperature text floats beside her in SF Pro font. Premium, modern, the kind of widget that makes people ask 'what app is that?' Rendered in 3D with physically accurate glass material.",
+    refs: [["Dribbble", "https://dribbble.com/tags/glassmorphism"]],
+    images: [
+      { src: "images/13-glass-gemini.png", label: "Gemini" },
+      { src: "images/13-glass-chatgpt.png", label: "ChatGPT" },
+      { src: "images/13-glass-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Paper Craft Diorama",
+    zh: "紙藝摺紙風",
+    tag: "CRAFT", tagBg: "#8b6b4a20", tagColor: "#a08058",
+    prompt: "A 掃晴娘 weather doll as a folded paper sculpture inside a layered paper diorama box. The doll is white cardstock, carefully folded with visible creases and slightly curled edges catching warm directional light. She hangs from a real thread in the center of the box. Behind her: layered paper mountains at different depths creating parallax — closest mountains in dark paper, distant ones in pale blue. Paper-cut clouds hang from threads at the top. The sun is an accordion-folded paper circle with ray pleats. Rain would be thin paper strips hanging on threads. Everything casts real shadows on the layers behind. Photographed from straight on, soft warm lighting from above. The craft paper has visible fiber texture. Handmade, tactile, like a precious Sunday afternoon project.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=paper+diorama+layered+craft"]],
+    images: [
+      { src: "images/14-paper-gemini.png", label: "Gemini" },
+      { src: "images/14-paper-chatgpt.png", label: "ChatGPT" },
+      { src: "images/14-paper-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Neon Glow",
+    zh: "霓虹燈風",
+    tag: "URBAN", tagBg: "#00d4ff20", tagColor: "#00d4ff",
+    prompt: "A 掃晴娘 weather doll drawn in neon light tubes mounted on a dark brick wall in a Tokyo back alley at night. Her outline glows in cyan neon — the tube bends to form her round head, curves for her smile, and flows down her cloth body. The neon light casts a cyan glow on the wet brick wall and reflects in puddles below. Rain is depicted as hot pink neon droplets. The temperature is displayed in a flickering red neon sign font beside her. The scene is moody and atmospheric — you can almost hear the rain and distant city sounds. Light bloom and lens flare from the neon tubes. Wet asphalt reflects everything. Cyberpunk meets ancient folklore. Cinematic photography, shot on anamorphic lens, 2.39:1 aspect ratio.",
+    refs: [["Dribbble", "https://dribbble.com/tags/neon-illustration"]],
+    images: [
+      { src: "images/15-neon-gemini.png", label: "Gemini" },
+      { src: "images/15-neon-chatgpt.png", label: "ChatGPT" },
+      { src: "images/15-neon-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Botanical Specimen",
+    zh: "植物圖鑑風",
+    tag: "ORGANIC", tagBg: "#2e7d3220", tagColor: "#60a060",
+    prompt: "A 掃晴娘 weather doll whose entire body is composed of real botanical elements, rendered in scientific botanical illustration style. Her head is a perfect white peony in full bloom. Her cloth body is made of cascading wisteria vines and hanging white flowers. Her broom is a dried lavender bundle. Tiny butterflies rest on her petals. The illustration is done with the precision of a Royal Botanical Gardens scientific plate — fine pen outlines with delicate watercolor tinting. Small annotation labels in copperplate handwriting point to different plant species. Aged cream paper background with a subtle border. In spring she blooms cherry blossoms; in winter, bare frost-covered branches. Scientific accuracy meets magical content.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=botanical+illustration+character"]],
+    images: [
+      { src: "images/16-botanical-gemini.png", label: "Gemini" },
+      { src: "images/16-botanical-chatgpt.png", label: "ChatGPT" },
+      { src: "images/16-botanical-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Embroidery on Linen",
+    zh: "刺繡風",
+    tag: "HANDMADE", tagBg: "#8b5e3c20", tagColor: "#b08060",
+    prompt: "A 掃晴娘 weather doll rendered as if embroidered by hand on natural linen fabric. Her head is filled with smooth satin stitch in white thread. Her eyes are tiny French knots in navy thread. Her smile is a single back stitch. Her cloth body uses long-and-short stitch with visible thread direction changes. The string she hangs from is chain stitch. Surrounding her: embroidered weather elements — lazy daisy stitches form sun rays, seed stitch creates rain texture, stem stitch outlines clouds. The linen background shows its natural weave texture. Slight fabric pucker around dense stitching. Thread colors are indigo, cream, rust, and sage on unbleached linen. Photographed in natural light with soft shadows showing the thread dimension above the fabric surface. Heirloom quality, made with love.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=embroidery+character+illustration"]],
+    images: [
+      { src: "images/17-embroidery-gemini.png", label: "Gemini" },
+      { src: "images/17-embroidery-chatgpt.png", label: "ChatGPT" },
+      { src: "images/17-embroidery-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Shadow Puppet Theatre",
+    zh: "皮影戲風",
+    tag: "ANCIENT", tagBg: "#e8d0a020", tagColor: "#d4b880",
+    prompt: "A 掃晴娘 weather doll as a traditional Chinese shadow puppet (皮影戲), backlit by a warm amber light source. She is made of translucent leather — her body panels are dyed in deep ruby red and emerald green, with intricate perforated patterns that let light through as glowing dots and lines. Her joints are articulated with small brass rivets. Her broom arm can move. The leather surface shows its grain and slight translucency. Behind her, the light source creates a warm golden glow that gradients to darkness at the edges. Other smaller shadow puppets of clouds and rain drops are visible at the margins. The perforated patterns within her body create constellations of colored light. Ancient cinema magic, theatrical, mesmerizing. Photographed from the audience side of the screen.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=chinese+shadow+puppet+art"]],
+    images: [
+      { src: "images/18-shadow-gemini.png", label: "Gemini" },
+      { src: "images/18-shadow-chatgpt.png", label: "ChatGPT" },
+      { src: "images/18-shadow-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Pastel Gradient Dream",
+    zh: "夢幻漸層風",
+    tag: "ETHEREAL", tagBg: "#8868a820", tagColor: "#a888c8",
+    prompt: "A 掃晴娘 weather doll made entirely of soft light and color gradients — no hard edges exist anywhere in the image. Her form blends from lavender at the top of her head through rose pink at her body to powder blue at her trailing edge. She is luminous — she appears to emit soft light. Floating bokeh particles of warm gold surround her like dust motes caught in a sunbeam. The background is a smooth gradient that shifts from dawn pink to midday blue to dusk purple, matching real sky colors. Her face is suggested by slightly brighter spots where eyes and smile would be — more felt than seen. Lens flare from an unseen sun catches her edge. The entire image feels like a lucid dream or the moment between sleeping and waking. Ultra smooth, meditative, ASMR for the eyes. 4K resolution, photographic quality light effects.",
+    refs: [["Dribbble", "https://dribbble.com/tags/gradient-illustration"]],
+    images: [
+      { src: "images/19-pastel-gemini.png", label: "Gemini" },
+      { src: "images/19-pastel-chatgpt.png", label: "ChatGPT" },
+      { src: "images/19-pastel-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Mixed Media Collage",
+    zh: "混合媒材風",
+    tag: "EXPERIMENTAL", tagBg: "#c8a87820", tagColor: "#c8a878",
+    prompt: "A 掃晴娘 weather doll assembled as a mixed-media collage. Her round head is a photograph of actual white cotton cloth, cut out with slightly rough edges. Her body is a watercolor painting on torn handmade paper. The string is a scan of real twisted thread. Behind her: fragments of a vintage Chinese map, a satellite cloud photograph, a piece of old newspaper showing a weather forecast, and strips of washi tape holding everything together. The temperature is rubber-stamped in red ink. A small pressed flower is tucked beside her. Some elements are slightly yellowed with age, others are fresh paint. The composition feels like an artist's journal page — personal, layered, alive with texture and meaning. Mixed resolution elements, collage edges visible, warmly chaotic yet somehow perfectly balanced.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=mixed+media+collage+character"]],
+    images: [
+      { src: "images/20-collage-gemini.png", label: "Gemini" },
+      { src: "images/20-collage-chatgpt.png", label: "ChatGPT" },
+      { src: "images/20-collage-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "3D Character Model",
+    zh: "3D建模風",
+    tag: "3D", tagBg: "#6366f120", tagColor: "#818cf8",
+    prompt: "A 掃晴娘 (Saoqing Niang) weather doll as a professional 3D character model rendered in Blender/Cinema 4D. Smooth subdivision surface modeling with clean topology visible in wireframe overlay on half her body. Soft white cloth material with subsurface scattering shader. Physically based rendering with HDRI studio lighting — key light from top-right, soft fill from left, rim light catching her edges. She hangs from a thin modeled string with proper physics simulation draping. Her round head has subtle normal map detail for cloth weave texture. Two small indented eyes and a sculpted smile line. The cloth body has simulated wrinkles and gravity-driven folds. Rendered at 4K with slight depth of field. Professional 3D portfolio quality — Artstation trending. Grey gradient background with subtle ground shadow.",
+    refs: [["ArtStation", "https://www.artstation.com/search?q=cute+character+3d+model"]],
+    images: [
+      { src: "images/21-3d-gemini.png", label: "Gemini" },
+      { src: "images/21-3d-chatgpt.png", label: "ChatGPT" },
+      { src: "images/21-3d-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Designer Toy / Pop Mart",
+    zh: "潮玩盲盒風",
+    tag: "COLLECTIBLE", tagBg: "#f59e0b20", tagColor: "#f59e0b",
+    prompt: "A 掃晴娘 weather doll as a premium designer vinyl art toy — NOT like Labubu or Crybaby. Her form stays true to the original cloth doll shape: a perfectly round smooth head atop a flowing draped body, hanging from a string. The vinyl has a matte porcelain-white finish with subtle pearl undertones — NOT glossy. Her face is minimal: two tiny recessed dot eyes and a thin embossed smile line. No exaggerated expressions. A delicate red thread is tied at her neck. She stands on a cloud-shaped acrylic base with her edition number engraved. The packaging is a cylindrical tube (not a blind box) with traditional Chinese cloud patterns in gold foil. Shot as a professional product photo on a seamless warm grey background. Macro lens, f/2.8, showing the matte vinyl texture and the precision of the sculpt. KAWS meets ancient folklore. Museum gift shop collectible energy.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=pop+mart+crybaby+designer+toy"]],
+    images: [
+      { src: "images/22-toy-gemini.png", label: "Gemini" },
+      { src: "images/22-toy-chatgpt.png", label: "ChatGPT" },
+      { src: "images/22-toy-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Jellycat Plushie",
+    zh: "毛絨公仔風",
+    tag: "SOFT", tagBg: "#f9a8d420", tagColor: "#f9a8d4",
+    prompt: "A 掃晴娘 weather doll as a Jellycat-style luxury plush toy. She is made of the softest imaginable marshmallow-white plush fabric with a velvety texture. Her round head is overstuffed and squishy — you can see the fabric stretching slightly at the seams. Bean-bag weighted bottom so she sits up. Tiny embroidered black dot eyes and a single-thread smile. A small satin ribbon bow at her neck in dusty pink. Her cloth body is floppy and huggable with understuffed arms. She sits on a cream knit blanket next to a cup of tea. Professional product photography — soft natural window light, shallow depth of field, the kind of photo that makes you want to reach into the screen and squeeze her. Jellycat Bashful collection energy. Lifestyle product shot.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=jellycat+plush+toy+photography"]],
+    images: [
+      { src: "images/23-jellycat-gemini.png", label: "Gemini" },
+      { src: "images/23-jellycat-chatgpt.png", label: "ChatGPT" },
+      { src: "images/23-jellycat-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Crochet Amigurumi",
+    zh: "鈎針編織風",
+    tag: "HANDCRAFT", tagBg: "#a78bfa20", tagColor: "#a78bfa",
+    prompt: "A 掃晴娘 weather doll as a handmade crochet amigurumi figure. She is crocheted in white cotton yarn — every single stitch is visible and perfectly even. Her round head is stuffed firmly into a perfect sphere. Two small black safety eyes and a pink embroidered V-shaped smile. A tiny crocheted broom in her hand with brown yarn handle and yellow yarn bristles. Miniature crochet clouds and raindrops hang beside her on thin yarn strings. She sits on a wooden surface next to balls of yarn, a crochet hook, and a pattern printout. The yarn has a slight fuzzy halo from the cotton fiber. Warm afternoon light from a window. Shot on a 50mm lens with creamy bokeh. Etsy shop product listing quality. Cottagecore aesthetic. The kind of photo that gets 50K saves on Pinterest.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=amigurumi+crochet+cute+doll"]],
+    images: [
+      { src: "images/24-crochet-gemini.png", label: "Gemini" },
+      { src: "images/24-crochet-chatgpt.png", label: "ChatGPT" },
+      { src: "images/24-crochet-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Photorealistic",
+    zh: "超寫實風",
+    tag: "REAL", tagBg: "#10b98120", tagColor: "#10b981",
+    prompt: "A photorealistic photograph of a real handmade 掃晴娘 weather doll hanging outside a traditional Japanese wooden window frame. She is made of actual white cotton cloth, tied with real twine at the neck. The cloth is slightly weathered and translucent — you can see the grey sky through the thin fabric. Rain droplets cling to her surface and run down in tiny rivulets. The wooden window frame has aged patina with small cracks. Behind her, a blurred rainy garden with wet maple leaves. Shot on a Sony A7R IV with a 85mm f/1.4 lens at f/2.0 — extremely shallow depth of field. The focus is razor-sharp on her face (two dots drawn with a felt pen, a wobbly smile). Natural overcast lighting. ISO 400, slight film grain. National Geographic documentary photography quality. Wabi-sabi beauty.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=teru+teru+bozu+real+photo"]],
+    images: [
+      { src: "images/25-photo-gemini.png", label: "Gemini" },
+      { src: "images/25-photo-chatgpt.png", label: "ChatGPT" },
+      { src: "images/25-photo-grok.jpg", label: "Grok" }
+    ]
+  },
+  {
+    title: "Futuristic / Sci-Fi",
+    zh: "未來科幻風",
+    tag: "FUTURE", tagBg: "#06b6d420", tagColor: "#06b6d4",
+    prompt: "A 掃晴娘 weather doll reimagined for the year 2150. She is a holographic AI weather companion — her body is made of translucent smart fabric that displays real-time weather data as flowing particles across her surface. Her head is a smooth white sphere with two glowing cyan LED dot eyes and a soft blue light-line smile. She floats (no string needed) using magnetic levitation above a sleek black charging base with a subtle blue glow ring. Tiny holographic weather icons orbit around her — rain drops, sun symbols, cloud formations rendered as light particles. The background is a minimalist futuristic apartment with floor-to-ceiling windows showing a cyberpunk cityscape at dusk. Holographic HUD elements float nearby showing temperature and forecast. Rendered in Unreal Engine 5 with ray tracing. Blade Runner meets Totoro.",
+    refs: [["ArtStation", "https://www.artstation.com/search?q=holographic+character+futuristic"]],
+    images: [
+      { src: "images/26-future-gemini.png", label: "Gemini" },
+      { src: "images/26-future-chatgpt.png", label: "ChatGPT" }
+    ]
+  },
+  {
+    title: "80s Synthwave",
+    zh: "80年代合成波風",
+    tag: "RETRO-FUTURE", tagBg: "#ec489920", tagColor: "#ec4899",
+    prompt: "A 掃晴娘 weather doll in full 1980s synthwave aesthetic. She is a chrome-finished figure with mirror reflections, floating above a neon grid that stretches to a horizon of purple mountains. The sky is a dramatic gradient from deep purple to hot pink to orange. A huge retro sun sits behind her — segmented by horizontal scan lines. Palm tree silhouettes frame the edges. Her outline glows in hot pink and cyan neon. VHS tracking lines and scan artifacts distort parts of the image. The temperature is displayed in a retro digital LCD font. Chrome text reads 'WEATHER WAVE' in an 80s movie title font with chrome reflection. Lens flare from the sun catches her chrome surface. The entire image looks like a VHS tape cover or synthwave album art. Outrun aesthetic, retrowave, Miami Vice energy.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=synthwave+80s+character+aesthetic"]]
+  },
+  {
+    title: "Retro Disco",
+    zh: "復古迪斯可風",
+    tag: "GROOVY", tagBg: "#f97316 20", tagColor: "#f97316",
+    prompt: "A 掃晴娘 weather doll at a 1970s disco. She hangs from a ceiling as a disco ball — her round head IS a mirror ball, covered in tiny square mirror tiles that scatter colored light across the dark dance floor below. Her white cloth body flows like a disco dress with sequin accents that catch the spinning colored lights — magenta, gold, electric blue. The background is a dark nightclub with a checkered dance floor, fog machine haze, and colorful stage lights creating god rays. Silhouettes of dancers below. A vintage marquee sign reads 'WEATHER TONIGHT: GROOVY' in light bulb letters. The entire image has a warm 70s film stock color grade — slightly orange-shifted with soft halation around the lights. Saturday Night Fever meets ancient Chinese folklore. Funky, joyful, absurdly cool.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=disco+ball+illustration+70s+aesthetic"]]
+  },
+  {
+    title: "Cinematic Film Still",
+    zh: "電影劇照風",
+    tag: "CINEMA", tagBg: "#78716c20", tagColor: "#a8a29e",
+    prompt: "A 掃晴娘 weather doll photographed as a cinematic film still from an art-house movie. She hangs in the foreground, slightly out of focus, while behind her through a rain-streaked window we see a young girl looking out at the storm. The color grading is teal and orange — shadows pushed to deep teal, highlights warm amber. Anamorphic lens bokeh (oval-shaped light blurs) from streetlights outside. The aspect ratio is 2.39:1 widescreen with subtle letterbox bars. Film grain is visible — shot on Kodak 5219 500T stock. The composition follows the rule of thirds perfectly. The doll is backlit by the window light creating a soft halo. A single practical light (desk lamp) provides warm fill on the girl's face. The mood is melancholy but hopeful — she's waiting for the rain to stop, trusting the doll will bring sunshine. Wong Kar-wai meets Hayao Miyazaki. A24 film energy.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=cinematic+film+still+rain+window"]]
+  },
+  {
+    title: "Stained Glass Window",
+    zh: "彩色玻璃窗風",
+    tag: "SACRED", tagBg: "#eab30820", tagColor: "#eab308",
+    prompt: "A 掃晴娘 weather doll depicted as a medieval cathedral stained glass window. Her figure is composed of pieces of colored glass — white and pale blue for her cloth body, clear textured glass for her head with painted-on features, deep cobalt for the sky behind her. Thick dark lead came lines outline each glass piece. Sunlight streams through from behind, making each glass piece glow with jewel-like intensity. Surrounding her: a Gothic arch frame with trefoil details, rose window patterns in the corners, and small panels showing weather scenes (sun, rain, snow, wind) like the stations of the cross. The glass has authentic texture — some pieces are mouth-blown with subtle bubbles and waves. Photographed from inside a dark stone cathedral with dramatic god rays streaming through. Sacred, luminous, eternal.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=stained+glass+window+character+art"]]
+  },
+  {
+    title: "Watercolor Tattoo",
+    zh: "水彩紋身風",
+    tag: "BODY ART", tagBg: "#ef444420", tagColor: "#f87171",
+    prompt: "A 掃晴娘 weather doll designed as a watercolor tattoo on skin. The doll is rendered in the watercolor tattoo style — bold black linework for her outline with splashes, drips, and washes of color that bleed beyond the lines. Turquoise and coral watercolor splashes burst from behind her like an explosion of weather. Rain drops are scattered ink splatters. The sun is a golden watercolor burst. Her string extends upward and wraps into a delicate mandala pattern. The tattoo sits on a realistic skin surface — you can see pores, the slight sheen of fresh tattoo moisture, and the way ink sits differently on skin versus paper. Clean white skin background. Professional tattoo portfolio photography, shot in a tattoo studio with ring light. The kind of design that would have a 2-year waiting list.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=watercolor+tattoo+cute+character"]]
+  },
+  {
+    title: "Lego Minifigure",
+    zh: "樂高人偶風",
+    tag: "PLAY", tagBg: "#facc1520", tagColor: "#facc15",
+    prompt: "A 掃晴娘 weather doll as an official Lego minifigure and brick-built display set. She is a custom minifigure with a specially molded round white cloth head piece (replacing the standard minifig head), printed dot eyes and smile, and a white fabric-textured torso and leg piece. She holds a tiny Lego broom accessory. She hangs from a brick-built traditional Japanese window frame using a real Lego string piece. The set includes a small cloud build, rain drop pieces, and a sunshine tile. The instruction booklet is partially visible. Product photography on a Lego baseplate with the official Lego set box visible in the background showing the set name '掃晴娘 Weather Doll #10389'. Professional Lego product photography lighting. Toy photography, miniature world.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=custom+lego+minifigure+display"]]
+  },
+  {
+    title: "Bauhaus Geometry",
+    zh: "包浩斯幾何風",
+    tag: "DESIGN", tagBg: "#ef444420", tagColor: "#ef4444",
+    prompt: "A 掃晴娘 weather doll constructed entirely from Bauhaus geometric primitives — her head is a perfect circle, body is a triangle, string is a thin vertical line. Primary colors only: red circle head, blue triangle body, yellow square broom. Black outlines on white background. The composition follows strict grid alignment. Typography in Futura or DIN. A weather icon (sun/rain) is a geometric abstraction — sun is a yellow circle with radiating lines, rain is blue diagonal lines. The overall layout resembles a Bauhaus poster by Herbert Bayer or László Moholy-Nagy. Form follows function. Every element has mathematical purpose. No decoration, no ornament — pure geometric truth.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=bauhaus+poster+geometric+character"]]
+  },
+  {
+    title: "Swiss International Style",
+    zh: "瑞士國際主義風",
+    tag: "GRID", tagBg: "#33333320", tagColor: "#999",
+    prompt: "A 掃晴娘 weather doll presented in Swiss International Typographic Style. Strict grid system. The doll is a high-contrast black and white photograph placed asymmetrically on the grid. Helvetica Bold typography dominates: '掃晴娘' set large in the upper left, 'WEATHER DOLL' tracked out below. Temperature in massive 120pt Helvetica Neue Ultra Light. Generous whitespace. Color is used sparingly — a single red rule line or a blue weather indicator dot. The grid lines are faintly visible. Everything is optically aligned. Josef Müller-Brockmann energy. The doll itself is rendered as a clean photographic silhouette. Information hierarchy is crystal clear. Swiss precision meets Chinese folklore.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=swiss+international+style+poster"]]
+  },
+  {
+    title: "Digital Brutalism",
+    zh: "數位粗獷主義風",
+    tag: "RAW", tagBg: "#ff660020", tagColor: "#ff6600",
+    prompt: "A 掃晴娘 weather doll in digital brutalist web design style. Raw, unpolished, intentionally ugly-beautiful. The doll is rendered as a chunky pixel art figure on a stark white background with a thick black border. Comic Sans or Times New Roman typography displays the temperature. Clashing neon colors — lime green, hot pink, electric blue. Visible HTML-style borders and monospace code snippets showing weather API data. No rounded corners anywhere — everything is sharp rectangles. A scrolling marquee shows weather updates. The cursor is a custom brutalist arrow. Anti-design that's so raw it becomes compelling. Bloomberg Terminal meets ancient folklore. Deliberately confrontational layout.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=brutalist+web+design"]]
+  },
+  {
+    title: "Memphis Design",
+    zh: "孟菲斯設計風",
+    tag: "RADICAL", tagBg: "#8b5cf620", tagColor: "#8b5cf6",
+    prompt: "A 掃晴娘 weather doll in 1980s Memphis Design Group style — the aesthetic of Ettore Sottsass. Her body is assembled from clashing geometric shapes: a pink sphere head on a mint green cone body with yellow squiggle arms. The background is covered in confetti-like patterns — dots, zigzags, triangles, wavy lines in coral, teal, lavender, and mustard. Her broom has a terrazzo-pattern handle. The composition deliberately breaks every rule of 'good taste' — clashing patterns, asymmetric layout, loud colors. A laminate texture overlays everything. The temperature is displayed in a funky geometric typeface. Postmodern, playful, rebellious. The kind of design that sparks arguments.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=memphis+design+character+illustration"]]
+  },
+  {
+    title: "Impressionist Oil",
+    zh: "印象派油畫風",
+    tag: "PAINTED", tagBg: "#6366f120", tagColor: "#818cf8",
+    prompt: "A 掃晴娘 weather doll painted in the style of Claude Monet or Pierre-Auguste Renoir. She hangs in a garden at golden hour — the light is dappled through leaves, creating dancing shadows. Thick impasto brush strokes build up the white cloth of her body. The background is a blur of impressionist color — lavender, sage green, warm gold, rose pink. Individual brush strokes are clearly visible, each one a distinct dab of color. The paint has physical texture — you can see the ridges where the palette knife dragged. Water lilies float in a pond below her. The overall feeling is a warm afternoon in Giverny. Oil on canvas, gallery lighting, museum-quality frame visible at edges.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=impressionist+painting+character"]]
+  },
+  {
+    title: "Expressionist",
+    zh: "表現主義風",
+    tag: "EMOTION", tagBg: "#dc262620", tagColor: "#ef4444",
+    prompt: "A 掃晴娘 weather doll painted in German Expressionist style — think Ernst Ludwig Kirchner or Edvard Munch. Bold, angular, emotionally intense. Her form is distorted — jagged outlines, exaggerated proportions, the cloth body twisting in an impossible wind. The color is violent: acid yellows, blood reds, bruise purples slashed across the canvas. Thick black outlines carve her shape aggressively. The sky behind her is a swirling vortex of color reminiscent of The Scream. Brush strokes are visible and violent — paint applied with fury. During storms, the expressionism intensifies. During calm weather, the palette softens slightly but the angular distortion remains. Raw emotional energy on canvas.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=german+expressionism+painting"]]
+  },
+  {
+    title: "Renaissance Oil Painting",
+    zh: "文藝復興油畫風",
+    tag: "CLASSICAL", tagBg: "#92400e20", tagColor: "#d97706",
+    prompt: "A 掃晴娘 weather doll painted as a Renaissance masterpiece in the style of Botticelli or Raphael. She is depicted as a celestial figure — the Cloud-Sweeping Maiden — floating in a golden sky. Her white cloth is rendered as flowing classical drapery with perfect chiaroscuro shading. Her face has the serene, idealized beauty of a Botticelli Venus — soft features, downcast eyes, enigmatic smile. Cherubs hold her string from above. Below, a detailed Italian landscape unfolds. The painting uses sfumato technique — soft, smoky transitions between tones. Gold leaf halo behind her head. Craquelure aging on the paint surface. Ornate gilded frame. Oil on wood panel, Uffizi Gallery lighting.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=renaissance+painting+angel+figure"]]
+  },
+  {
+    title: "Surrealism",
+    zh: "超現實主義風",
+    tag: "DREAM", tagBg: "#7c3aed20", tagColor: "#a78bfa",
+    prompt: "A 掃晴娘 weather doll in the surrealist style of Salvador Dalí or René Magritte. She hangs from a melting clock in a vast desert landscape. Her cloth body is transparent — inside you can see a miniature rainstorm happening, complete with tiny lightning. Her head is replaced by a floating cloud, but her smile is visible on the cloud's surface. The sky is simultaneously day and night — split down the middle like Magritte's 'Empire of Light'. A giant eye watches from the horizon. Ants crawl along her string. The perspective is impossible — stairs lead both up and down. Everything casts shadows in wrong directions. Hyper-realistic painting technique depicting impossible scenes. Oil on canvas, photographic detail.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=surrealism+dali+magritte+character"]]
+  },
+  {
+    title: "Felt Craft",
+    zh: "不織布手作風",
+    tag: "COZY", tagBg: "#f59e0b20", tagColor: "#f59e0b",
+    prompt: "A 掃晴娘 weather doll made of layered felt pieces — like a handmade felt ornament. Her round head is cut from thick white wool felt with visible fiber texture. Two tiny black felt circles for eyes, a pink thread smile. Her body is multiple layers of white felt stitched together with visible blanket stitch in red thread along the edges. A felt broom with brown handle and yellow bristles. She hangs from embroidery floss. Surrounding her: felt clouds (grey and white layers), felt raindrops (blue), felt sun (yellow with orange rays). Everything sits on a cork board background with pins visible. The felt has that slightly fuzzy, warm texture. Shot in natural light on a craft table with scissors and felt scraps visible. Etsy handmade listing quality.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=felt+craft+doll+ornament+handmade"]]
+  },
+  {
+    title: "Balloon Sculpture",
+    zh: "氣球造型風",
+    tag: "PARTY", tagBg: "#ec489920", tagColor: "#ec4899",
+    prompt: "A 掃晴娘 weather doll made entirely of twisted balloon animals technique. Her round head is a perfectly inflated white balloon with a drawn-on smiley face. Her body is multiple long balloons twisted together to form the flowing cloth shape. A tiny balloon broom. She floats (naturally, being a balloon) against a party backdrop with confetti and streamers. The balloons have that characteristic shiny, slightly transparent latex surface with visible light reflections and the tied knot at the top. Some balloons are slightly under-inflated giving a organic, imperfect shape. Shot at a children's party or carnival with bokeh lights behind. The color palette is mostly white balloons with accent colors for the bow (red) and broom (brown/yellow). Fun, festive, ephemeral.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=balloon+sculpture+art+character"]]
+  },
+  {
+    title: "Ceramic Glazed Sculpture",
+    zh: "釉燒陶瓷風",
+    tag: "ARTISAN", tagBg: "#0ea5e920", tagColor: "#0ea5e9",
+    prompt: "A 掃晴娘 weather doll as a handmade ceramic sculpture fresh from the kiln. She is wheel-thrown and hand-sculpted in white stoneware clay with a beautiful reactive glaze that pools and runs — translucent celadon green at the high points fading to creamy white where it's thin, with unexpected copper-red flashes from the kiln atmosphere. Her surface has the organic undulations of hand-thrown pottery. Her face is two simple incised dots and a line, filled with iron oxide wash. She sits on a wooden shelf in a potter's studio with other pieces. The glaze has that distinctive crackle pattern. Light catches the glossy surface creating bright highlights. Shot with warm directional lighting showing the 3D form and glaze depth. Mingei folk pottery meets contemporary ceramics.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=ceramic+sculpture+cute+glazed"]]
+  },
+  {
+    title: "Paper Quilling Art",
+    zh: "衍紙藝術風",
+    tag: "INTRICATE", tagBg: "#14b8a620", tagColor: "#14b8a6",
+    prompt: "A 掃晴娘 weather doll created entirely from paper quilling — hundreds of thin paper strips rolled, shaped, and glued into intricate coils and scrolls. Her round head is a tight spiral of white paper strips. Her body is formed by loose scrolls and teardrops of white and cream paper creating a flowing cloth effect. The broom is quilled from brown and yellow strips. Surrounding her: quilled clouds (grey tight coils), quilled sun (yellow and orange marquise shapes radiating outward), quilled raindrops (blue teardrops). All mounted on a contrasting dark background in a shadow box frame. Shot from slightly above to show the 3D depth of the paper curls casting shadows. The precision is extraordinary — each coil is perfectly formed. Museum-quality paper art installation.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=paper+quilling+art+character"]]
+  },
+  {
+    title: "Film Noir B&W",
+    zh: "黑色電影風",
+    tag: "NOIR", tagBg: "#27272a20", tagColor: "#a1a1aa",
+    prompt: "A 掃晴娘 weather doll photographed in classic 1940s film noir style. Pure black and white — high contrast, deep shadows, sharp highlights. She hangs in a rain-slicked alley, backlit by a single street lamp creating dramatic rim lighting and long shadows. Venetian blind shadows stripe across her body. The rain catches the light like silver needles. Fog rolls in from the edges. A cigarette smoke-like wisp curls past her (it's actually steam from a grate). The composition uses extreme dutch angles and low camera positions. Film grain is heavy — Kodak Tri-X pushed to 1600 ISO. The mood is mysterious, dangerous, romantic. Jazz saxophone plays somewhere off-screen. Raymond Chandler meets Chinese folklore. 'It was a dark and stormy night...'",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=film+noir+photography+rain"]]
+  },
+  {
+    title: "Wes Anderson Symmetry",
+    zh: "乍得安德森對稱風",
+    tag: "WHIMSY", tagBg: "#fb923c20", tagColor: "#fb923c",
+    prompt: "A 掃晴娘 weather doll in a perfectly symmetrical Wes Anderson composition. She hangs dead-center in a pastel-colored room — the walls are dusty pink, the window frame is mint green, the curtains are mustard yellow. Everything is obsessively symmetrical and centered. The camera is perfectly level, no perspective distortion. Two identical potted plants flank her. The floor has a geometric tile pattern. A vintage weather barometer hangs on the wall to her left, matched by an identical clock on the right. The color palette is the exact Wes Anderson pastels — Pantone-precise. A title card in Futura Bold reads 'THE CLOUD-SWEEPING LADY' centered at the bottom. Shot on 35mm film with Wes Anderson's signature flat, tableau framing. Grand Budapest Hotel energy.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=wes+anderson+symmetry+pastel"]]
+  },
+  {
+    title: "Documentary Photography",
+    zh: "紀實攝影風",
+    tag: "TRUTH", tagBg: "#57534e20", tagColor: "#a8a29e",
+    prompt: "A 掃晴娘 weather doll captured in raw documentary photography style. She hangs from the eave of a real weathered rural Chinese farmhouse — the actual village where the tradition originated. The photo is unposed and candid: an elderly woman's weathered hands are visible tying the string. The farmhouse wall is crumbling whitewash over grey brick. Laundry hangs nearby. A real storm is approaching — dark clouds fill half the sky while the other half is still blue. The doll is slightly crooked, imperfect, clearly handmade by non-artist hands. Shot on a Leica M with a 35mm lens, natural light only. Slight underexposure. The image tells a story of faith, tradition, and the relationship between humans and weather. Steve McCurry meets rural China. National Geographic Documentary.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=documentary+photography+rural+china"]]
+  },
+  {
+    title: "Macro Nature Photography",
+    zh: "微距自然攝影風",
+    tag: "MICRO", tagBg: "#22c55e20", tagColor: "#22c55e",
+    prompt: "A 掃晴娘 weather doll photographed in extreme macro — she is tiny, only 2cm tall, and we see her at insect-scale among real nature. She hangs from a blade of grass, and a real dewdrop clings to her cloth body like a crystal ball reflecting the world upside-down inside it. A ladybug climbs her string. Morning dew covers everything in tiny spheres. The background is a dreamy bokeh of green garden, completely blurred. Focus stacking gives her razor-sharp detail while everything else melts away. You can see individual cloth fibers. A spider web glistens nearby. The scale creates a magical miniature world — she's a tiny guardian spirit of the garden. Shot at f/2.8 macro, golden hour backlighting creating rim glow on the dew drops. Levon Biss insect photography meets folklore.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=macro+photography+miniature+nature"]]
+  },
+  {
+    title: "Persian Miniature",
+    zh: "波斯細密畫風",
+    tag: "ORNATE", tagBg: "#0d948820", tagColor: "#2dd4bf",
+    prompt: "A 掃晴娘 weather doll painted in the style of Persian miniature painting (نگارگری). Extremely fine brushwork on a gold-leafed background. She is depicted as a celestial maiden in a garden paradise — surrounded by intricate floral arabesques, geometric tile patterns, and calligraphic borders. Her white cloth is rendered with ultra-fine parallel lines suggesting fabric folds. Trees have individually painted leaves. The clouds are stylized gold-outlined scrolling forms from Persian tradition. The entire composition is framed by an elaborate illuminated manuscript border with lapis lazuli blue, vermillion, and gold leaf. The perspective is flattened — multiple viewpoints combined as in traditional Persian painting. Executed with a single-hair brush. Isfahan School, 16th century quality.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=persian+miniature+painting+art"]]
+  },
+  {
+    title: "Indian Madhubani",
+    zh: "印度馬杜巴尼畫風",
+    tag: "TRIBAL", tagBg: "#ea580c20", tagColor: "#f97316",
+    prompt: "A 掃晴娘 weather doll painted in the Madhubani/Mithila folk art style of Bihar, India. Bold black outlines filled with dense cross-hatching and dot patterns in bright primary colors — red, yellow, blue, green on white. Her round head is surrounded by concentric decorative circles like a mandala. Her cloth body is filled with fish-scale patterns, lotus motifs, and peacock feather eyes. The background is completely filled — no empty space — with stylized sun, rain clouds depicted as elephants (traditional motif), birds, and flowering vines. Double-line borders frame the composition. The colors are natural pigments — turmeric yellow, indigo blue, vermillion red. Every square centimeter is decorated. Painted on handmade paper with bamboo stick and cotton wrapped on a twig.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=madhubani+painting+art"]]
+  },
+  {
+    title: "African Tribal Pattern",
+    zh: "非洲部落圖案風",
+    tag: "BOLD", tagBg: "#b4540020", tagColor: "#f59e0b",
+    prompt: "A 掃晴娘 weather doll illustrated using bold African tribal pattern aesthetics — inspired by Ndebele house painting, Kente cloth geometry, and Adinkra symbols. Her body is filled with striking geometric patterns in earth tones — terracotta, ochre, deep brown, and chalk white. Her round head features concentric circle patterns inspired by Maasai beadwork. The background is divided into bold geometric sections each containing different tribal patterns — chevrons, diamonds, spirals, and zigzags. Adinkra weather symbols mark the corners. The overall palette is warm earth tones with occasional bright accent — cobalt blue for rain, bright yellow for sun. Printed on textured handmade bark paper. Bold, rhythmic, celebratory. Pan-African design meeting East Asian folklore.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=african+tribal+pattern+illustration"]]
+  },
+  {
+    title: "Mexican Alebrije Folk Art",
+    zh: "墨西哥奇幻獸風",
+    tag: "WILD", tagBg: "#e11d4820", tagColor: "#fb7185",
+    prompt: "A 掃晴娘 weather doll reimagined as a Mexican Alebrije — a fantastical folk art creature carved from copal wood and painted in explosively vivid colors. Her round head is painted with intricate dot patterns, swirling designs, and tiny flowers in hot pink, electric blue, lime green, bright orange, and purple. Her cloth body becomes organic — sprouting small wings, growing tiny horns, with a tail that curls into a cloud shape. Every surface is covered in microscopic painted details — no area left undecorated. The broom has become a feathered staff. She sits on a carved wooden base. The background is the workshop of a Oaxacan artisan with wood shavings and paint pots. The craftsmanship is extraordinary — each dot painted with a cactus spine. Día de los Muertos meets Chinese weather magic.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=alebrije+folk+art+colorful"]]
+  },
+  {
+    title: "Vaporwave",
+    zh: "蒸氣波風",
+    tag: "AESTHETIC", tagBg: "#a855f720", tagColor: "#c084fc",
+    prompt: "A 掃晴娘 weather doll floating in a vaporwave dreamscape. She is rendered as a white marble Greek bust-style figure but with her traditional cloth doll form. Pink and cyan gradient lighting bathes her. She floats above a checkerboard tile floor that stretches to infinity. Roman columns frame the scene. A Windows 95 dialog box displays the weather forecast. Japanese characters (掃晴娘) appear in a retro pixel font. Palm trees silhouetted against a sunset gradient. VHS tracking artifacts and scan lines overlay everything. The sky is THE vaporwave sunset — horizontal bands of pink, purple, and blue. A dolphin leaps in the background. Fiji water bottles line the columns. The temperature is displayed in a retro digital clock font. A E S T H E T I C.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=vaporwave+aesthetic+statue"]]
+  },
+  {
+    title: "Glitch Art",
+    zh: "故障藝術風",
+    tag: "ERROR", tagBg: "#ef444420", tagColor: "#f87171",
+    prompt: "A 掃晴娘 weather doll being consumed by digital glitch corruption. She starts as a clean, normal photograph on the left side but progressively breaks apart toward the right — pixel sorting stretches her colors into horizontal streaks, data moshing melts her form, RGB channels separate creating red/green/blue ghost duplicates offset from each other. Chunks of her image are displaced to wrong positions. QR code fragments appear in the corrupted areas. Binary data strings are visible. Her smile remains intact in the chaos — the one uncorrupted element. The temperature data glitches between numbers. The background shows corrupted JPEG artifacts — block distortion and color banding. It's beautiful in its destruction. The glitch reveals hidden beauty in the data beneath the image.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=glitch+art+portrait"]]
+  },
+  {
+    title: "Low Poly 3D",
+    zh: "低面數3D風",
+    tag: "FACETED", tagBg: "#06b6d420", tagColor: "#22d3ee",
+    prompt: "A 掃晴娘 weather doll rendered as a low-polygon 3D model — her round head is approximated by a 12-sided dodecahedron, her cloth body is a series of flat triangular faces. Each polygon face is a slightly different shade of white/cream, creating a faceted gem-like appearance. The flat shading (no smooth normals) gives her a distinctive geometric beauty. She hangs from a single-polygon string. The background sky is also low-poly — large triangular faces in gradients of blue. Clouds are chunky geometric forms. The sun is an octahedron. The entire scene has 500 polygons or less. Rendered with subtle ambient occlusion in the creases between faces. Wireframe overlay visible on half the image. Cinema 4D viewport aesthetic. Beautiful in its geometric simplicity.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=low+poly+3d+character+art"]]
+  },
+  {
+    title: "Isometric Illustration",
+    zh: "等距插畫風",
+    tag: "PIXEL-PERFECT", tagBg: "#8b5cf620", tagColor: "#a78bfa",
+    prompt: "A 掃晴娘 weather doll as part of an isometric pixel-perfect illustration scene. She hangs from a tiny isometric Japanese house — the scene includes a miniature garden with isometric trees, a koi pond, stone path, and bamboo fence, all rendered at perfect 30° isometric angles. The doll is the focal point, hanging from the eave. Tiny isometric people walk below with umbrellas. Weather effects are isometric too — rain falls at the isometric angle, clouds are flat isometric shapes. The color palette is clean and flat with subtle gradients on surfaces. Every edge is pixel-perfect — no anti-aliasing on the isometric angles. The scene is a self-contained isometric world on a floating island. Sim City meets teru teru bōzu. Charming, detailed, endlessly explorable.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=isometric+illustration+japanese+house"]]
+  },
+  {
+    title: "Be@rbrick Style",
+    zh: "庫柏力克熊風",
+    tag: "HYPE", tagBg: "#78716c20", tagColor: "#d6d3d1",
+    prompt: "A 掃晴娘 weather doll reimagined as a 1000% Be@rbrick figure (70cm tall). The classic Be@rbrick body shape — blocky rectangular torso, cylindrical arms and legs, round ears — but customized with 掃晴娘 artwork. The front panel is painted with a detailed illustration of the cloth doll hanging against a sky. The back shows weather data in a clean typographic layout. The plastic is semi-transparent frosted white — you can see a tiny LED weather display glowing inside the chest cavity. She stands on a black acrylic display base with engraved text. Limited edition 1 of 100. The photo shows her in a glass display case in a hypebeast's apartment alongside Supreme and KAWS pieces. Product photography, museum lighting, collector's grail piece.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=bearbrick+custom+1000+art"]]
+  },
+  {
+    title: "Funko Pop Style",
+    zh: "Funko Pop風",
+    tag: "COLLECT", tagBg: "#f59e0b20", tagColor: "#fbbf24",
+    prompt: "A 掃晴娘 weather doll as an official Funko Pop vinyl figure #888. She has the classic Funko proportions — oversized square head with rounded corners, tiny body, black beady dot eyes (no pupils). Her white cloth is represented by the smooth vinyl body shape with sculpted fold lines. A small plastic broom accessory in her hand. Red ribbon bow sculpted at her neck. She stands in her official Funko box — the box has the classic Funko Pop design with '掃晴娘' and 'WEATHER DOLL' text, '#888 CHINESE FOLKLORE' category, and the figure visible through the front window. The box art shows a stylized illustration version. Multiple box variants are visible — Chase edition (glow in the dark), Hot Topic exclusive (translucent rainy version). Toy shelf photography with bokeh.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=funko+pop+custom+figure"]]
+  },
+  {
+    title: "Stop Motion Clay (Laika)",
+    zh: "定格動畫黏土風",
+    tag: "ANIMATED", tagBg: "#a3e63520", tagColor: "#a3e635",
+    prompt: "A 掃晴娘 weather doll as a character from a Laika Studios stop-motion film (Coraline, Kubo). She is a handmade puppet with a wire armature visible at her joints. Her head is sculpted from polymer clay with replaceable face plates for different expressions (several spare faces visible on the workbench beside her). Her cloth body is real miniature fabric, hand-sewn with visible tiny stitches. The set around her is a miniature Japanese village — handbuilt from balsa wood, paper, and clay at 1:12 scale. Dramatic cinematic lighting creates atmosphere. A camera rig and animator's hands are visible at the frame edges. The image captures the magical moment between frames — the puppet is alive but you can see the craft. Behind-the-scenes magic of stop motion animation.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=laika+stop+motion+puppet+making"]]
+  },
+  {
+    title: "Rubber Hose Cartoon",
+    zh: "橡膠管卡通風",
+    tag: "1930s", tagBg: "#fde04720", tagColor: "#fde047",
+    prompt: "A 掃晴娘 weather doll drawn in 1930s rubber hose animation style — the era of early Mickey Mouse, Betty Boop, and Fleischer Studios. She has noodle-like arms and legs with no joints, pie-cut eyes (black circles with a wedge removed), white gloves on her hands, and oversized shoes. Everything bounces and stretches with exaggerated squash-and-stretch. She's dancing in the rain — the raindrops have faces and are dancing too. Musical notes float around her. The sun peeks from behind a cloud with a big grin. Everything is animated and alive — even the broom does a little jig. Drawn in black and white with a sepia-tinted paper background showing projector flicker. Film grain and scratches overlay. A vintage 'SILLY SYMPHONY' title card at the top. Old-timey piano ragtime energy.",
+    refs: [["Pinterest", "https://www.pinterest.com/search/pins/?q=rubber+hose+cartoon+1930s+style"]]
+  }
+];
+
+const grid = document.getElementById('grid');
+
+STYLES.forEach((s, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  
+  const refsHtml = s.refs.map(r => `<a class="ref-link" href="${r[1]}" target="_blank">${r[0]} →</a>`).join('');
+  
+  let imagesHtml = '';
+  if (s.images && s.images.length > 0) {
+    imagesHtml = '<div class="gen-images">' + s.images.map((img, j) => {
+      const dataAttr = `data-style="${i}" data-idx="${j}"`;
+      if (img.type === 'video') {
+        return `<div class="gen-item" ${dataAttr} onclick="openLB(${i},${j})"><video src="${img.src}" playsinline loop muted autoplay></video><div class="gen-label">${img.label}</div></div>`;
+      }
+      return `<div class="gen-item" ${dataAttr} onclick="openLB(${i},${j})"><img src="${img.src}" alt="${img.label}" loading="lazy"><div class="gen-label">${img.label}</div></div>`;
+    }).join('') + '</div>';
+  }
+  
+  card.innerHTML = `
+    <div class="card-head">
+      <div class="card-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="card-tag" style="background:${s.tagBg};color:${s.tagColor}">${s.tag}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${s.title}</div>
+      <div class="card-zh">${s.zh}</div>
+      ${imagesHtml}
+      <div class="prompt-box" data-prompt="${encodeURIComponent(s.prompt)}">${s.prompt}</div>
+      <div class="refs">${refsHtml}</div>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+// Chips nav
+const chipsEl = document.getElementById('chips');
+STYLES.forEach((s, i) => {
+  const chip = document.createElement('button');
+  chip.className = 'chip';
+  chip.innerHTML = `<span class="chip-num">${String(i+1).padStart(2,'0')}</span>${s.title}`;
+  chip.onclick = () => {
+    const card = grid.children[i];
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Update active chip
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+  };
+  chipsEl.appendChild(chip);
+});
+
+// Update active chip on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const idx = Array.from(grid.children).indexOf(entry.target);
+      if (idx >= 0) {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        const activeChip = chipsEl.children[idx];
+        if (activeChip) {
+          activeChip.classList.add('active');
+          activeChip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }
+  });
+}, { threshold: 0.5 });
+
+Array.from(grid.children).forEach(card => observer.observe(card));
+
+// Lightbox
+let lbStyle = 0, lbIdx = 0;
+
+function openLB(styleIdx, imgIdx) {
+  lbStyle = styleIdx;
+  lbIdx = imgIdx;
+  renderLB();
+  document.getElementById('lightbox').classList.add('show');
+}
+
+function closeLB() {
+  document.getElementById('lightbox').classList.remove('show');
+  // Stop any playing video
+  const v = document.querySelector('#lbContent video');
+  if (v) v.pause();
+}
+
+function navLB(dir) {
+  const imgs = STYLES[lbStyle].images;
+  if (!imgs) return;
+  lbIdx = (lbIdx + dir + imgs.length) % imgs.length;
+  renderLB();
+}
+
+function renderLB() {
+  const imgs = STYLES[lbStyle].images;
+  if (!imgs || !imgs[lbIdx]) return;
+  const img = imgs[lbIdx];
+  const content = document.getElementById('lbContent');
+  const label = document.getElementById('lbLabel');
+  
+  if (img.type === 'video') {
+    content.innerHTML = `<video src="${img.src}" playsinline loop autoplay controls style="max-width:100%;max-height:80vh;border-radius:12px"></video>`;
+  } else {
+    content.innerHTML = `<img src="${img.src}" style="max-width:100%;max-height:80vh;border-radius:12px">`;
+  }
+  label.textContent = `${STYLES[lbStyle].title} · ${img.label}`;
+}
+
+// Swipe support for lightbox
+let lbTouchStart = null;
+document.getElementById('lightbox').addEventListener('touchstart', e => {
+  lbTouchStart = e.touches[0].clientX;
+});
+document.getElementById('lightbox').addEventListener('touchend', e => {
+  if (lbTouchStart === null) return;
+  const diff = e.changedTouches[0].clientX - lbTouchStart;
+  if (Math.abs(diff) > 50) navLB(diff < 0 ? 1 : -1);
+  lbTouchStart = null;
+});
+
+// Copy on tap
+document.querySelectorAll('.prompt-box').forEach(box => {
+  box.addEventListener('click', async () => {
+    const text = decodeURIComponent(box.dataset.prompt);
+    try {
+      await navigator.clipboard.writeText(text);
+      box.classList.add('copied');
+      setTimeout(() => box.classList.remove('copied'), 2000);
+    } catch {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      box.classList.add('copied');
+      setTimeout(() => box.classList.remove('copied'), 2000);
+    }
+  });
+});
+</script>
+</body>
+</html>
