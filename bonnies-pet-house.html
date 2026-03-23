@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bonnie's Pet House 🏠</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#ffeef0,#e8f5ff 50%,#f0fff4);min-height:100vh;overflow-x:hidden;-webkit-user-select:none;user-select:none}
+
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes sparkleAnim{0%,100%{opacity:0;transform:scale(.5) rotate(0)}50%{opacity:1;transform:scale(1) rotate(180deg)}}
+        @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.4)}}
+        @keyframes petIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        @keyframes sadPet{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(2px) rotate(-3deg)}}
+        @keyframes tailWag{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}
+        @keyframes blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+        @keyframes glow{0%,100%{filter:drop-shadow(0 0 6px rgba(255,180,200,.4))}50%{filter:drop-shadow(0 0 14px rgba(255,180,200,.9))}}
+        @keyframes selectedPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+        @keyframes walkCycle{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+        @keyframes legWalk{0%,50%,100%{transform:rotate(0deg)}25%{transform:rotate(15deg)}75%{transform:rotate(-15deg)}}
+        @keyframes happyBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.05)}}
+        @keyframes sadSway{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(3px) rotate(-2deg)}}
+        @keyframes playAction{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-5deg) scale(.95)}75%{transform:rotate(5deg) scale(1.05)}}
+        @keyframes stretch{0%,100%{transform:scaleX(1) scaleY(1)}50%{transform:scaleX(1.1) scaleY(.9)}}
+
+        .spark{position:fixed;pointer-events:none;font-size:22px;z-index:999;animation:sparkleAnim 1.4s ease-out forwards}
+        .hfloat{position:fixed;pointer-events:none;font-size:18px;z-index:999;animation:floatUp 1.1s ease-out forwards}
+
+        /* Welcome */
+        #welcome{position:fixed;inset:0;background:linear-gradient(135deg,#ff9a9e,#fecfef 50%,#fad0c4);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1000}
+        .wtitle{font-size:clamp(1.8rem,7vw,3.5rem);font-weight:800;color:#fff;text-shadow:2px 2px 4px rgba(0,0,0,.12);margin-bottom:.8rem;animation:bounce 2s infinite}
+        .wpets{font-size:clamp(1.8rem,5vw,3rem);margin-bottom:1rem;animation:wiggle 3s infinite}
+        .wsub{font-size:clamp(.95rem,3vw,1.3rem);color:#fff;margin-bottom:2rem;text-align:center;padding:0 20px}
+        .startbtn{background:linear-gradient(45deg,#ff6b9d,#c44569);color:#fff;border:none;padding:16px 36px;border-radius:28px;font-size:1.2rem;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(196,69,105,.4);font-family:inherit;transition:.3s}
+        .startbtn:active{transform:scale(.96)}
+
+        /* Modal */
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;justify-content:center;align-items:center;z-index:2000;animation:fadeIn .25s}
+        .modalbox{background:linear-gradient(135deg,#fff5f7,#f0f0ff);padding:28px;border-radius:24px;text-align:center;max-width:360px;width:90%;box-shadow:0 20px 40px rgba(0,0,0,.25)}
+        .modalbox h2{font-size:1.4rem;font-weight:800;color:#ff6b9d;margin-bottom:10px}
+        .modalbox .petprev{margin:8px 0}
+        .modalbox input{width:100%;padding:11px 14px;border:3px solid #ffb3d9;border-radius:14px;font-size:1.1rem;font-family:inherit;text-align:center;outline:none;background:#fff;margin:12px 0}
+        .modalbox input:focus{border-color:#ff6b9d}
+        .modalbtn{background:linear-gradient(45deg,#ff6b9d,#c44569);color:#fff;border:none;padding:11px 28px;border-radius:18px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px}
+
+        /* Layout */
+        .game{display:none;max-width:960px;margin:0 auto;padding:12px}
+
+        .header{background:rgba(255,255,255,.92);border-radius:20px;padding:14px 20px;box-shadow:0 3px 12px rgba(0,0,0,.07);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .htitle{font-size:clamp(1.1rem,3.5vw,1.6rem);font-weight:800;color:#ff6b9d}
+        .coinbox{font-size:clamp(.95rem,2.8vw,1.2rem);font-weight:700;color:#b8860b;background:linear-gradient(45deg,#fff9e6,#fff3cc);padding:7px 16px;border-radius:18px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+
+        /* Math */
+        .mathbox{background:rgba(255,255,255,.92);border-radius:20px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.07);text-align:center;margin-bottom:12px}
+        .mathlbl{font-size:1rem;font-weight:700;color:#ff6b9d;margin-bottom:10px}
+        .qtxt{font-size:clamp(.95rem,2.6vw,1.25rem);font-weight:600;color:#333;margin-bottom:14px;line-height:1.45;min-height:40px}
+        .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:400px;margin:0 auto}
+        .cbtn{background:linear-gradient(45deg,#ffd3e1,#ffb3d9);color:#444;border:none;padding:13px 6px;border-radius:14px;font-size:clamp(.9rem,2.4vw,1.1rem);font-weight:600;cursor:pointer;transition:.2s;font-family:inherit}
+        .cbtn:active{transform:scale(.96)}
+        .cbtn:disabled{cursor:default}
+        .cbtn.ok{background:linear-gradient(45deg,#a8e6cf,#7fcdcd)!important;color:#fff}
+        .cbtn.no{background:#fcc!important}
+        .inprow{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;max-width:420px;margin:0 auto}
+        .ansinp{padding:11px 14px;border:3px solid #ffb3d9;border-radius:14px;font-size:1.05rem;font-family:inherit;text-align:center;outline:none;background:#fff;width:110px}
+        .ansinp:focus{border-color:#ff6b9d}
+        .sbtn{padding:11px 14px;border:none;border-radius:14px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+        .sbtn{background:linear-gradient(45deg,#ffd3e1,#ffb3d9);color:#444}
+        .sbtn:active{transform:scale(.95)}
+        .fbtxt{margin-top:12px;font-size:1rem;font-weight:600;min-height:24px}
+        .fbtxt.ok{color:#4caf50}.fbtxt.no{color:#e57373}
+
+        /* Tabs */
+        .tabnav{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
+        .tab{background:linear-gradient(45deg,#eee,#e8e8e8);color:#888;border:none;padding:10px 18px;border-radius:14px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s}
+        .tab.active{background:linear-gradient(45deg,#ff6b9d,#c44569);color:#fff;box-shadow:0 3px 10px rgba(196,69,105,.3)}
+        .tab:hover:not(.active){background:#ddd}
+
+        /* Spelling */
+        .spell-prompt{font-size:clamp(.95rem,2.6vw,1.25rem);font-weight:600;color:#333;margin-bottom:14px;line-height:1.45;min-height:40px}
+        .spell-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+        .spell-listen-btn{background:linear-gradient(45deg,#a78bfa,#8b5cf6);color:#fff;border:none;padding:12px 20px;border-radius:16px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;box-shadow:0 3px 10px rgba(139,92,246,.3)}
+        .spell-listen-btn:active{transform:scale(.95)}
+        .spell-listen-btn.again{background:linear-gradient(45deg,#a8e6cf,#7fcdcd)}
+        .spell-inp{text-transform:lowercase!important;letter-spacing:1px;font-size:1.1rem!important;width:200px!important;background:#fff!important;color:#333!important;border:3px solid #ddd!important}
+        .spell-inp:focus{border-color:#60a5fa!important;box-shadow:0 0 0 3px rgba(96,165,250,.2)!important;outline:none}
+        .spell-inp:disabled{background:#f9f9f9!important;color:#333!important}
+
+        /* House + Shop */
+        .hsrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+        /* House */
+        .house{border-radius:20px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.07);position:relative;min-height:400px;
+            background:linear-gradient(180deg,#e8f0ff 0%,#f5eff8 40%,#d4c9a8 75%,#c4b494 100%)}
+        .house::after{content:'';position:absolute;bottom:0;left:0;right:0;height:22px;background:linear-gradient(90deg,#b8a882,#c7b998,#b8a882);border-top:2px solid #a89870}
+        .housetitle{font-size:clamp(1rem,3vw,1.3rem);font-weight:700;color:#ff6b9d;text-align:center;padding:12px 12px 6px;position:relative;z-index:2}
+        .hcontent{position:relative;z-index:2;padding:6px 12px 30px;min-height:350px}
+        .hempty{text-align:center;color:#b09cc0;font-size:clamp(.9rem,2.5vw,1.1rem);font-weight:600;padding:50px 16px}
+        .hempty .big{font-size:2.6rem;display:block;margin-bottom:8px}
+
+        /* Pets in house — walking around */
+        .pet-container{position:relative;width:100%;height:320px;overflow:hidden;border-radius:12px}
+        .walking-pet{position:absolute;cursor:pointer;z-index:10;will-change:left,top,transform}
+        .walking-pet svg{width:100%;height:100%}
+        .walking-pet.moving{animation:walkCycle .8s ease-in-out infinite}
+        .walking-pet.happy{animation:happyBounce 1.5s ease-in-out infinite}
+        .walking-pet.hungry{animation:sadSway 2s ease-in-out infinite}
+        .walking-pet.playing{animation:playAction 1s ease-in-out}
+        .walking-pet.stretching{animation:stretch .8s ease-in-out}
+        .walking-pet.stopped{animation:petIdle 2.5s ease-in-out infinite}
+
+        .pet-info{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;
+            background:rgba(255,255,255,.92);border-radius:12px;padding:8px 12px;box-shadow:0 4px 15px rgba(0,0,0,.15);
+            opacity:0;transition:opacity .2s;white-space:nowrap;z-index:50}
+        .walking-pet:hover .pet-info{opacity:1}
+        .pet-info .pname{font-size:.9rem;font-weight:700;color:#8e5e7a;margin-bottom:3px}
+        .pet-meters{display:flex;flex-direction:column;gap:3px;min-width:100px}
+        .meter-row{display:flex;align-items:center;gap:4px;font-size:.75rem;font-weight:600}
+        .meter-label{color:#8e5e7a;min-width:52px;text-align:left}
+        .meter-bar{height:11px;width:60px;background:rgba(240,220,240,.5);border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.08)}
+        .meter-fill{height:100%;border-radius:6px;transition:width .4s;position:relative}
+        .meter-fill.happy{background:linear-gradient(90deg,#ff9ec7,#ff6b9d)}
+        .meter-fill.hungry{background:linear-gradient(90deg,#a8e6cf,#66cdaa)}
+        .meter-percentage{position:absolute;right:2px;top:50%;transform:translateY(-50%);font-size:.6rem;color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+        /* Mobile: static info cards below house */
+        .mobile-pet-cards{display:none;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 4px}
+        .mobile-pet-card{background:rgba(255,255,255,.9);border-radius:12px;padding:8px 12px;text-align:center;min-width:100px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+        .walking-pet.droptarget{filter:drop-shadow(0 0 15px #7fcdcd)}
+
+        /* Food in house */
+        .foodicon{display:inline-block;font-size:28px;cursor:pointer;margin:3px;transition:.15s;position:relative;z-index:10;touch-action:none}
+        .foodicon.selected{animation:selectedPulse .6s infinite;filter:drop-shadow(0 0 8px gold)}
+        .foodicon.dragging{position:fixed;z-index:1000;pointer-events:none;transform:scale(1.3)}
+        .foodtray{padding:4px 8px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;min-height:36px;position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:15}
+
+        /* Shop */
+        .shop{background:rgba(255,255,255,.92);border-radius:20px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.07)}
+        .shoplbl{font-size:1rem;font-weight:700;color:#ff6b9d;margin-bottom:10px;text-align:center}
+        .sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+        .sitem{background:linear-gradient(135deg,#f7f0ff,#eef7ff);border-radius:14px;padding:10px 4px;text-align:center;cursor:pointer;transition:.3s;border:3px solid transparent;opacity:.4;filter:grayscale(.3)}
+        .sitem.can{opacity:1;filter:none;border-color:#ffd700;box-shadow:0 0 10px rgba(255,215,0,.25)}
+        .sitem.can:active{transform:scale(.95)}
+        .sitem .si{font-size:1.6rem;display:block;margin-bottom:2px}
+        .sitem .si.boing{animation:bounce 2s infinite}
+        .sitem .sn{font-size:.72rem;font-weight:600;color:#555}
+        .sitem .sp{font-size:.7rem;font-weight:700;color:#b8860b}
+        .foodsub{font-size:.8rem;font-weight:700;color:#999;margin-bottom:6px;text-align:center}
+        .hint{font-size:.75rem;color:#bbb;text-align:center;margin-top:8px;font-style:italic}
+
+        @media(max-width:680px){
+            .hsrow{grid-template-columns:1fr}
+            .choices{grid-template-columns:1fr 1fr}
+            .sgrid{grid-template-columns:1fr 1fr 1fr}
+            .house{min-height:350px}
+            .hcontent{min-height:300px}
+            .pet-container{height:270px}
+            .walking-pet svg{width:100%;height:100%}
+            .pet-info{display:none!important}
+            .mobile-pet-cards{display:flex}
+        }
+        @media(min-width:681px){
+            .mobile-pet-cards{display:none!important}
+        }
+    </style>
+</head>
+<body>
+
+<div id="welcome">
+    <div class="wtitle">Bonnie's Pet House! 🏠</div>
+    <div class="wpets">🐱 🐰 🐶</div>
+    <div class="wsub">Solve math problems, earn coins, and build your dream pet home!</div>
+    <button class="startbtn" onclick="go()">Let's Play! ✨</button>
+</div>
+
+<div id="modal" class="modal" style="display:none">
+    <div class="modalbox">
+        <h2>Name your new pet! 💕</h2>
+        <div class="petprev" id="mprev"></div>
+        <input id="mname" placeholder="Enter a cute name...">
+        <button class="modalbtn" onclick="nameOk()">Love it! ✨</button>
+    </div>
+</div>
+
+<div id="game" class="game">
+    <div class="header">
+        <div class="htitle">Bonnie's Pet House 🏠</div>
+    </div>
+    <div class="mathbox">
+        <div class="tabnav">
+            <button class="tab active" onclick="switchTab('math')">🧮 Math Time</button>
+            <button class="tab" onclick="switchTab('spell')">🔤 Spelling Master</button>
+        </div>
+        <div id="mathTab">
+            <div id="qtxt" class="qtxt"></div>
+            <div id="minput"></div>
+            <div id="fb" class="fbtxt"></div>
+        </div>
+        <div id="spellTab" style="display:none">
+            <div class="spell-prompt" id="spellPrompt">🔊 Listen to the word, then spell it!</div>
+            <div class="spell-controls">
+                <button class="spell-listen-btn" onclick="speakWord()" id="readAgainBtn">🔁 Read Again</button>
+            </div>
+            <div class="inprow" style="margin-top:14px">
+                <input type="text" class="ansinp spell-inp" id="spellInp" placeholder="Type the word..." autocomplete="off" autocapitalize="none" style="width:180px;text-transform:lowercase">
+                <button class="sbtn" onclick="checkSpelling()">Submit ✓</button>
+            </div>
+            <div id="spellFb" class="fbtxt"></div>
+        </div>
+    </div>
+    <div class="hsrow">
+        <div class="house">
+            <div class="housetitle">🏠 My Pet House</div>
+            <div class="hcontent" id="hcontent"></div>
+        </div>
+        <div class="shop">
+            <div class="shoplbl">🏪 Pet Shop</div>
+            <div class="coinbox" style="text-align:center;margin-bottom:10px">🪙 <span id="coins">0</span></div>
+            <div class="sgrid" id="pshop"></div>
+            <div class="foodsub">🍽️ Food</div>
+            <div class="sgrid" id="fshop"></div>
+            <div class="hint" id="shint">Solve problems to earn coins!</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const PC=15,FP=5;
+const FOOD={fish:{e:'🐟'},carrot:{e:'🥕'},bone:{e:'🦴'}};
+const PN={cat:['Mimi','Luna','Kiki','Coco','Nana','Bella','Ruby'],rabbit:['Fluffy','Bunny','Cotton','Snowy','Mochi','Daisy','Angel'],dog:['Buddy','Cookie','Sunny','Lucky','Happy','Max','Rosie']};
+
+let S={coins:0,pets:[],food:{fish:0,carrot:0,bone:0}};
+// Growth: pets start at size 0.5 (baby), grow to 1.0 (adult). Growth is driven by happiness+feeding.
+// Stage: baby (0-0.39), teen (0.4-0.69), adult (0.7-1.0). Adults stop growing.
+const STAGES=[{max:0.39,label:'🍼 Baby'},{max:0.69,label:'🌱 Teen'},{max:1.0,label:'⭐ Adult'}];
+function getStage(g){return g<=0.39?0:g<=0.69?1:2}
+function stageLabel(g){return STAGES[getStage(g)].label}
+let curAns=null,locked=false,adoptType=null;
+let selectedFood=null;
+let audioCtx=null;
+let petAnimations={};
+
+function sv(){localStorage.setItem('bph3',JSON.stringify(S))}
+function ld(){try{const d=JSON.parse(localStorage.getItem('bph3'));if(d)S={...S,...d}}catch(e){}}
+
+// Audio
+function ia(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function bp(f,d,v=.07){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;g.gain.setValueAtTime(v,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+d);o.start();o.stop(audioCtx.currentTime+d)}
+function sOk(){bp(523,.1);setTimeout(()=>bp(659,.12),90);setTimeout(()=>bp(784,.15),180)}
+function sNo(){bp(200,.22,.03)}
+function sCoin(){bp(880,.07);setTimeout(()=>bp(1100,.08),50)}
+function sPet(){bp(500,.07);setTimeout(()=>bp(600,.07),50);setTimeout(()=>bp(700,.08),100)}
+// Pet-specific sounds when fed
+function sndMeow(){
+    if(!audioCtx)return;
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';
+    o.connect(g);g.connect(audioCtx.destination);
+    o.frequency.setValueAtTime(700,audioCtx.currentTime);
+    o.frequency.linearRampToValueAtTime(900,audioCtx.currentTime+.1);
+    o.frequency.linearRampToValueAtTime(600,audioCtx.currentTime+.25);
+    g.gain.setValueAtTime(.1,audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(.08,audioCtx.currentTime+.15);
+    g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.35);
+    o.start();o.stop(audioCtx.currentTime+.35);
+}
+function sndBark(){
+    if(!audioCtx)return;
+    // Two short bursts
+    for(let i=0;i<2;i++){
+        const t=audioCtx.currentTime+i*.15;
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sawtooth';
+        o.connect(g);g.connect(audioCtx.destination);
+        o.frequency.setValueAtTime(350,t);o.frequency.linearRampToValueAtTime(250,t+.08);
+        g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+.1);
+        o.start(t);o.stop(t+.1);
+    }
+}
+function sndSqueak(){
+    if(!audioCtx)return;
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';
+    o.connect(g);g.connect(audioCtx.destination);
+    o.frequency.setValueAtTime(1200,audioCtx.currentTime);
+    o.frequency.linearRampToValueAtTime(1500,audioCtx.currentTime+.06);
+    o.frequency.linearRampToValueAtTime(1000,audioCtx.currentTime+.15);
+    g.gain.setValueAtTime(.06,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.2);
+    o.start();o.stop(audioCtx.currentTime+.2);
+}
+function sndPetFeed(type){if(type==='cat')sndMeow();else if(type==='dog')sndBark();else sndSqueak()}
+
+// Effects
+function ef(em,x,y,c){const e=document.createElement('div');e.className=c;e.textContent=em;e.style.left=x+'px';e.style.top=y+'px';document.body.appendChild(e);setTimeout(()=>e.remove(),1400)}
+function sparks(x,y){for(let i=0;i<4;i++)setTimeout(()=>ef('✨',x+Math.random()*50-25,y+Math.random()*50-25,'spark'),i*100)}
+function hts(x,y){for(let i=0;i<3;i++)setTimeout(()=>ef(['💕','💖','❤️'][i],x+Math.random()*30-15,y-8,'hfloat'),i*120)}
+
+// Enhanced SVG pets with full bodies
+function catSVG(m){const h=m==='happy',s=m==='hungry';return`<svg viewBox="0 0 100 100">
+    <!-- Body -->
+    <ellipse cx="50" cy="60" rx="20" ry="16" fill="#ffb3d9" stroke="#ff6b9d" stroke-width="1.5"/>
+    <!-- Head -->
+    <circle cx="50" cy="35" r="16" fill="#ffb3d9" stroke="#ff6b9d" stroke-width="1.5"/>
+    <!-- Ears -->
+    <polygon points="38,22 42,12 46,22" fill="#ffb3d9" stroke="#ff6b9d" stroke-width="1"/>
+    <polygon points="54,22 58,12 62,22" fill="#ffb3d9" stroke="#ff6b9d" stroke-width="1"/>
+    <!-- Legs -->
+    <g class="legs" style="animation:${m==='walking'?'legWalk .8s ease-in-out infinite':'none'}">
+        <ellipse cx="40" cy="75" rx="3" ry="8" fill="#ffb3d9"/>
+        <ellipse cx="48" cy="75" rx="3" ry="8" fill="#ffb3d9"/>
+        <ellipse cx="52" cy="75" rx="3" ry="8" fill="#ffb3d9"/>
+        <ellipse cx="60" cy="75" rx="3" ry="8" fill="#ffb3d9"/>
+    </g>
+    <!-- Paws -->
+    <circle cx="40" cy="82" r="2.5" fill="#ff9ec7"/>
+    <circle cx="48" cy="82" r="2.5" fill="#ff9ec7"/>
+    <circle cx="52" cy="82" r="2.5" fill="#ff9ec7"/>
+    <circle cx="60" cy="82" r="2.5" fill="#ff9ec7"/>
+    <!-- Tail -->
+    <path d="M70,55 Q78,50 82,58 Q78,66 70,60" fill="#ff6b9d" style="transform-origin:70px 58px;animation:tailWag 1.5s ease-in-out infinite"/>
+    <!-- Eyes -->
+    <g style="animation:blink 4s infinite">
+        <ellipse cx="44" cy="32" rx="3" ry="${s?1.5:3}" fill="#fff"/>
+        <ellipse cx="56" cy="32" rx="3" ry="${s?1.5:3}" fill="#fff"/>
+        <circle cx="44" cy="32" r="1.8" fill="#333"/>
+        <circle cx="56" cy="32" r="1.8" fill="#333"/>
+        ${h?'<circle cx="42.5" cy="30.5" r=".6" fill="#fff"/><circle cx="54.5" cy="30.5" r=".6" fill="#fff"/>':''}
+    </g>
+    <!-- Nose and mouth -->
+    <ellipse cx="50" cy="38" rx="1.5" ry="1" fill="#ff6b9d"/>
+    <path d="M47,40 Q50,42 53,40" stroke="#ff6b9d" stroke-width="1" fill="none"/>
+    <!-- Cheeks -->
+    ${h?'<circle cx="34" cy="35" r="3" fill="#ff9ec7" opacity=".6"/><circle cx="66" cy="35" r="3" fill="#ff9ec7" opacity=".6"/>':''}
+</svg>`}
+
+function rabSVG(m){const h=m==='happy',s=m==='hungry';return`<svg viewBox="0 0 100 100">
+    <!-- Body -->
+    <ellipse cx="50" cy="62" rx="18" ry="20" fill="#e6d3f7" stroke="#c9a9dd" stroke-width="1.5"/>
+    <!-- Head -->
+    <ellipse cx="50" cy="35" rx="14" ry="12" fill="#e6d3f7" stroke="#c9a9dd" stroke-width="1.5"/>
+    <!-- Long ears -->
+    <ellipse cx="42" cy="20" rx="5" ry="16" fill="#e6d3f7" stroke="#c9a9dd" stroke-width="1"/>
+    <ellipse cx="58" cy="20" rx="5" ry="16" fill="#e6d3f7" stroke="#c9a9dd" stroke-width="1"/>
+    <!-- Legs (back legs bigger) -->
+    <g class="legs" style="animation:${m==='walking'?'legWalk .8s ease-in-out infinite':'none'}">
+        <ellipse cx="42" cy="80" rx="4" ry="6" fill="#e6d3f7"/>
+        <ellipse cx="50" cy="78" rx="3" ry="8" fill="#e6d3f7"/>
+        <ellipse cx="50" cy="78" rx="3" ry="8" fill="#e6d3f7"/>
+        <ellipse cx="58" cy="80" rx="4" ry="6" fill="#e6d3f7"/>
+    </g>
+    <!-- Paws -->
+    <ellipse cx="42" cy="86" rx="3" ry="2" fill="#d9c3f0"/>
+    <ellipse cx="50" cy="84" rx="2.5" ry="2" fill="#d9c3f0"/>
+    <ellipse cx="50" cy="84" rx="2.5" ry="2" fill="#d9c3f0"/>
+    <ellipse cx="58" cy="86" rx="3" ry="2" fill="#d9c3f0"/>
+    <!-- Fluffy tail -->
+    <circle cx="68" cy="60" r="6" fill="#fff" opacity=".9"/>
+    <!-- Eyes -->
+    <g style="animation:blink 4.5s infinite">
+        <ellipse cx="45" cy="32" rx="3.5" ry="${s?2:3.5}" fill="#fff"/>
+        <ellipse cx="55" cy="32" rx="3.5" ry="${s?2:3.5}" fill="#fff"/>
+        <circle cx="45" cy="32" r="2" fill="#333"/>
+        <circle cx="55" cy="32" r="2" fill="#333"/>
+        ${h?'<circle cx="43.5" cy="30.5" r=".7" fill="#fff"/><circle cx="53.5" cy="30.5" r=".7" fill="#fff"/>':''}
+    </g>
+    <!-- Pink nose -->
+    <ellipse cx="50" cy="38" rx="2" ry="1.3" fill="#ffaacc"/>
+    <path d="M47,40 Q50,42 53,40" stroke="#ffaacc" stroke-width="1" fill="none"/>
+    <!-- Cheeks -->
+    ${h?'<circle cx="36" cy="35" r="3" fill="#ffc0cb" opacity=".5"/><circle cx="64" cy="35" r="3" fill="#ffc0cb" opacity=".5"/>':''}
+</svg>`}
+
+function dogSVG(m){const h=m==='happy',s=m==='hungry';return`<svg viewBox="0 0 100 100">
+    <!-- Body -->
+    <ellipse cx="50" cy="60" rx="20" ry="18" fill="#ffe4b3" stroke="#ffcc80" stroke-width="1.5"/>
+    <!-- Head -->
+    <circle cx="50" cy="35" r="15" fill="#ffe4b3" stroke="#ffcc80" stroke-width="1.5"/>
+    <!-- Floppy ears -->
+    <ellipse cx="36" cy="30" rx="6" ry="12" fill="#ffe4b3" stroke="#ffcc80" stroke-width="1"/>
+    <ellipse cx="64" cy="30" rx="6" ry="12" fill="#ffe4b3" stroke="#ffcc80" stroke-width="1"/>
+    <!-- Legs -->
+    <g class="legs" style="animation:${m==='walking'?'legWalk .8s ease-in-out infinite':'none'}">
+        <ellipse cx="40" cy="76" rx="3.5" ry="9" fill="#ffe4b3"/>
+        <ellipse cx="48" cy="76" rx="3.5" ry="9" fill="#ffe4b3"/>
+        <ellipse cx="52" cy="76" rx="3.5" ry="9" fill="#ffe4b3"/>
+        <ellipse cx="60" cy="76" rx="3.5" ry="9" fill="#ffe4b3"/>
+    </g>
+    <!-- Paws -->
+    <circle cx="40" cy="84" r="3" fill="#e6cc80"/>
+    <circle cx="48" cy="84" r="3" fill="#e6cc80"/>
+    <circle cx="52" cy="84" r="3" fill="#e6cc80"/>
+    <circle cx="60" cy="84" r="3" fill="#e6cc80"/>
+    <!-- Wagging tail -->
+    <path d="M70,50 Q80,45 85,55 Q80,65 70,60" fill="#ffcc80" style="transform-origin:70px 55px;animation:tailWag 1.2s ease-in-out infinite"/>
+    <!-- Eyes -->
+    <g style="animation:blink 3.8s infinite">
+        <ellipse cx="44" cy="32" rx="3.5" ry="${s?2:3.5}" fill="#fff"/>
+        <ellipse cx="56" cy="32" rx="3.5" ry="${s?2:3.5}" fill="#fff"/>
+        <circle cx="44" cy="32" r="2" fill="#333"/>
+        <circle cx="56" cy="32" r="2" fill="#333"/>
+        ${h?'<circle cx="42.5" cy="30.5" r=".7" fill="#fff"/><circle cx="54.5" cy="30.5" r=".7" fill="#fff"/>':''}
+    </g>
+    <!-- Nose -->
+    <ellipse cx="50" cy="38" rx="2.5" ry="2" fill="#333"/>
+    <!-- Tongue (when happy) -->
+    ${h?'<ellipse cx="50" cy="43" rx="3" ry="2" fill="#ff69b4"/>':''}
+    <path d="M47,40 Q50,42 53,40" stroke="#333" stroke-width="1" fill="none"/>
+    <!-- Cheeks -->
+    ${h?'<circle cx="34" cy="35" r="3" fill="#ffb3ba" opacity=".5"/><circle cx="66" cy="35" r="3" fill="#ffb3ba" opacity=".5"/>':''}
+    <!-- Spots (optional) -->
+    <circle cx="58" cy="55" r="3" fill="#e6cc80" opacity=".7"/>
+    <circle cx="44" cy="63" r="2.5" fill="#e6cc80" opacity=".7"/>
+</svg>`}
+
+function petSVG(t,m){
+    return t==='cat'?catSVG(m):t==='rabbit'?rabSVG(m):dogSVG(m)
+}
+
+// Math
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function genQ(){
+    locked=false;
+    const types=['add','sub','wadd','wsub','place','compare','skip','groups'];
+    const t=types[ri(0,7)];
+    const isChoice = t==='compare' || Math.random()>.25;
+    let q,ans;
+    switch(t){
+        case'add':{const a=ri(5,55),b=ri(5,99-a);ans=a+b;q=`${a} + ${b} = ?`;break}
+        case'sub':{const a=ri(20,99),b=ri(1,a-5);ans=a-b;q=`${a} - ${b} = ?`;break}
+        case'wadd':{const w=['stickers','crayons','cookies','marbles','flowers'][ri(0,4)];const a=ri(8,40),b=ri(3,25);ans=a+b;q=`Bonnie has ${a} ${w}. She gets ${b} more. How many now?`;break}
+        case'wsub':{const w=['candies','stars','buttons','shells','cards'][ri(0,4)];const a=ri(20,50),b=ri(3,a-5);ans=a-b;q=`Bonnie has ${a} ${w}. She gives away ${b}. How many left?`;break}
+        case'place':{const n=ri(10,99);const p=Math.random()>.5?'tens':'ones';ans=p==='tens'?Math.floor(n/10):n%10;q=`What digit is in the ${p} place of ${n}?`;break}
+        case'compare':{let a=ri(10,95),b=ri(10,95);while(b===a)b=ri(10,95);ans=Math.max(a,b);q=`Which is greater: ${a} or ${b}?`;break}
+        case'skip':{const by=[2,5,10][ri(0,2)];const s=ri(0,10)*by;ans=s+by*3;q=`Count by ${by}s: ${s}, ${s+by}, ${s+by*2}, ?`;break}
+        case'groups':{const g=ri(2,5),p=ri(2,6);ans=g*p;q=`${g} groups of ${p} = ?`;break}
+    }
+    curAns=ans;
+    document.getElementById('qtxt').textContent=q;
+    document.getElementById('fb').textContent='';
+    const mi=document.getElementById('minput');mi.innerHTML='';
+
+    if(isChoice){
+        let ch=new Set([ans]);
+        while(ch.size<4){let w=ans+ri(-8,8);if(w<0)w=ri(0,5);if(w!==ans)ch.add(w)}
+        let arr=[...ch].sort(()=>Math.random()-.5);
+        const d=document.createElement('div');d.className='choices';
+        arr.forEach(c=>{const b=document.createElement('button');b.className='cbtn';b.textContent=c;b.onclick=()=>pick(c,b);d.appendChild(b)});
+        mi.appendChild(d);
+    } else {
+        const d=document.createElement('div');d.className='inprow';
+        const inp=document.createElement('input');inp.type='number';inp.className='ansinp';inp.placeholder='?';inp.inputMode='numeric';inp.pattern='[0-9]*';
+        inp.onkeydown=e=>{if(e.key==='Enter')submit()};
+        const sb=document.createElement('button');sb.className='sbtn';sb.textContent='Submit ✓';sb.onclick=submit;
+        d.appendChild(inp);d.appendChild(sb);
+        mi.appendChild(d);
+        setTimeout(()=>inp.focus(),80);
+    }
+}
+
+function pick(v,btn){
+    if(locked)return;
+    locked=true;
+    document.querySelectorAll('.cbtn').forEach(b=>b.disabled=true);
+    const fb=document.getElementById('fb');
+    if(v===curAns){
+        btn.classList.add('ok');
+        fb.textContent=['🎉 Yay!','🌟 Amazing!','💖 So smart!','✨ Got it!','🎊 Awesome!'][ri(0,4)];
+        fb.className='fbtxt ok';
+        S.coins++;sv();render();sOk();sCoin();
+        const r=btn.getBoundingClientRect();sparks(r.left+r.width/2,r.top);
+    } else {
+        btn.classList.add('no');
+        document.querySelectorAll('.cbtn').forEach(b=>{if(+b.textContent===curAns)b.classList.add('ok')});
+        fb.textContent=`💕 It's ${curAns}. You'll get it!`;fb.className='fbtxt no';sNo();
+    }
+    setTimeout(genQ,1400);
+}
+
+function submit(){
+    if(locked)return;
+    const inp=document.querySelector('.ansinp');if(!inp)return;
+    const v=parseInt(inp.value);if(isNaN(v))return;
+    locked=true;
+    document.querySelectorAll('.ansinp,.sbtn').forEach(e=>e.disabled=true);
+    const fb=document.getElementById('fb');
+    if(v===curAns){
+        inp.classList.add('ok');inp.style.background='#a8e6cf';inp.style.color='#fff';
+        fb.textContent=['🎉 Yay!','🌟 Amazing!','💖 So smart!','✨ Got it!','🎊 Awesome!'][ri(0,4)];
+        fb.className='fbtxt ok';
+        S.coins++;sv();render();sOk();sCoin();
+        const r=inp.getBoundingClientRect();sparks(r.left+r.width/2,r.top);
+    } else {
+        inp.style.background='#fcc';
+        fb.textContent=`💕 It's ${curAns}. You'll get it!`;fb.className='fbtxt no';sNo();
+    }
+    setTimeout(genQ,1400);
+}
+
+// Pet Walking System — smooth RAF-based movement
+let walkingRAF=null;
+let lastWalkTime=0;
+
+function initPetAnim(i){
+    const p=S.pets[i];if(!p)return;
+    if(petAnimations[i])return; // already exists
+    const container=document.querySelector('.pet-container');
+    const maxW=container?container.offsetWidth-100:250;
+    const maxH=container?container.offsetHeight-100:200;
+    const angle=Math.random()*Math.PI*2;
+    const spd=0.4+Math.random()*0.4;
+    petAnimations[i]={
+        x:Math.random()*maxW*0.6+20,
+        y:Math.random()*maxH*0.6+20,
+        vx:Math.cos(angle)*spd,
+        vy:Math.sin(angle)*spd,
+        speed:p.happiness>75?1.3:p.hunger<25?0.4:0.8,
+        state:'walking',
+        stateTimer:0,
+        nextStateChange:ri(200,500),
+        direction:Math.random()>0.5?1:-1,
+        reacting:false
+    };
+}
+
+function walkLoop(ts){
+    const dt=Math.min(ts-lastWalkTime,50); // cap delta to avoid jumps
+    lastWalkTime=ts;
+    const container=document.querySelector('.pet-container');
+    
+    S.pets.forEach((p,i)=>{
+        const a=petAnimations[i];
+        const el=document.querySelector(`[data-pi="${i}"]`);
+        if(!a||!el)return;
+        if(a.reacting)return;
+
+        // Update speed based on mood
+        a.speed=p.happiness>75?1.3:p.hunger<25?0.4:0.8;
+
+        a.stateTimer+=dt;
+        // State changes
+        if(a.stateTimer>a.nextStateChange){
+            const behaviors=['walking','idle','walking','walking']; // bias toward walking
+            if(p.happiness>75)behaviors.push('playing');
+            a.state=behaviors[ri(0,behaviors.length-1)];
+            a.stateTimer=0;
+            a.nextStateChange=a.state==='idle'?ri(1500,3000):ri(3000,7000);
+            // New random direction on walk resume
+            if(a.state==='walking'){
+                const angle=Math.random()*Math.PI*2;
+                const spd=0.3+Math.random()*0.4;
+                a.vx=Math.cos(angle)*spd;
+                a.vy=Math.sin(angle)*spd;
+                a.direction=a.vx>0?1:-1;
+            }
+        }
+
+        if(a.state==='walking'){
+            const step=dt*0.06*a.speed;
+            a.x+=a.vx*step;
+            a.y+=a.vy*step;
+
+            const g=p.growth||0;const sz=Math.round(160*(0.5+g*0.5));
+            const maxX=container?container.offsetWidth-sz:200;
+            const maxY=container?container.offsetHeight-sz-30:150;
+            if(a.x<=0||a.x>=maxX){a.vx*=-1;a.direction*=-1;a.x=Math.max(0,Math.min(maxX,a.x))}
+            if(a.y<=0||a.y>=maxY){a.vy*=-1;a.y=Math.max(0,Math.min(maxY,a.y))}
+        }
+
+        // Smooth CSS update
+        el.style.left=a.x+'px';
+        el.style.top=a.y+'px';
+        el.style.transform=`scaleX(${a.direction})`;
+
+        // Update classes
+        el.classList.toggle('moving',a.state==='walking');
+        el.classList.toggle('stopped',a.state==='idle');
+        el.classList.toggle('playing',a.state==='playing');
+    });
+    walkingRAF=requestAnimationFrame(walkLoop);
+}
+
+function startWalkLoop(){
+    if(walkingRAF)return;
+    lastWalkTime=performance.now();
+    walkingRAF=requestAnimationFrame(walkLoop);
+}
+function stopWalkLoop(){
+    if(walkingRAF){cancelAnimationFrame(walkingRAF);walkingRAF=null}
+}
+
+function petReaction(idx,x,y){
+    const a=petAnimations[idx];if(!a)return;
+    a.reacting=true;
+    hts(x,y);sPet();
+    setTimeout(()=>{a.reacting=false},1500);
+}
+
+// Render
+function render(){
+    document.getElementById('coins').textContent=S.coins;
+    renderShop();renderHouse();
+}
+
+function renderShop(){
+    const ps=document.getElementById('pshop');ps.innerHTML='';
+    ['cat','rabbit','dog'].forEach(t=>{
+        const ok=S.coins>=PC;
+        const d=document.createElement('div');d.className='sitem'+(ok?' can':'');
+        d.innerHTML=`<span class="si${ok?' boing':''}" style="font-size:0">${petSVG(t,'happy').replace('viewBox','width="44" height="44" viewBox')}</span><div class="sn">${t[0].toUpperCase()+t.slice(1)}</div><div class="sp">🪙 ${PC}</div>`;
+        d.onclick=()=>buyPet(t);ps.appendChild(d);
+    });
+    const fs=document.getElementById('fshop');fs.innerHTML='';
+    Object.entries(FOOD).forEach(([k,f])=>{
+        const ok=S.coins>=FP;
+        const d=document.createElement('div');d.className='sitem'+(ok?' can':'');
+        d.innerHTML=`<span class="si${ok?' boing':''}">${f.e}</span><div class="sn">${k[0].toUpperCase()+k.slice(1)}</div><div class="sp">🪙 ${FP}</div>`;
+        d.onclick=()=>buyFood(k);fs.appendChild(d);
+    });
+    const h=document.getElementById('shint');
+    const tf=S.food.fish+S.food.carrot+S.food.bone;
+    h.textContent=tf>0?`Food: 🐟${S.food.fish} 🥕${S.food.carrot} 🦴${S.food.bone}`:'Solve problems to earn coins!';
+}
+
+let housePetCount=-1; // track when we need full rebuild
+
+function renderHouse(){
+    const hc=document.getElementById('hcontent');
+    
+    if(S.pets.length===0){
+        stopWalkLoop();petAnimations={};housePetCount=0;
+        const need=PC-S.coins;
+        hc.innerHTML=`<div class="hempty"><span class="big">🏠</span>${need>0?`Earn ${need} more coin${need>1?'s':''} to adopt your first pet!`:'You can adopt a pet! Check the shop →'}</div>`;
+        return;
+    }
+
+    // Full rebuild only when pet count changes
+    if(housePetCount!==S.pets.length){
+        housePetCount=S.pets.length;
+        let html='<div class="pet-container">';
+        S.pets.forEach((p,i)=>{
+            const g=p.growth||0;const sizePx=Math.round(160*(0.5+g*0.5));
+            const mood=p.hunger<25?'hungry':p.happiness>75?'happy':'normal';
+            html+=`<div class="walking-pet stopped" data-pi="${i}" onclick="tapP(${i},event)" style="position:absolute;left:30px;top:50px;">
+                <div class="pet-svg-wrap" style="width:${sizePx}px;height:${sizePx}px">${petSVG(p.type,mood)}</div>
+                <div class="pet-info">
+                    <div class="pname">${p.name} <span style="font-size:.7rem;color:#b09cc0">${stageLabel(g)}</span></div>
+                    <div class="pet-meters">
+                        <div class="meter-row"><div class="meter-label">💖 Happy</div><div class="meter-bar"><div class="meter-fill happy" style="width:${p.happiness}%"><div class="meter-percentage">${Math.round(p.happiness)}%</div></div></div></div>
+                        <div class="meter-row"><div class="meter-label">🍽️ Hungry</div><div class="meter-bar"><div class="meter-fill hungry" style="width:${p.hunger}%"><div class="meter-percentage">${Math.round(p.hunger)}%</div></div></div></div>
+                    </div>
+                </div>
+            </div>`;
+        });
+        html+='</div>';
+        // Mobile cards
+        html+='<div class="mobile-pet-cards" id="mpcards"></div>';
+        // Food tray
+        html+='<div class="foodtray" id="ftray"></div>';
+        hc.innerHTML=html;
+
+        // Init animations for new pets
+        S.pets.forEach((_,i)=>initPetAnim(i));
+        startWalkLoop();
+    } else {
+        // Lightweight update: just update meters, SVG mood, size in-place
+        S.pets.forEach((p,i)=>{
+            const el=document.querySelector(`[data-pi="${i}"]`);if(!el)return;
+            const g=p.growth||0;const sizePx=Math.round(160*(0.5+g*0.5));
+            const mood=p.hunger<25?'hungry':p.happiness>75?'happy':'normal';
+            const wrap=el.querySelector('.pet-svg-wrap');
+            if(wrap){wrap.style.width=sizePx+'px';wrap.style.height=sizePx+'px';wrap.innerHTML=petSVG(p.type,mood)}
+            // Update info
+            const info=el.querySelector('.pet-info');
+            if(info){
+                info.querySelector('.pname').innerHTML=`${p.name} <span style="font-size:.7rem;color:#b09cc0">${stageLabel(g)}</span>`;
+                const fills=info.querySelectorAll('.meter-fill');
+                if(fills[0]){fills[0].style.width=p.happiness+'%';fills[0].querySelector('.meter-percentage').textContent=Math.round(p.happiness)+'%'}
+                if(fills[1]){fills[1].style.width=p.hunger+'%';fills[1].querySelector('.meter-percentage').textContent=Math.round(p.hunger)+'%'}
+            }
+        });
+    }
+
+    // Always update mobile cards
+    const mc=document.getElementById('mpcards');
+    if(mc){
+        mc.innerHTML='';
+        S.pets.forEach((p,i)=>{
+            const g=p.growth||0;
+            mc.innerHTML+=`<div class="mobile-pet-card">
+                <div style="font-size:.85rem;font-weight:700;color:#c44569">${p.name} ${stageLabel(g)}</div>
+                <div class="pet-meters" style="margin-top:4px">
+                    <div class="meter-row"><div class="meter-label">💖 Happy</div><div class="meter-bar"><div class="meter-fill happy" style="width:${p.happiness}%"><div class="meter-percentage">${Math.round(p.happiness)}%</div></div></div></div>
+                    <div class="meter-row"><div class="meter-label">🍽️ Hungry</div><div class="meter-bar"><div class="meter-fill hungry" style="width:${p.hunger}%"><div class="meter-percentage">${Math.round(p.hunger)}%</div></div></div></div>
+                </div>
+            </div>`;
+        });
+    }
+
+    // Always update food tray
+    const ft=document.getElementById('ftray');
+    if(ft){
+        const tf=S.food.fish+S.food.carrot+S.food.bone;
+        let fhtml='';
+        for(let i=0;i<S.food.fish;i++) fhtml+=`<span class="foodicon" data-ft="fish">🐟</span>`;
+        for(let i=0;i<S.food.carrot;i++) fhtml+=`<span class="foodicon" data-ft="carrot">🥕</span>`;
+        for(let i=0;i<S.food.bone;i++) fhtml+=`<span class="foodicon" data-ft="bone">🦴</span>`;
+        ft.innerHTML=fhtml;
+        ft.querySelectorAll('.foodicon').forEach(f=>f.addEventListener('pointerdown',foodDown));
+    }
+}
+
+// Food interaction: tap-to-select + tap-pet-to-feed, OR drag
+let dragEl=null,dragType=null,dragOff={x:0,y:0},isDragging=false;
+
+function foodDown(e){
+    e.preventDefault();
+    const el=e.target;
+    const ft=el.dataset.ft;
+
+    // If already have a selected food and tapping another food, deselect old
+    if(selectedFood){document.querySelectorAll('.foodicon.selected').forEach(f=>f.classList.remove('selected'));selectedFood=null}
+
+    dragEl=el;dragType=ft;isDragging=false;
+    const r=el.getBoundingClientRect();
+    dragOff={x:e.clientX-r.left,y:e.clientY-r.top};
+
+    document.addEventListener('pointermove',foodMove);
+    document.addEventListener('pointerup',foodUp);
+}
+
+function foodMove(e){
+    if(!dragEl)return;
+    if(!isDragging){
+        const dx=Math.abs(e.clientX-(dragEl.getBoundingClientRect().left+dragOff.x));
+        const dy=Math.abs(e.clientY-(dragEl.getBoundingClientRect().top+dragOff.y));
+        if(dx+dy<8)return;
+        isDragging=true;
+        dragEl.classList.add('dragging');
+        dragEl.style.position='fixed';
+        dragEl.style.zIndex='1000';
+    }
+    dragEl.style.left=(e.clientX-dragOff.x)+'px';
+    dragEl.style.top=(e.clientY-dragOff.y)+'px';
+
+    // Highlight pet under cursor
+    document.querySelectorAll('.walking-pet').forEach(p=>p.classList.remove('droptarget'));
+    const els=document.elementsFromPoint(e.clientX,e.clientY);
+    const ps=els.find(el=>el.classList&&el.classList.contains('walking-pet'))||els.find(el=>el.closest&&el.closest('.walking-pet'));
+    const slot=ps?.classList?.contains('walking-pet')?ps:ps?.closest('.walking-pet');
+    if(slot)slot.classList.add('droptarget');
+}
+
+function foodUp(e){
+    document.removeEventListener('pointermove',foodMove);
+    document.removeEventListener('pointerup',foodUp);
+    if(!dragEl)return;
+
+    if(isDragging){
+        // Check drop on pet
+        document.querySelectorAll('.walking-pet').forEach(p=>p.classList.remove('droptarget'));
+        const els=document.elementsFromPoint(e.clientX,e.clientY);
+        const ps=els.find(el=>el.classList&&el.classList.contains('walking-pet'))||els.find(el=>el.closest&&el.closest('.walking-pet'));
+        const slot=ps?.classList?.contains('walking-pet')?ps:ps?.closest('.walking-pet');
+        if(slot){
+            const pi=parseInt(slot.dataset.pi);
+            feedPet(pi,dragType);
+            petReaction(pi, e.clientX, e.clientY);
+        }
+        dragEl.classList.remove('dragging');
+        dragEl.style.position='';dragEl.style.zIndex='';dragEl.style.left='';dragEl.style.top='';
+    } else {
+        // Tap — select this food
+        selectedFood=dragType;
+        dragEl.classList.add('selected');
+    }
+    dragEl=null;dragType=null;isDragging=false;
+}
+
+function tapP(i,evt){
+    if(selectedFood){
+        // Feed with selected food
+        feedPet(i,selectedFood);
+        petReaction(i, evt.clientX, evt.clientY);
+        selectedFood=null;
+        document.querySelectorAll('.foodicon.selected').forEach(f=>f.classList.remove('selected'));
+        return;
+    }
+    // Just pet it
+    const p=S.pets[i];if(!p)return;
+    p.happiness=Math.min(100,p.happiness+5);
+    sv();render();
+    petReaction(i, evt.clientX, evt.clientY);
+}
+
+function feedPet(i,ft){
+    const p=S.pets[i];if(!p)return;
+    if(S.food[ft]<=0)return;
+    S.food[ft]--;
+    p.hunger=Math.min(100,p.hunger+35);
+    p.happiness=Math.min(100,p.happiness+20);
+    if((p.growth||0)<1.0){
+        const boost=p.happiness>60?0.04:0.02;
+        p.growth=Math.min(1.0,(p.growth||0)+boost);
+    }
+    sndPetFeed(p.type);
+    sv();render();
+}
+
+// Buy
+function buyPet(t){
+    if(S.coins<PC)return;
+    S.coins-=PC;sv();render();
+    adoptType=t;
+    const names=PN[t];
+    document.getElementById('mname').value=names[ri(0,names.length-1)];
+    document.getElementById('mprev').innerHTML=petSVG(t,'happy').replace('viewBox','width="80" height="80" viewBox');
+    document.getElementById('modal').style.display='flex';
+    setTimeout(()=>document.getElementById('mname').select(),100);
+}
+function nameOk(){
+    const n=document.getElementById('mname').value.trim()||'Buddy';
+    S.pets.push({type:adoptType,name:n,happiness:100,hunger:100,growth:0.0,lastTick:Date.now(),bornAt:Date.now()});
+    sv();render();sPet();
+    document.getElementById('modal').style.display='none';adoptType=null;
+}
+function buyFood(k){
+    if(S.coins<FP)return;
+    S.coins-=FP;S.food[k]++;sv();render();sCoin();
+}
+
+// Hunger
+function tick(){
+    const now=Date.now();let u=false;
+    S.pets.forEach(p=>{
+        const el=now-(p.lastTick||now);const loss=Math.floor(el/30000)*2;
+        if(loss>0){p.hunger=Math.max(0,p.hunger-loss);if(p.hunger<20)p.happiness=Math.max(10,p.happiness-1);p.lastTick=now;u=true}
+        // Passive growth when happy and not starving
+        if((p.growth||0)<1.0&&p.happiness>50&&p.hunger>30){p.growth=Math.min(1.0,(p.growth||0)+0.005);u=true}
+    });
+    if(u){sv();render()}
+}
+
+// ─── Spelling Master ───
+const SPELL_WORDS=[
+    // NJ 2nd grade high-frequency & spelling words
+    'about','again','always','animal','because','before','began','below',
+    'between','both','bring','carry','city','clean','close','could',
+    'country','different','does','done','during','early','earth','eight',
+    'enough','every','example','family','first','follow','found','friend',
+    'give','going','great','group','grow','happy','hard','head',
+    'heard','high','house','important','inside','jump','keep','kind',
+    'know','large','later','laugh','learn','leave','letter','light',
+    'little','live','long','love','many','money','morning','mother',
+    'much','music','near','never','night','nothing','number','often',
+    'once','only','open','other','outside','over','own','paper',
+    'people','picture','place','plant','play','please','point','pretty',
+    'pull','push','quiet','rain','read','really','right','river',
+    'room','round','school','second','show','since','small','some',
+    'something','sometimes','soon','start','story','study','sure','table',
+    'tell','than','their','these','thing','think','those','thought',
+    'through','together','took','tree','turn','under','until','upon',
+    'very','walk','want','warm','wash','watch','water','where',
+    'which','while','white','whole','window','without','word','work',
+    'world','would','write','young'
+];
+
+// ElevenLabs audio loaded from external file at startup
+let SPELL_AUDIO={};
+let currentSpellWord=null;
+let spellLocked=false;
+let currentMode='math'; // 'math' or 'spell'
+
+function switchTab(mode){
+    currentMode=mode;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    if(mode==='math'){
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('mathTab').style.display='';
+        document.getElementById('spellTab').style.display='none';
+    } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('mathTab').style.display='none';
+        document.getElementById('spellTab').style.display='';
+        newSpellWord();
+    }
+}
+
+function newSpellWord(){
+    spellLocked=false;
+    currentSpellWord=SPELL_WORDS[ri(0,SPELL_WORDS.length-1)];
+    document.getElementById('spellPrompt').textContent='🔊 Listen carefully, then spell the word!';
+    document.getElementById('spellFb').textContent='';
+    const spellInput=document.getElementById('spellInp');
+    spellInput.value='';
+    spellInput.disabled=false;
+    document.getElementById('readAgainBtn').style.display='inline-block';
+    // Keep typing flow smooth: focus input automatically for each new word
+    setTimeout(()=>{
+        spellInput.focus();
+        spellInput.setSelectionRange(0,0);
+    },50);
+    // Auto-speak after a short delay
+    setTimeout(()=>speakWord(),400);
+}
+
+function speakWord(){
+    if(!currentSpellWord)return;
+
+    const speakFallback=()=>{
+        const u=new SpeechSynthesisUtterance(currentSpellWord);
+        u.rate=0.8;u.pitch=1.1;u.lang='en-US';
+        const voices=speechSynthesis.getVoices();
+        const fem=voices.find(v=>v.name.includes('Samantha'))||voices.find(v=>v.lang==='en-US');
+        if(fem)u.voice=fem;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+    };
+
+    // Use ElevenLabs audio if available
+    if(SPELL_AUDIO[currentSpellWord]){
+        const audio=new Audio(SPELL_AUDIO[currentSpellWord]);
+        audio.currentTime=0;
+        audio.play().catch(()=>{
+            // Some browsers block autoplay on later rounds; fallback keeps game flowing
+            speakFallback();
+        });
+        return;
+    }
+
+    // Fallback to Web Speech API
+    speakFallback();
+}
+
+function checkSpelling(){
+    if(spellLocked)return;
+    const inp=document.getElementById('spellInp');
+    const answer=inp.value.trim().toLowerCase();
+    if(!answer)return;
+    spellLocked=true;
+    inp.disabled=true;
+    const fb=document.getElementById('spellFb');
+
+    if(answer===currentSpellWord){
+        fb.textContent=['🎉 Perfect spelling!','🌟 You nailed it!','💖 Amazing speller!','✨ Exactly right!','🎊 Wonderful!'][ri(0,4)];
+        fb.className='fbtxt ok';
+        inp.style.borderColor='#4caf50';
+        S.coins++;sv();render();sOk();sCoin();
+        const r=inp.getBoundingClientRect();sparks(r.left+r.width/2,r.top);
+    } else {
+        fb.innerHTML=`💕 It's spelled: <strong>${currentSpellWord}</strong>. Keep trying!`;
+        fb.className='fbtxt no';
+        inp.style.borderColor='#e57373';
+        sNo();
+        // Speak the correct spelling letter by letter
+        setTimeout(()=>{
+            const u=new SpeechSynthesisUtterance(currentSpellWord.split('').join(', '));
+            u.rate=0.6;u.pitch=1.1;u.lang='en-US';
+            speechSynthesis.speak(u);
+        },800);
+    }
+    // If speech queue gets stuck (common after rapid retries), still advance round safely
+    setTimeout(newSpellWord,2200);
+    setTimeout(()=>{ if(spellLocked) newSpellWord(); },3200);
+}
+
+// Bind enter key for spelling input
+document.addEventListener('keydown',e=>{
+    if(currentMode==='spell'&&e.key==='Enter'){
+        const inp=document.getElementById('spellInp');
+        if(inp&&document.activeElement===inp)checkSpelling();
+    }
+});
+
+// Pre-load voices
+if(speechSynthesis.onvoiceschanged!==undefined) speechSynthesis.onvoiceschanged=()=>{};
+
+// Load ElevenLabs audio data
+function loadSpellAudio(){
+    // Try loading from same directory
+    fetch('spell-audio.json').then(r=>r.json()).then(data=>{
+        SPELL_AUDIO=data;
+        console.log('Loaded ElevenLabs audio for',Object.keys(data).length,'words');
+    }).catch(()=>console.log('No ElevenLabs audio file found, using Web Speech API'));
+}
+
+function go(){
+    ia();
+    document.getElementById('welcome').style.display='none';
+    document.getElementById('game').style.display='block';
+    ld();
+    const now=Date.now();S.pets.forEach(p=>p.lastTick=now);
+    loadSpellAudio();
+    render();genQ();setInterval(tick,5000);
+    document.getElementById('mname').addEventListener('keydown',e=>{if(e.key==='Enter')nameOk()});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Master - Piano Memory Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #eee;
+            --text-secondary: #bbb;
+            --accent: #0f3460;
+            --accent-bright: #533483;
+            --white-key: #f8f8f8;
+            --black-key: #1a1a1a;
+            --success: #4ade80;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --border: #333;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --key-shadow: rgba(0, 0, 0, 0.2);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #1a1a2e;
+            --text-secondary: #64748b;
+            --accent: #e2e8f0;
+            --accent-bright: #7c3aed;
+            --white-key: #ffffff;
+            --black-key: #1a1a1a;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --key-shadow: rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html { height: 100%; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-bright);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .leaderboard-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .leaderboard-btn:hover {
+            color: var(--accent-bright);
+            transform: scale(1.1);
+        }
+
+        .theme-toggle {
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.2rem;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--accent-bright);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Profile Selection Screen */
+        .profile-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .profile-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent-bright);
+        }
+
+        .profile-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .profiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .profile-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .profile-card:hover {
+            border-color: var(--accent-bright);
+            transform: translateY(-2px);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-age {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .create-profile-btn {
+            background: var(--accent-bright);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .create-profile-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Create Profile Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: calc(100% - 2rem);
+            max-width: 400px;
+            border: 1px solid var(--border);
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .avatar-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            background: var(--accent);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .file-input-label:hover {
+            background: var(--accent-bright);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: none;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent-bright);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Leaderboard Modal */
+        .leaderboard-modal .modal {
+            max-width: 500px;
+        }
+
+        .leaderboard-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .leaderboard-rank {
+            font-weight: 700;
+            font-size: 1.2rem;
+            width: 40px;
+            color: var(--accent-bright);
+        }
+
+        .leaderboard-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 1rem;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .leaderboard-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+        }
+
+        .leaderboard-name {
+            font-weight: 600;
+        }
+
+        .leaderboard-age {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .leaderboard-score {
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-bright), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .play-button {
+            background: var(--accent-bright);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--shadow);
+        }
+
+        .game-ui {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .game-header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-bright);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .game-phase {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            /* Clean text-only style - no background, no border */
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            min-height: 0;
+        }
+
+        .game-messages {
+            text-align: center;
+            height: 4rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            background: var(--accent);
+            color: var(--text-primary);
+            display: inline-block;
+            transition: var(--transition);
+        }
+
+        .message.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .message.error {
+            background: var(--error);
+            color: white;
+        }
+
+        .piano-container {
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .piano {
+            position: relative;
+            display: flex;
+            justify-content: flex-start;
+            width: 100%;
+            height: 55vh !important;
+            min-height: 350px !important;
+            margin: 0;
+        }
+
+        .key {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 1rem;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .key.white {
+            width: calc(100% / 8);
+            height: 100%;
+            background: var(--white-key);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px var(--key-shadow);
+            z-index: 1;
+            color: var(--text-secondary);
+        }
+
+        .key.black {
+            width: calc(100% / 13);
+            height: 60%;
+            background: var(--black-key);
+            border: 1px solid #000;
+            box-shadow: 0 2px 8px var(--shadow);
+            z-index: 2;
+            position: absolute;
+            color: #bbb;
+        }
+
+        /* Black key positioning — percentage of piano width */
+        .key.black[data-note="C#4"] { left: calc(12.5% * 1 - 100% / 26); }
+        .key.black[data-note="D#4"] { left: calc(12.5% * 2 - 100% / 26); }
+        .key.black[data-note="F#4"] { left: calc(12.5% * 4 - 100% / 26); }
+        .key.black[data-note="G#4"] { left: calc(12.5% * 5 - 100% / 26); }
+        .key.black[data-note="A#4"] { left: calc(12.5% * 6 - 100% / 26); }
+
+        .key:active, .key.pressed {
+            transform: translateY(2px);
+        }
+
+        .key.white:active, .key.white.pressed {
+            background: #e8e8e8;
+        }
+
+        .key.black:active, .key.black.pressed {
+            background: #333;
+        }
+
+        .key.correct {
+            animation: successGlow 0.5s ease-out;
+        }
+
+        .key.incorrect {
+            animation: errorGlow 0.5s ease-out;
+        }
+
+        @keyframes successGlow {
+            0% { box-shadow: 0 0 0 0 var(--success); }
+            50% { box-shadow: 0 0 0 6px var(--success); }
+            100% { box-shadow: 0 0 0 0 var(--success); }
+        }
+
+        @keyframes errorGlow {
+            0% { box-shadow: 0 0 0 0 var(--error); }
+            50% { box-shadow: 0 0 0 6px var(--error); }
+            100% { box-shadow: 0 0 0 0 var(--error); }
+        }
+
+        .controls {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+        }
+
+        .btn {
+            background: none;
+            color: var(--accent-bright);
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin: 0 0.5rem;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            opacity: 0.7;
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn.secondary {
+            color: var(--text-secondary);
+        }
+
+        /* Next button styled as a proper button */
+        #nextLevel {
+            background: var(--accent-bright) !important;
+            color: white !important;
+            border-radius: 12px !important;
+            padding: 1rem 3rem !important;
+            font-size: 1.1rem !important;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        #nextLevel:hover {
+            opacity: 0.9 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        @media (min-width: 769px) {
+            .piano { height: 55vh; min-height: 350px; }
+        }
+        @media (max-width: 768px) {
+            .header { padding: 0.75rem 1rem; }
+            .game-header { padding: 0.5rem 1rem; }
+            .piano-container { padding: 0; }
+            .stat-value { font-size: 1.1rem; }
+            .piano { height: 40vh; min-height: 200px; }
+        }
+
+        /* Animations */
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .level-announcement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--accent-bright);
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 10px 40px var(--shadow);
+            animation: levelAnnounce 2s ease-out forwards;
+        }
+
+        @keyframes levelAnnounce {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-bright), var(--success));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🎹 Note Master</div>
+        <div class="header-controls">
+            <button class="leaderboard-btn" id="leaderboardBtn" style="display: none;">🏆</button>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Profile Selection Screen -->
+        <div class="profile-screen" id="profileScreen">
+            <h1 class="profile-title">Choose Your Player</h1>
+            <p class="profile-subtitle">Select a profile or create a new one</p>
+            <div class="profiles-grid" id="profilesGrid">
+                <!-- Profiles will be loaded here -->
+            </div>
+            <button class="create-profile-btn" id="createProfileBtn">+ Create New Player</button>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcomeScreen" style="display: none;">
+            <h1 class="welcome-title">Note Master</h1>
+            <p class="welcome-subtitle">Master the piano through memory and rhythm</p>
+            <button class="play-button" id="playButton">Start Playing</button>
+        </div>
+
+        <!-- Game UI -->
+        <div class="game-ui" id="gameUI">
+            <div class="game-header">
+                <div class="game-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="levelValue">1</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="scoreValue">0</div>
+                        <div class="stat-label">Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="streakValue">0</div>
+                        <div class="stat-label">Streak</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="livesValue">❤️❤️❤️</div>
+                        <div class="stat-label">Lives</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="game-phase" id="gamePhase" style="display:none"></div>
+            </div>
+
+            <div class="game-area">
+                <div class="game-messages">
+                    <div class="message" id="gameMessage"></div>
+                    <button id="listenAgainBtn" style="display:none;background:none;border:none;color:var(--accent-bright);font-family:inherit;font-size:0.9rem;font-weight:600;cursor:pointer;padding:0.4rem 0.75rem;white-space:nowrap" onclick="replayCurrentSequence()">🔊 Listen Again</button>
+                </div>
+
+                <div class="piano-container">
+                    <div class="piano" id="piano">
+                        <!-- White keys -->
+                        <div class="key white" data-note="C4" data-freq="261.63"></div>
+                        <div class="key white" data-note="D4" data-freq="293.66"></div>
+                        <div class="key white" data-note="E4" data-freq="329.63"></div>
+                        <div class="key white" data-note="F4" data-freq="349.23"></div>
+                        <div class="key white" data-note="G4" data-freq="392.00"></div>
+                        <div class="key white" data-note="A4" data-freq="440.00"></div>
+                        <div class="key white" data-note="B4" data-freq="493.88"></div>
+                        <div class="key white" data-note="C5" data-freq="523.25"></div>
+                        
+                        <!-- Black keys -->
+                        <div class="key black" data-note="C#4" data-freq="277.18"></div>
+                        <div class="key black" data-note="D#4" data-freq="311.13"></div>
+                        <div class="key black" data-note="F#4" data-freq="369.99"></div>
+                        <div class="key black" data-note="G#4" data-freq="415.30"></div>
+                        <div class="key black" data-note="A#4" data-freq="466.16"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls" id="controlsArea" style="display:none"></div>
+        </div>
+    </div>
+
+    <!-- Create Profile Modal -->
+    <div class="modal-overlay" id="createProfileModal">
+        <div class="modal">
+            <h2 class="modal-title">Create New Player</h2>
+            <div class="form-group">
+                <label class="form-label" for="profileName">Name</label>
+                <input type="text" id="profileName" class="form-input" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Pick Your Avatar</label>
+                <div id="avatarGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-top:0.5rem">
+                </div>
+                <input type="hidden" id="selectedAvatar" value="">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelProfileBtn">Cancel</button>
+                <button class="btn-primary" id="saveProfileBtn">Create Player</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div class="modal-overlay leaderboard-modal" id="leaderboardModal">
+        <div class="modal">
+            <h2 class="modal-title">🏆 Leaderboard</h2>
+            <div class="leaderboard-list" id="leaderboardList">
+                <!-- Leaderboard entries will be loaded here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="closeLeaderboardBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal-overlay" id="gameOverModal">
+        <div class="modal" style="text-align:center">
+            <h2 class="modal-title">Game Over</h2>
+            <div style="margin-bottom:1.5rem">
+                <div style="font-size:2.5rem;font-weight:700;color:var(--accent-bright)" id="finalScore">0</div>
+                <div style="font-size:0.9rem;color:var(--text-secondary)">Score</div>
+                <div style="margin-top:0.5rem;font-size:1rem;color:var(--text-secondary)">Level <span id="finalLevel">1</span></div>
+            </div>
+            <button class="btn-primary" onclick="hideGameOver();resetGame();currentPlayer=null;showScreen('profileScreen');renderProfiles();">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Audio Context and Synthesis
+        let audioContext;
+        let masterGain;
+
+        // Player profiles
+        let currentPlayer = null;
+
+        // Game State
+        let gameState = {
+            currentLevel: 1,
+            score: 0,
+            streak: 0,
+            highScore: 0,
+            lives: 3,
+            phase: 'waiting',
+            sequence: [],
+            userInput: [],
+            sequenceIndex: 0,
+            lastInputTime: 0,
+            tolerance: 200,
+            bpm: 100
+        };
+
+        // Musical patterns and progressions for intelligent sequence generation
+        const musicalPatterns = {
+            scales: {
+                cMajor: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
+                cMajorPentatonic: ['C4', 'D4', 'E4', 'G4', 'A4'],
+                gMajor: ['G4', 'A4', 'B4', 'C5'],
+                fMajor: ['F4', 'G4', 'A4', 'Bb4']
+            },
+            arpeggios: {
+                cMajor: ['C4', 'E4', 'G4', 'C5'],
+                fMajor: ['F4', 'A4', 'C5'],
+                gMajor: ['G4', 'B4', 'D5']
+            },
+            intervals: {
+                thirds: [['C4', 'E4'], ['D4', 'F4'], ['E4', 'G4'], ['F4', 'A4']],
+                fifths: [['C4', 'G4'], ['D4', 'A4'], ['E4', 'B4'], ['F4', 'C5']],
+                octaves: [['C4', 'C5']]
+            }
+        };
+
+        // Level configurations
+        const levelConfigs = [
+            // Levels 1-3: Quarter notes only, C D E (3 keys)
+            { keys: ['C4', 'D4', 'E4'], length: 4, rhythms: ['quarter'], bpm: 100, patterns: ['simple'] },
+            { keys: ['C4', 'D4', 'E4'], length: 4, rhythms: ['quarter'], bpm: 100, patterns: ['simple'] },
+            { keys: ['C4', 'D4', 'E4'], length: 4, rhythms: ['quarter'], bpm: 105, patterns: ['scale'] },
+            
+            // Levels 4-6: Quarter notes, C D E F G (5 white keys)
+            { keys: ['C4', 'D4', 'E4', 'F4', 'G4'], length: 4, rhythms: ['quarter'], bpm: 100, patterns: ['scale'] },
+            { keys: ['C4', 'D4', 'E4', 'F4', 'G4'], length: 4, rhythms: ['quarter'], bpm: 105, patterns: ['scale', 'arpeggio'] },
+            { keys: ['C4', 'D4', 'E4', 'F4', 'G4'], length: 5, rhythms: ['quarter'], bpm: 110, patterns: ['scale', 'arpeggio'] },
+            
+            // Levels 7-9: Introduce half notes, all white keys
+            { keys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4'], length: 4, rhythms: ['quarter', 'half'], bpm: 100, patterns: ['scale', 'arpeggio'] },
+            { keys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4'], length: 5, rhythms: ['quarter', 'half'], bpm: 105, patterns: ['scale', 'arpeggio'] },
+            { keys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'], length: 6, rhythms: ['quarter', 'half'], bpm: 110, patterns: ['scale', 'arpeggio', 'interval'] },
+            
+            // Levels 10-12: Add sharps/flats
+            { keys: ['C4', 'D4', 'E4', 'F4', 'F#4', 'G4', 'A4', 'B4'], length: 6, rhythms: ['quarter', 'half'], bpm: 110, patterns: ['scale', 'arpeggio'] },
+            { keys: ['C4', 'D4', 'E4', 'F4', 'F#4', 'G4', 'A4', 'A#4', 'B4'], length: 7, rhythms: ['quarter', 'half'], bpm: 115, patterns: ['scale', 'arpeggio', 'interval'] },
+            { keys: ['C4', 'D4', 'E4', 'F4', 'F#4', 'G4', 'A4', 'A#4', 'B4', 'C5'], length: 8, rhythms: ['quarter', 'half'], bpm: 120, patterns: ['scale', 'arpeggio', 'interval'] },
+            
+            // Levels 13-15: Introduce eighth notes
+            { keys: ['C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4'], length: 8, rhythms: ['quarter', 'half', 'eighth'], bpm: 120, patterns: ['scale', 'arpeggio', 'interval'] },
+            { keys: ['C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4'], length: 9, rhythms: ['quarter', 'half', 'eighth'], bpm: 125, patterns: ['scale', 'arpeggio', 'interval', 'chromatic'] },
+            { keys: ['C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4', 'C5'], length: 10, rhythms: ['quarter', 'half', 'eighth'], bpm: 130, patterns: ['scale', 'arpeggio', 'interval', 'chromatic'] }
+        ];
+
+        // Initialize audio context and pre-decode samples
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Resume context if suspended (required after user interaction)
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = 1.5;
+                loadPianoSamples();
+            }
+        }
+
+        // Real Steinway piano samples (University of Iowa) - PRE-DECODED
+        let pianoSamples = {};
+        let pianoBuffers = {};  // decoded AudioBuffers for the 5 base samples
+        
+        // Note-to-sample mapping with pitch shift (semitones from base sample)
+        // Salamander Grand Piano (Yamaha C5) — sampled in minor thirds: C4, D#4, F#4, A4, C5
+        const NOTE_SAMPLE_MAP = {
+            'C4':  { sample: 'C4',  shift: 0 },
+            'C#4': { sample: 'C4',  shift: 1 },
+            'D4':  { sample: 'Ds4', shift: -1 },
+            'D#4': { sample: 'Ds4', shift: 0 },
+            'E4':  { sample: 'Ds4', shift: 1 },
+            'F4':  { sample: 'Fs4', shift: -1 },
+            'F#4': { sample: 'Fs4', shift: 0 },
+            'G4':  { sample: 'Fs4', shift: 1 },
+            'G#4': { sample: 'A4',  shift: -1 },
+            'A4':  { sample: 'A4',  shift: 0 },
+            'A#4': { sample: 'A4',  shift: 1 },
+            'B4':  { sample: 'C5',  shift: -1 },
+            'C5':  { sample: 'C5',  shift: 0 },
+        };
+        
+        async function loadPianoSamples() {
+            try {
+                const resp = await fetch('salamander-samples.json');
+                const samples = await resp.json();
+                
+                // Decode the 5 base samples into AudioBuffers
+                const decodePromises = [];
+                for (const [note, b64] of Object.entries(samples)) {
+                    const promise = (async () => {
+                        try {
+                            const binary = atob(b64);
+                            const bytes = new Uint8Array(binary.length);
+                            for (let i = 0; i < binary.length; i++) {
+                                bytes[i] = binary.charCodeAt(i);
+                            }
+                            pianoBuffers[note] = await audioContext.decodeAudioData(bytes.buffer.slice(0));
+                        } catch(e) { 
+                            console.warn('Failed to decode', note, e); 
+                        }
+                    })();
+                    decodePromises.push(promise);
+                }
+                
+                await Promise.all(decodePromises);
+                console.log('Loaded Yamaha C5 Grand Piano samples:', Object.keys(pianoBuffers).length, 'base notes');
+            } catch(e) { 
+                console.log('No piano samples found, using synth fallback', e); 
+            }
+        }
+        
+        // Play a note with ZERO delay using pre-decoded buffers
+        function playNote(frequency, duration = 0.5, velocity = 0.7) {
+            if (!audioContext) return;
+            
+            // Ensure audio context is running
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // Find the note name from frequency and use sample + pitch shift
+            const noteForFreq = document.querySelector(`[data-freq="${frequency}"]`);
+            const noteName = noteForFreq ? noteForFreq.dataset.note : null;
+            
+            if (noteName) {
+                playNoteByName(noteName);
+                return;
+            }
+            
+            // Synth fallback (also instant)
+            const now = audioContext.currentTime;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = frequency;
+            osc.connect(gain);
+            gain.connect(masterGain);
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(velocity * 0.3, now + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration + 0.1);
+            osc.start(now);
+            osc.stop(now + duration + 0.15);
+        }
+
+        // Metronome click sound
+        function playMetronome() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.value = 800;
+            oscillator.connect(gainNode);
+            gainNode.connect(masterGain);
+            
+            const now = audioContext.currentTime;
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.1, now + 0.001);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            
+            oscillator.start(now);
+            oscillator.stop(now + 0.05);
+        }
+
+        // Profile Management
+        function loadProfiles() {
+            const profiles = JSON.parse(localStorage.getItem('noteMasterProfiles') || '[]');
+            return profiles;
+        }
+
+        function saveProfiles(profiles) {
+            localStorage.setItem('noteMasterProfiles', JSON.stringify(profiles));
+        }
+
+        function createProfile(name, age, avatar) {
+            const profiles = loadProfiles();
+            const newProfile = {
+                id: Date.now(),
+                name: name,
+                age: age,
+                avatar: avatar,
+                bestScore: 0,
+                totalGames: 0
+            };
+            profiles.push(newProfile);
+            saveProfiles(profiles);
+            return newProfile;
+        }
+
+        function setCurrentPlayer(profileId) {
+            currentPlayer = loadProfiles().find(p => p.id === profileId);
+            localStorage.setItem('noteMasterCurrentPlayer', profileId);
+        }
+
+        function getCurrentPlayer() {
+            const playerId = localStorage.getItem('noteMasterCurrentPlayer');
+            if (playerId) {
+                return loadProfiles().find(p => p.id == playerId);
+            }
+            return null;
+        }
+
+        function updatePlayerScore(profileId, score) {
+            const profiles = loadProfiles();
+            const profile = profiles.find(p => p.id === profileId);
+            if (profile) {
+                profile.bestScore = Math.max(profile.bestScore, score);
+                profile.totalGames = (profile.totalGames || 0) + 1;
+                saveProfiles(profiles);
+            }
+        }
+
+        function renderProfiles() {
+            const profiles = loadProfiles();
+            const grid = document.getElementById('profilesGrid');
+            
+            if (profiles.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">No players yet. Create your first profile!</p>';
+                return;
+            }
+            
+            grid.innerHTML = profiles.map(profile => `
+                <div class="profile-card" onclick="selectProfile(${profile.id})">
+                    <div class="profile-avatar">
+                        ${profile.avatar ? (getAvatarSvg(profile.avatar) || '👤') : '👤'}
+                    </div>
+                    <div class="profile-name">${profile.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectProfile(profileId) {
+            setCurrentPlayer(profileId);
+            showScreen('welcomeScreen');
+            document.getElementById('leaderboardBtn').style.display = 'block';
+        }
+
+        const AVATAR_OPTIONS = [
+            { id: 'cat', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#FFE0EC"/><path d="M20 25 L28 8 L36 25" fill="#FFB5D0"/><path d="M44 25 L52 8 L60 25" fill="#FFB5D0"/><circle cx="40" cy="42" r="22" fill="#FFB5D0"/><circle cx="33" cy="38" r="4" fill="#2D2D2D"/><circle cx="47" cy="38" r="4" fill="#2D2D2D"/><circle cx="34" cy="37" r="1.5" fill="white"/><circle cx="48" cy="37" r="1.5" fill="white"/><ellipse cx="40" cy="46" rx="3" ry="2" fill="#FF8FAB"/><path d="M37 48 Q40 52 43 48" fill="none" stroke="#2D2D2D" stroke-width="1.5"/><line x1="20" y1="42" x2="30" y2="44" stroke="#2D2D2D" stroke-width="1"/><line x1="20" y1="46" x2="30" y2="46" stroke="#2D2D2D" stroke-width="1"/><line x1="50" y1="44" x2="60" y2="42" stroke="#2D2D2D" stroke-width="1"/><line x1="50" y1="46" x2="60" y2="46" stroke="#2D2D2D" stroke-width="1"/></svg>` },
+            { id: 'dog', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#FFF3E0"/><path d="M18 30 Q14 12 26 22 L30 30Z" fill="#D4A574"/><path d="M62 30 Q66 12 54 22 L50 30Z" fill="#D4A574"/><circle cx="40" cy="42" r="22" fill="#E8C9A0"/><circle cx="33" cy="38" r="4" fill="#2D2D2D"/><circle cx="47" cy="38" r="4" fill="#2D2D2D"/><circle cx="34" cy="37" r="1.5" fill="white"/><circle cx="48" cy="37" r="1.5" fill="white"/><ellipse cx="40" cy="47" rx="5" ry="4" fill="#D4A574"/><ellipse cx="40" cy="46" rx="3" ry="2" fill="#2D2D2D"/><path d="M37 50 Q40 53 43 50" fill="none" stroke="#2D2D2D" stroke-width="1.5"/></svg>` },
+            { id: 'bunny', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#F3E5F5"/><ellipse cx="32" cy="16" rx="6" ry="18" fill="#E1BEE7"/><ellipse cx="32" cy="16" rx="3" ry="14" fill="#F8BBD0"/><ellipse cx="48" cy="16" rx="6" ry="18" fill="#E1BEE7"/><ellipse cx="48" cy="16" rx="3" ry="14" fill="#F8BBD0"/><circle cx="40" cy="46" r="22" fill="#E1BEE7"/><circle cx="33" cy="42" r="3.5" fill="#2D2D2D"/><circle cx="47" cy="42" r="3.5" fill="#2D2D2D"/><circle cx="34" cy="41" r="1.5" fill="white"/><circle cx="48" cy="41" r="1.5" fill="white"/><ellipse cx="40" cy="50" rx="2.5" ry="2" fill="#FF8FAB"/><path d="M37 52 Q40 55 43 52" fill="none" stroke="#2D2D2D" stroke-width="1.5"/><circle cx="28" cy="48" r="4" fill="#FFCDD2" opacity="0.5"/><circle cx="52" cy="48" r="4" fill="#FFCDD2" opacity="0.5"/></svg>` },
+            { id: 'bear', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#EFEBE9"/><circle cx="24" cy="22" r="10" fill="#A1887F"/><circle cx="24" cy="22" r="6" fill="#BCAAA4"/><circle cx="56" cy="22" r="10" fill="#A1887F"/><circle cx="56" cy="22" r="6" fill="#BCAAA4"/><circle cx="40" cy="44" r="22" fill="#A1887F"/><circle cx="33" cy="40" r="3.5" fill="#2D2D2D"/><circle cx="47" cy="40" r="3.5" fill="#2D2D2D"/><circle cx="34" cy="39" r="1.5" fill="white"/><circle cx="48" cy="39" r="1.5" fill="white"/><ellipse cx="40" cy="48" rx="3" ry="2.5" fill="#2D2D2D"/><path d="M37 51 Q40 54 43 51" fill="none" stroke="#2D2D2D" stroke-width="1.5"/></svg>` },
+            { id: 'panda', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#E8F5E9"/><circle cx="24" cy="22" r="10" fill="#2D2D2D"/><circle cx="56" cy="22" r="10" fill="#2D2D2D"/><circle cx="40" cy="44" r="22" fill="white"/><ellipse cx="33" cy="39" rx="7" ry="6" fill="#2D2D2D"/><ellipse cx="47" cy="39" rx="7" ry="6" fill="#2D2D2D"/><circle cx="33" cy="39" r="3" fill="white"/><circle cx="47" cy="39" r="3" fill="white"/><circle cx="34" cy="38" r="1.5" fill="#2D2D2D"/><circle cx="48" cy="38" r="1.5" fill="#2D2D2D"/><ellipse cx="40" cy="48" rx="3" ry="2" fill="#2D2D2D"/><path d="M37 50 Q40 53 43 50" fill="none" stroke="#2D2D2D" stroke-width="1.5"/></svg>` },
+            { id: 'fox', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#FFF8E1"/><path d="M18 28 L24 6 L34 28Z" fill="#FF8A65"/><path d="M24 14 L30 28 L22 28Z" fill="white"/><path d="M62 28 L56 6 L46 28Z" fill="#FF8A65"/><path d="M56 14 L50 28 L58 28Z" fill="white"/><circle cx="40" cy="44" r="22" fill="#FF8A65"/><path d="M28 50 Q40 62 52 50 Q40 56 28 50Z" fill="white"/><circle cx="33" cy="39" r="3.5" fill="#2D2D2D"/><circle cx="47" cy="39" r="3.5" fill="#2D2D2D"/><circle cx="34" cy="38" r="1.5" fill="white"/><circle cx="48" cy="38" r="1.5" fill="white"/><ellipse cx="40" cy="46" rx="2.5" ry="2" fill="#2D2D2D"/></svg>` },
+            { id: 'penguin', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#E3F2FD"/><circle cx="40" cy="44" r="22" fill="#37474F"/><ellipse cx="40" cy="48" rx="14" ry="16" fill="white"/><circle cx="33" cy="38" r="3.5" fill="white"/><circle cx="47" cy="38" r="3.5" fill="white"/><circle cx="33" cy="38" r="2" fill="#2D2D2D"/><circle cx="47" cy="38" r="2" fill="#2D2D2D"/><path d="M37 45 L40 48 L43 45Z" fill="#FFB74D"/><circle cx="34" cy="37" r="1" fill="white"/><circle cx="48" cy="37" r="1" fill="white"/></svg>` },
+            { id: 'owl', svg: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="40" fill="#EDE7F6"/><path d="M20 30 L26 14 L32 30" fill="#7E57C2"/><path d="M48 30 L54 14 L60 30" fill="#7E57C2"/><circle cx="40" cy="44" r="22" fill="#9575CD"/><circle cx="33" cy="40" r="8" fill="white"/><circle cx="47" cy="40" r="8" fill="white"/><circle cx="33" cy="40" r="4" fill="#2D2D2D"/><circle cx="47" cy="40" r="4" fill="#2D2D2D"/><circle cx="34.5" cy="39" r="1.5" fill="white"/><circle cx="48.5" cy="39" r="1.5" fill="white"/><path d="M38 50 L40 53 L42 50Z" fill="#FFB74D"/></svg>` },
+        ];
+        
+        function showCreateProfileModal() {
+            document.getElementById('createProfileModal').style.display = 'flex';
+            document.getElementById('profileName').value = '';
+            document.getElementById('selectedAvatar').value = '';
+            
+            // Render avatar grid
+            const grid = document.getElementById('avatarGrid');
+            grid.innerHTML = AVATAR_OPTIONS.map(a => `
+                <div class="avatar-option" data-avatar-id="${a.id}" onclick="selectAvatar('${a.id}')" 
+                     style="width:60px;height:60px;border-radius:50%;overflow:hidden;cursor:pointer;border:3px solid transparent;margin:0 auto;transition:all 0.2s">
+                    ${a.svg}
+                </div>
+            `).join('');
+        }
+
+        function selectAvatar(avatarId) {
+            document.getElementById('selectedAvatar').value = avatarId;
+            document.querySelectorAll('.avatar-option').forEach(el => {
+                el.style.border = el.dataset.avatarId === avatarId 
+                    ? '3px solid var(--accent-bright)' 
+                    : '3px solid transparent';
+            });
+        }
+        
+        function getAvatarSvg(avatarId) {
+            const a = AVATAR_OPTIONS.find(x => x.id === avatarId);
+            return a ? a.svg : null;
+        }
+        
+        function hideCreateProfileModal() {
+            document.getElementById('createProfileModal').style.display = 'none';
+        }
+
+        // Leaderboard
+        function showLeaderboard() {
+            const profiles = loadProfiles();
+            const sortedProfiles = profiles
+                .filter(p => p.bestScore > 0)
+                .sort((a, b) => b.bestScore - a.bestScore);
+            
+            const list = document.getElementById('leaderboardList');
+            
+            if (sortedProfiles.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No scores yet. Start playing to see rankings!</p>';
+            } else {
+                list.innerHTML = sortedProfiles.map((profile, index) => `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">#${index + 1}</div>
+                        <div class="leaderboard-avatar">
+                            ${profile.avatar ? (getAvatarSvg(profile.avatar) || '👤') : '👤'}
+                        </div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${profile.name}</div>
+                        </div>
+                        <div class="leaderboard-score">${profile.bestScore}</div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('leaderboardModal').style.display = 'flex';
+        }
+
+        function hideLeaderboard() {
+            document.getElementById('leaderboardModal').style.display = 'none';
+        }
+
+        // Screen management
+        function showScreen(screenId) {
+            const screens = ['profileScreen', 'welcomeScreen', 'gameUI'];
+            screens.forEach(screen => {
+                const el = document.getElementById(screen);
+                el.style.display = screen === screenId ? (screen === 'gameUI' ? 'flex' : 'flex') : 'none';
+            });
+        }
+
+        // Generate musically intelligent sequence
+        function generateSequence(level) {
+            const config = levelConfigs[Math.min(level - 1, levelConfigs.length - 1)] || 
+                          { ...levelConfigs[levelConfigs.length - 1], length: Math.min(15 + level - 16, 20) };
+            
+            gameState.bpm = config.bpm;
+            
+            const sequence = [];
+            const availableKeys = config.keys;
+            const patterns = config.patterns;
+            const rhythms = config.rhythms;
+            
+            // Choose a musical pattern
+            const patternType = patterns[Math.floor(Math.random() * patterns.length)];
+            
+            for (let i = 0; i < config.length; i++) {
+                let note;
+                
+                // Generate note based on pattern
+                if (patternType === 'scale' && i > 0) {
+                    // Scale-like movement
+                    const lastNote = sequence[i - 1].note;
+                    const lastIndex = availableKeys.indexOf(lastNote);
+                    const direction = Math.random() > 0.5 ? 1 : -1;
+                    const step = Math.random() > 0.7 ? 2 : 1; // occasional skips
+                    let newIndex = lastIndex + (direction * step);
+                    
+                    if (newIndex < 0) newIndex = 0;
+                    if (newIndex >= availableKeys.length) newIndex = availableKeys.length - 1;
+                    
+                    note = availableKeys[newIndex];
+                } else if (patternType === 'arpeggio' && availableKeys.length >= 3) {
+                    // Arpeggio-like patterns (1-3-5 intervals)
+                    const arpeggioNotes = availableKeys.filter((_, index) => index % 2 === 0);
+                    note = arpeggioNotes[Math.floor(Math.random() * arpeggioNotes.length)];
+                } else if (patternType === 'interval' && i > 0) {
+                    // Interval-based movement
+                    const lastNote = sequence[i - 1].note;
+                    const lastIndex = availableKeys.indexOf(lastNote);
+                    const intervals = [2, 3, 4]; // thirds, fourths, fifths
+                    const interval = intervals[Math.floor(Math.random() * intervals.length)];
+                    const direction = Math.random() > 0.5 ? 1 : -1;
+                    let newIndex = lastIndex + (direction * interval);
+                    
+                    if (newIndex < 0 || newIndex >= availableKeys.length) {
+                        newIndex = lastIndex - (direction * interval);
+                    }
+                    if (newIndex < 0) newIndex = 0;
+                    if (newIndex >= availableKeys.length) newIndex = availableKeys.length - 1;
+                    
+                    note = availableKeys[newIndex];
+                } else {
+                    // Random selection or first note
+                    note = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+                }
+                
+                // Choose rhythm
+                const rhythm = rhythms[Math.floor(Math.random() * rhythms.length)];
+                let duration;
+                switch (rhythm) {
+                    case 'eighth': duration = 30000 / gameState.bpm; break;
+                    case 'quarter': duration = 60000 / gameState.bpm; break;
+                    case 'half': duration = 120000 / gameState.bpm; break;
+                    default: duration = 60000 / gameState.bpm;
+                }
+                
+                sequence.push({
+                    note: note,
+                    duration: duration,
+                    rhythm: rhythm
+                });
+            }
+            
+            return sequence;
+        }
+
+        // Play sequence with timing (NO visual highlights — audio only)
+        async function playSequence(sequence) {
+            gameState.phase = 'playing';
+            updateUI();
+            
+            const beatInterval = 60000 / gameState.bpm;
+            
+            for (let i = 0; i < sequence.length; i++) {
+                const item = sequence[i];
+                
+                // Play note (audio only, no key highlights)
+                playNoteByName(item.note);
+                
+                // Wait for the note duration
+                await new Promise(resolve => setTimeout(resolve, item.duration));
+                
+                // Small gap between notes
+                if (i < sequence.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            }
+            
+            // Brief pause then player's turn
+            await new Promise(resolve => setTimeout(resolve, 600));
+            
+            // Start listening phase
+            gameState.phase = 'listening';
+            gameState.sequenceIndex = 0;
+            showMessage('Your turn!', '');
+            updateUI();
+        }
+
+        // Handle user key press — PLAY SOUND FIRST, then check logic
+        // Play note directly by name — uses Yamaha C5 samples with pitch shifting
+        function playNoteByName(noteName) {
+            if (!audioContext) return;
+            if (audioContext.state === 'suspended') audioContext.resume();
+            
+            const mapping = NOTE_SAMPLE_MAP[noteName];
+            if (!mapping) return;
+            
+            const buffer = pianoBuffers[mapping.sample];
+            if (buffer) {
+                const source = audioContext.createBufferSource();
+                source.buffer = buffer;
+                // Pitch shift: each semitone = 2^(1/12) ratio
+                source.playbackRate.value = Math.pow(2, mapping.shift / 12);
+                const gain = audioContext.createGain();
+                gain.gain.value = 1.0;
+                source.connect(gain);
+                gain.connect(masterGain);
+                source.start(0);
+            }
+        }
+        
+        function handleKeyPress(note) {
+            if (gameState.phase !== 'listening') return;
+            
+            const key = document.querySelector(`[data-note="${note}"]`);
+            const expectedItem = gameState.sequence[gameState.sequenceIndex];
+            if (!expectedItem) return;
+            
+            // Check if correct note
+            const isCorrect = note === expectedItem.note;
+            
+            if (isCorrect) {
+                key.classList.add('correct');
+                setTimeout(() => key.classList.remove('correct'), 400);
+                gameState.sequenceIndex++;
+                
+                // Check if sequence is complete
+                if (gameState.sequenceIndex >= gameState.sequence.length) {
+                    handleSequenceSuccess();
+                }
+            } else {
+                key.classList.add('incorrect');
+                setTimeout(() => key.classList.remove('incorrect'), 400);
+                handleSequenceFailure();
+            }
+        }
+
+        // Handle successful sequence
+        function handleSequenceSuccess() {
+            gameState.phase = 'success';
+            gameState.streak++;
+            
+            const baseScore = gameState.currentLevel * 10;
+            const streakBonus = gameState.streak * 5;
+            const totalScore = baseScore + streakBonus;
+            
+            gameState.score += totalScore;
+            
+            // Save progress and update player profile
+            saveProgress();
+            if (currentPlayer) {
+                updatePlayerScore(currentPlayer.id, gameState.score);
+            }
+            
+            updateUI();
+            showMessage(`Perfect! +${totalScore} points`, 'success');
+            
+            // Auto-advance to next level
+            setTimeout(() => {
+                gameState.currentLevel++;
+                showLevelAnnouncement(gameState.currentLevel);
+                setTimeout(() => {
+                    startNewRound();
+                    setTimeout(() => playSequence(gameState.sequence), 500);
+                }, 1500);
+            }, 1200);
+        }
+
+        // Handle failed sequence
+        function handleSequenceFailure() {
+            gameState.phase = 'failure';
+            gameState.streak = 0;
+            gameState.lives--;
+            
+            updateUI();
+            
+            if (gameState.lives <= 0) {
+                // Game over!
+                showMessage(`Game Over! Score: ${gameState.score}`, 'error');
+                setTimeout(() => showGameOver(), 1500);
+                return;
+            }
+            
+            showMessage(`Wrong! ${gameState.lives} ${gameState.lives === 1 ? 'life' : 'lives'} left`, 'error');
+            
+            // Replay correct sequence then auto-retry
+            setTimeout(async () => {
+                await highlightCorrectSequence();
+                // Brief pause then auto-start listening again
+                await new Promise(r => setTimeout(r, 600));
+                gameState.phase = 'listening';
+                gameState.sequenceIndex = 0;
+                showMessage('Your turn!', '');
+                updateUI();
+            }, 1000);
+        }
+        
+        function showGameOver() {
+            // Auto-save score to current player
+            if (currentPlayer) {
+                updatePlayerScore(currentPlayer.id, gameState.score);
+            }
+            
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalLevel').textContent = gameState.currentLevel;
+            document.getElementById('gameOverModal').style.display = 'flex';
+        }
+        
+        function hideGameOver() {
+            document.getElementById('gameOverModal').style.display = 'none';
+        }
+        
+        function resetGame() {
+            gameState.currentLevel = 1;
+            gameState.score = 0;
+            gameState.streak = 0;
+            gameState.lives = 3;
+            gameState.phase = 'waiting';
+            gameState.sequence = [];
+            gameState.sequenceIndex = 0;
+            updateUI();
+        }
+
+        // Replay correct sequence (audio only, no highlights)
+        async function replayCurrentSequence() {
+            if (gameState.phase !== 'listening') return;
+            gameState.phase = 'playing';
+            gameState.sequenceIndex = 0;
+            updateUI();
+            
+            for (let i = 0; i < gameState.sequence.length; i++) {
+                const item = gameState.sequence[i];
+                playNoteByName(item.note);
+                await new Promise(r => setTimeout(r, item.duration));
+                if (i < gameState.sequence.length - 1) {
+                    await new Promise(r => setTimeout(r, 50));
+                }
+            }
+            
+            await new Promise(r => setTimeout(r, 400));
+            gameState.phase = 'listening';
+            gameState.sequenceIndex = 0;
+            showMessage('Your turn!', '');
+            updateUI();
+        }
+        
+        async function highlightCorrectSequence() {
+            showMessage('Listen again...', '');
+            
+            for (let i = 0; i < gameState.sequence.length; i++) {
+                const item = gameState.sequence[i];
+                playNoteByName(item.note);
+                
+                await new Promise(resolve => setTimeout(resolve, item.duration * 0.8));
+                
+                if (i < gameState.sequence.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            
+        }
+
+        // Show level announcement
+        function showLevelAnnouncement(level) {
+            const announcement = document.createElement('div');
+            announcement.className = 'level-announcement';
+            announcement.textContent = `Level ${level}`;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                announcement.remove();
+            }, 2000);
+        }
+
+        // Show message
+        function showMessage(text, type = '') {
+            const messageEl = document.getElementById('gameMessage');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+        }
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('levelValue').textContent = gameState.currentLevel;
+            document.getElementById('scoreValue').textContent = gameState.score;
+            document.getElementById('streakValue').textContent = gameState.streak;
+            document.getElementById('livesValue').textContent = '❤️'.repeat(gameState.lives) + '🖤'.repeat(3 - gameState.lives);
+            
+            const phase = document.getElementById('gamePhase');
+            
+            const listenBtn = document.getElementById('listenAgainBtn');
+            switch (gameState.phase) {
+                case 'waiting': phase.textContent = ''; listenBtn.style.display = 'none'; break;
+                case 'playing': phase.textContent = ''; listenBtn.style.display = 'none'; break;
+                case 'listening': phase.textContent = 'Your turn!'; listenBtn.style.display = 'inline-block'; break;
+                case 'success': phase.textContent = ''; listenBtn.style.display = 'none'; break;
+                case 'failure': phase.textContent = ''; listenBtn.style.display = 'none'; break;
+            }
+            
+            // Update progress bar based on sequence progress
+            const progress = gameState.phase === 'listening' 
+                ? (gameState.sequenceIndex / gameState.sequence.length) * 100
+                : gameState.phase === 'success' ? 100 : 0;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        // Start new round
+        function startNewRound() {
+            gameState.sequence = generateSequence(gameState.currentLevel);
+            gameState.phase = 'waiting';
+            updateUI();
+        }
+
+        // Load saved progress (only high score persists, always start level 1)
+        function loadProgress() {
+            const saved = localStorage.getItem('noteMasterProgress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                gameState.highScore = data.highScore || 0;
+            }
+            gameState.currentLevel = 1;
+            gameState.score = 0;
+            gameState.streak = 0;
+            gameState.lives = 3;
+        }
+
+        // Save progress
+        function saveProgress() {
+            const data = {
+                highScore: Math.max(gameState.score, gameState.highScore),
+                currentLevel: gameState.currentLevel
+            };
+            localStorage.setItem('noteMasterProgress', JSON.stringify(data));
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.dataset.theme || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.dataset.theme = newTheme;
+            
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+            
+            localStorage.setItem('noteMasterTheme', newTheme);
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('noteMasterTheme') || 'dark';
+            document.body.dataset.theme = savedTheme;
+            document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            loadProgress();
+            
+            // Always show profile selection first
+            currentPlayer = null;
+            showScreen('profileScreen');
+            renderProfiles();
+            document.getElementById('leaderboardBtn').style.display = 'block';
+            
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Profile management
+            document.getElementById('createProfileBtn').addEventListener('click', showCreateProfileModal);
+            document.getElementById('cancelProfileBtn').addEventListener('click', hideCreateProfileModal);
+            document.getElementById('saveProfileBtn').addEventListener('click', function() {
+                const name = document.getElementById('profileName').value.trim();
+                const avatar = document.getElementById('selectedAvatar').value || null;
+                
+                if (!name) {
+                    alert('Please enter a name');
+                    return;
+                }
+                
+                const newProfile = createProfile(name, null, avatar);
+                setCurrentPlayer(newProfile.id);
+                
+                // If there's a pending score from game over, assign it
+                if (window._pendingScoreFromGameOver) {
+                    updatePlayerScore(newProfile.id, window._pendingScoreFromGameOver);
+                    window._pendingScoreFromGameOver = null;
+                    resetGame();
+                }
+                
+                hideCreateProfileModal();
+                showScreen('welcomeScreen');
+                document.getElementById('leaderboardBtn').style.display = 'block';
+                renderProfiles();
+            });
+            
+            // Avatar upload
+            // Leaderboard
+            document.getElementById('leaderboardBtn').addEventListener('click', showLeaderboard);
+            document.getElementById('closeLeaderboardBtn').addEventListener('click', hideLeaderboard);
+            
+            // Start Playing → go straight into game and play sequence
+            document.getElementById('playButton').addEventListener('click', function() {
+                initAudio();
+                showScreen('gameUI');
+                document.getElementById('gameUI').classList.add('slide-in');
+                gameState.sequence = generateSequence(gameState.currentLevel);
+                gameState.phase = 'playing';
+                updateUI();
+                
+                setTimeout(() => playSequence(gameState.sequence), 500);
+            });
+            
+            // Start round button (for subsequent rounds)
+            // Buttons removed — game flow is now automatic
+            
+            // Piano key event listeners - NO DELAYS, INSTANT RESPONSE
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                const handlePress = () => {
+                    if (!audioContext) initAudio();
+                    if (audioContext && audioContext.state === 'suspended') audioContext.resume();
+                    
+                    // ALWAYS play sound immediately
+                    playNoteByName(key.dataset.note);
+                    
+                    // Visual feedback
+                    key.classList.add('pressed');
+                    setTimeout(() => key.classList.remove('pressed'), 100);
+                    
+                    // Game logic only during listening phase
+                    handleKeyPress(key.dataset.note);
+                };
+                
+                // Touch events for mobile - prevent delays
+                key.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    handlePress();
+                });
+                
+                // Mouse events for desktop
+                key.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    handlePress();
+                });
+            });
+            
+            // Prevent default touch behaviors to eliminate delays
+            document.addEventListener('touchstart', (e) => {
+                if (e.target.classList.contains('key')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Close modals on overlay click
+            document.getElementById('createProfileModal').addEventListener('click', function(e) {
+                if (e.target === this) hideCreateProfileModal();
+            });
+            
+            document.getElementById('leaderboardModal').addEventListener('click', function(e) {
+                if (e.target === this) hideLeaderboard();
+            });
+        });
+
+        // Keyboard support for desktop
+        document.addEventListener('keydown', function(e) {
+            // Don't intercept keys when typing in an input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            const keyMap = {
+                'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 
+                'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5',
+                'w': 'C#4', 'e': 'D#4', 't': 'F#4', 'y': 'G#4', 'u': 'A#4'
+            };
+            
+            const note = keyMap[e.key.toLowerCase()];
+            if (note) {
+                e.preventDefault();
+                if (!audioContext) initAudio();
+                
+                const key = document.querySelector(`[data-note="${note}"]`);
+                if (key && !key.classList.contains('pressed')) {
+                    key.classList.add('pressed');
+                    handleKeyPress(note);
+                }
+            }
+        });
+        
+        document.addEventListener('keyup', function(e) {
+            const keyMap = {
+                'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 
+                'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5',
+                'w': 'C#4', 'e': 'D#4', 't': 'F#4', 'y': 'G#4', 'u': 'A#4'
+            };
+            
+            const note = keyMap[e.key.toLowerCase()];
+            if (note) {
+                const key = document.querySelector(`[data-note="${note}"]`);
+                if (key) {
+                    key.classList.remove('pressed');
+                }
+            }
+        });
+
+        // Global functions for onclick handlers
+        window.selectProfile = selectProfile;
+    </script>
+</body>
+</html>

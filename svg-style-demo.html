@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SVG Style Demo</title>
+  <style>
+    :root { --bg:#0b1020; --panel:#121a33; --text:#edf2ff; --muted:#9fb0d0; --accent:#7fc1ff; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter,system-ui,-apple-system,sans-serif; background: radial-gradient(circle at 20% 0%, #1a2850 0%, #0b1020 45%, #080c17 100%); color:var(--text); }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 14px; }
+    .ui { background: rgba(18,26,51,.82); border:1px solid rgba(255,255,255,.14); border-radius:14px; padding:12px; display:grid; gap:10px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    label { font-size: 13px; color: var(--muted); display:flex; gap:6px; align-items:center; }
+    select, input[type="file"], input[type="range"], button { background:#111b36; color:var(--text); border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:7px 10px; }
+    button { cursor:pointer; }
+
+    .stage { margin-top: 12px; min-height: 58vh; display:grid; place-items:center; }
+    .card {
+      width:min(92vw, 860px); aspect-ratio: 16/9; position:relative; border-radius:16px; overflow:hidden;
+      box-shadow: 0 18px 42px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.12);
+      transform-style: preserve-3d; perspective: 1000px;
+      background:#0a0f1d;
+    }
+
+    .layer, .main-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .layer { pointer-events:none; opacity:0; transition:opacity .2s ease, transform .12s linear, filter .2s ease; transform-style: preserve-3d; will-change: transform; }
+    .main-img { transition: transform .12s linear, filter .2s ease, opacity .2s ease; will-change: transform, opacity; }
+
+    .glare {
+      position:absolute; inset:0; pointer-events:none; opacity:0;
+      background: radial-gradient(circle at var(--gx,50%) var(--gy,50%), rgba(255,255,255,.32), rgba(255,255,255,0) 48%);
+      mix-blend-mode: screen;
+      transition: opacity .15s;
+    }
+
+    .hint { font-size:12px; color:var(--muted); }
+    .status { font-size:12px; color:#8ec5ff; min-height:1.2em; }
+
+    .mode-chromatic .main-img { filter:url(#chromatic); }
+    .mode-displace .main-img { filter:url(#displace); }
+    .mode-tilt .glare { opacity:.55; }
+    .mode-depth .layer.depth-back,
+    .mode-depth .layer.depth-mid,
+    .mode-depth .layer.depth-front,
+    .mode-parallax .layer.depth-back,
+    .mode-parallax .layer.depth-midback,
+    .mode-parallax .layer.depth-mid,
+    .mode-parallax .layer.depth-midfront,
+    .mode-parallax .layer.depth-front { opacity: 1; }
+    .mode-genie .main-img { animation: genie 1.4s ease-in-out infinite; transform-origin: 50% 100%; }
+
+    @keyframes genie {
+      0%,100% { transform: scale(1,1) skewX(0deg); border-radius: 0; }
+      45% { transform: scale(1.06,.82) skewX(calc(var(--genieSkew,0deg))); border-radius: 22% 4% 18% 10%; }
+      70% { transform: scale(.95,1.12) skewX(calc(var(--genieSkew,0deg) * -0.5)); border-radius: 6% 24% 8% 16%; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute;">
+    <filter id="chromatic" x="-20%" y="-20%" width="140%" height="140%">
+      <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="r"/>
+      <feOffset in="r" id="offR" dx="2" dy="0" result="r2"/>
+      <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" result="g"/>
+      <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="b"/>
+      <feOffset in="b" id="offB" dx="-2" dy="0" result="b2"/>
+      <feBlend in="r2" in2="g" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="b2" mode="screen"/>
+    </filter>
+
+    <filter id="displace" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.01 0.02" numOctaves="2" seed="4" result="noise"/>
+      <feDisplacementMap id="dispMap" in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+  <div class="wrap">
+    <div class="ui">
+      <div class="row">
+        <input id="upload" type="file" accept="image/*" />
+        <button id="sample">Use sample</button>
+        <label>Style
+          <select id="mode">
+            <option value="chromatic">Chromatic Aberration</option>
+            <option value="displace">Displacement Maps</option>
+            <option value="tilt">Card Tilt</option>
+            <option value="depth">Depth Map (fake)</option>
+            <option value="parallax">3D Parallax Card</option>
+            <option value="genie">Genie Effects</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label>Intensity <input id="intensity" type="range" min="0" max="100" value="45" /></label>
+        <label>Speed <input id="speed" type="range" min="0" max="100" value="35" /></label>
+        <label><input id="gyro" type="checkbox" /> Use phone motion</label>
+        <button id="enableMotion" type="button">Enable Motion Tilt</button>
+        <button id="openStandalone" type="button">Open Standalone Viewer</button>
+      </div>
+      <div class="hint">Upload any image, pick a style, then move mouse (or enable phone motion) to feel the effect.</div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="stage">
+      <div class="card mode-chromatic" id="card">
+        <img class="layer depth-back" id="back" alt="" />
+        <img class="layer depth-midback" id="midback" alt="" />
+        <img class="layer depth-mid" id="mid" alt="" />
+        <img class="layer depth-midfront" id="midfront" alt="" />
+        <img class="layer depth-front" id="front" alt="" />
+        <img class="main-img" id="img" alt="demo" />
+        <div class="glare" id="glare"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const sample = document.getElementById('sample');
+    const mode = document.getElementById('mode');
+    const intensity = document.getElementById('intensity');
+    const speed = document.getElementById('speed');
+    const gyro = document.getElementById('gyro');
+    const enableMotionBtn = document.getElementById('enableMotion');
+    const openStandaloneBtn = document.getElementById('openStandalone');
+    const card = document.getElementById('card');
+    const img = document.getElementById('img');
+    const back = document.getElementById('back');
+    const midback = document.getElementById('midback');
+    const mid = document.getElementById('mid');
+    const midfront = document.getElementById('midfront');
+    const front = document.getElementById('front');
+    const glare = document.getElementById('glare');
+    const statusEl = document.getElementById('status');
+
+    const offR = document.getElementById('offR');
+    const offB = document.getElementById('offB');
+    const turb = document.getElementById('turb');
+    const dispMap = document.getElementById('dispMap');
+
+    let px = 0, py = 0;
+    let tx = 0, ty = 0;
+    let t = 0;
+    let depthImage = null;
+    let motionEnabled = false;
+    let centerGamma = null;
+    let centerBeta = null;
+
+    const SAMPLE = 'phone-motion-mountain.jpg';
+
+    function smoothstep(a,b,x){
+      const t=Math.max(0,Math.min(1,(x-a)/(b-a)));
+      return t*t*(3-2*t);
+    }
+
+    async function estimateDepthDataUrl(imageDataUrl) {
+      const r = await fetch('/api/depth/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageDataUrl, blur: 0.7 })
+      });
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.error || 'Depth estimation failed');
+      return j.depthDataUrl;
+    }
+
+    function buildDepthLayers(sourceImg, depthImg = null) {
+      const maxW = 760;
+      const scale = Math.min(1, maxW / sourceImg.naturalWidth);
+      const w = Math.max(64, Math.round(sourceImg.naturalWidth * scale));
+      const h = Math.max(64, Math.round(sourceImg.naturalHeight * scale));
+
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const cx = c.getContext('2d', { willReadFrequently: true });
+      cx.drawImage(sourceImg, 0, 0, w, h);
+      const base = cx.getImageData(0, 0, w, h);
+
+      let depth = null;
+      if (depthImg) {
+        const dc = document.createElement('canvas');
+        dc.width = w; dc.height = h;
+        const dx = dc.getContext('2d', { willReadFrequently: true });
+        dx.drawImage(depthImg, 0, 0, w, h);
+        depth = dx.getImageData(0, 0, w, h);
+      }
+
+      const backData = new ImageData(w,h);
+      const midBackData = new ImageData(w,h);
+      const midData = new ImageData(w,h);
+      const midFrontData = new ImageData(w,h);
+      const frontData = new ImageData(w,h);
+
+      for (let i=0;i<base.data.length;i+=4) {
+        const r=base.data[i], g=base.data[i+1], b=base.data[i+2], a=base.data[i+3];
+        const luma=(0.2126*r+0.7152*g+0.0722*b)/255;
+        const dRaw = depth ? (0.2126*depth.data[i]+0.7152*depth.data[i+1]+0.0722*depth.data[i+2])/255 : luma;
+
+        const d = Math.pow(dRaw, 0.82);
+
+        const wBack = Math.max(0, 1 - Math.abs(d - 0.18) / 0.22);
+        const wMidBack = Math.max(0, 1 - Math.abs(d - 0.36) / 0.2);
+        const wMid = Math.max(0, 1 - Math.abs(d - 0.54) / 0.2);
+        const wMidFront = Math.max(0, 1 - Math.abs(d - 0.72) / 0.2);
+        const wFront = Math.max(0, 1 - Math.abs(d - 0.9) / 0.18);
+
+        backData.data[i]=r; backData.data[i+1]=g; backData.data[i+2]=b; backData.data[i+3]=Math.round(a*wBack*0.9);
+        midBackData.data[i]=r; midBackData.data[i+1]=g; midBackData.data[i+2]=b; midBackData.data[i+3]=Math.round(a*wMidBack*0.82);
+        midData.data[i]=r; midData.data[i+1]=g; midData.data[i+2]=b; midData.data[i+3]=Math.round(a*wMid*0.76);
+        midFrontData.data[i]=r; midFrontData.data[i+1]=g; midFrontData.data[i+2]=b; midFrontData.data[i+3]=Math.round(a*wMidFront*0.86);
+        frontData.data[i]=r; frontData.data[i+1]=g; frontData.data[i+2]=b; frontData.data[i+3]=Math.round(a*wFront);
+      }
+
+      const out = document.createElement('canvas');
+      out.width=w; out.height=h; const ox=out.getContext('2d');
+      ox.putImageData(backData,0,0); const backUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(midBackData,0,0); const midBackUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(midData,0,0); const midUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(midFrontData,0,0); const midFrontUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(frontData,0,0); const frontUrl=out.toDataURL('image/png');
+      return { backUrl, midBackUrl, midUrl, midFrontUrl, frontUrl };
+    }
+
+    function applyLayers() {
+      if (!img.naturalWidth) return;
+      const layers = buildDepthLayers(img, depthImage);
+      back.src = layers.backUrl;
+      midback.src = layers.midBackUrl;
+      mid.src = layers.midUrl;
+      midfront.src = layers.midFrontUrl;
+      front.src = layers.frontUrl;
+    }
+
+    function setSource(src) {
+      img.onload = () => {
+        applyLayers();
+      };
+      img.src = src;
+      back.src = src; midback.src = src; mid.src = src; midfront.src = src; front.src = src;
+    }
+
+    upload.addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const dataUrl = String(reader.result || '');
+        depthImage = null;
+        setSource(dataUrl);
+        statusEl.textContent = 'Estimating depth map...';
+        try {
+          const depthDataUrl = await estimateDepthDataUrl(dataUrl);
+          const d = new Image();
+          d.onload = () => { depthImage = d; applyLayers(); statusEl.textContent = 'Depth map ready'; };
+          d.src = depthDataUrl;
+        } catch (err) {
+          statusEl.textContent = 'Depth fallback active';
+          applyLayers();
+        }
+      };
+      reader.readAsDataURL(f);
+    });
+
+    async function estimateDepthForSourceUrl(src) {
+      try {
+        statusEl.textContent = 'Estimating depth map...';
+        const resp = await fetch(src);
+        const blob = await resp.blob();
+        const dataUrl = await new Promise((resolve, reject) => {
+          const fr = new FileReader();
+          fr.onload = () => resolve(String(fr.result || ''));
+          fr.onerror = reject;
+          fr.readAsDataURL(blob);
+        });
+
+        const depthDataUrl = await estimateDepthDataUrl(dataUrl);
+        const d = new Image();
+        d.onload = () => {
+          depthImage = d;
+          applyLayers();
+          statusEl.textContent = 'Depth map ready';
+        };
+        d.src = depthDataUrl;
+      } catch {
+        statusEl.textContent = 'Depth fallback active';
+      }
+    }
+
+    sample.addEventListener('click', async ()=> {
+      depthImage = null;
+      statusEl.textContent = '';
+      setSource(SAMPLE);
+      await estimateDepthForSourceUrl(SAMPLE);
+    });
+
+    setSource(SAMPLE);
+    estimateDepthForSourceUrl(SAMPLE);
+
+    mode.addEventListener('change', () => {
+      card.className = `card mode-${mode.value}`;
+    });
+
+    function apply() {
+      const I = Number(intensity.value) / 100;
+      const S = Number(speed.value) / 100;
+
+      // smooth motion
+      tx += (px - tx) * (0.08 + S * 0.2);
+      ty += (py - ty) * (0.08 + S * 0.2);
+
+      const rx = (-ty * 10 * I).toFixed(2);
+      const ry = (tx * 14 * I).toFixed(2);
+
+      const m = mode.value;
+      card.style.setProperty('--gx', `${50 + tx * 30}%`);
+      card.style.setProperty('--gy', `${50 + ty * 30}%`);
+      card.style.boxShadow = '0 18px 42px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.12)';
+
+      if (m === 'chromatic') {
+        const a = Math.max(1, Math.round(8 * I));
+        offR.setAttribute('dx', String( a + tx * 3));
+        offB.setAttribute('dx', String(-a + tx * 3));
+        img.style.transform = 'scale(1.02)';
+      } else if (m === 'displace') {
+        dispMap.setAttribute('scale', String(8 + 60 * I));
+        const bfX = 0.005 + I * 0.03;
+        const bfY = 0.008 + I * 0.03;
+        turb.setAttribute('baseFrequency', `${(bfX + Math.sin(t)*0.002).toFixed(4)} ${(bfY + Math.cos(t)*0.002).toFixed(4)}`);
+        img.style.transform = 'scale(1.03)';
+      } else if (m === 'tilt') {
+        card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+        img.style.transform = `scale(${(1.01 + I*0.05).toFixed(3)})`;
+      } else if (m === 'depth') {
+        card.style.transform = `perspective(900px) rotateX(${(rx*0.5).toFixed(2)}deg) rotateY(${(ry*0.5).toFixed(2)}deg)`;
+        back.style.transform = `translate(${(-tx*20*I).toFixed(1)}px, ${(-ty*14*I).toFixed(1)}px) scale(1.1)`;
+        front.style.transform = `translate(${(tx*28*I).toFixed(1)}px, ${(ty*18*I).toFixed(1)}px) scale(1.02)`;
+        back.style.filter = 'blur(2px) saturate(.8)';
+        front.style.filter = 'contrast(1.08)';
+        img.style.opacity = .55;
+      } else if (m === 'parallax') {
+        const tiltX = (rx * 0.72).toFixed(2);
+        const tiltY = (ry * 0.92).toFixed(2);
+
+        card.style.transform = `perspective(1050px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+        card.style.boxShadow = `0 24px 56px rgba(0,0,0,.52), 0 10px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.12)`;
+
+        back.style.transform = `translate3d(${(-tx*30*I).toFixed(1)}px, ${(-ty*20*I).toFixed(1)}px, -40px) scale(1.23)`;
+        midback.style.transform = `translate3d(${(-tx*20*I).toFixed(1)}px, ${(-ty*13*I).toFixed(1)}px, -20px) scale(1.14)`;
+        mid.style.transform = `translate3d(${(-tx*11*I).toFixed(1)}px, ${(-ty*7*I).toFixed(1)}px, 0px) scale(1.08)`;
+        midfront.style.transform = `translate3d(${(tx*18*I).toFixed(1)}px, ${(ty*12*I).toFixed(1)}px, 20px) scale(1.05)`;
+        front.style.transform = `translate3d(${(tx*38*I).toFixed(1)}px, ${(ty*26*I).toFixed(1)}px, 44px) scale(1.03)`;
+
+        back.style.filter = 'brightness(.66) blur(1.4px)';
+        midback.style.filter = 'brightness(.78) saturate(.95) blur(.8px)';
+        mid.style.filter = 'saturate(1.15) contrast(1.06)';
+        midfront.style.filter = 'saturate(1.1) contrast(1.1)';
+        front.style.filter = 'contrast(1.22) saturate(1.08) drop-shadow(0 8px 14px rgba(0,0,0,.28))';
+
+        img.style.opacity = .15;
+      } else if (m === 'genie') {
+        card.style.setProperty('--genieSkew', `${(tx*18*I).toFixed(2)}deg`);
+        card.style.transform = `perspective(900px) rotateX(${(rx*0.25).toFixed(2)}deg) rotateY(${(ry*0.25).toFixed(2)}deg)`;
+        img.style.transform = `scale(${(1.01 + I*0.03).toFixed(3)})`;
+      }
+
+      if (m === 'chromatic' || m === 'displace' || m === 'genie') {
+        card.style.transform = `perspective(900px) rotateX(${(rx*0.15).toFixed(2)}deg) rotateY(${(ry*0.2).toFixed(2)}deg)`;
+        img.style.opacity = 1;
+        back.style.transform = midback.style.transform = mid.style.transform = midfront.style.transform = front.style.transform = 'none';
+        back.style.filter = midback.style.filter = mid.style.filter = midfront.style.filter = front.style.filter = 'none';
+      }
+
+      t += 0.03 + S*0.08;
+      requestAnimationFrame(apply);
+    }
+
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      px = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      py = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    });
+    card.addEventListener('pointerleave', ()=> { px = 0; py = 0; });
+
+    function onDeviceOrientation(e) {
+      const gamma = Number(e.gamma || 0);
+      const beta = Number(e.beta || 0);
+
+      if (centerGamma === null) centerGamma = gamma;
+      if (centerBeta === null) centerBeta = beta;
+
+      const relGamma = gamma - centerGamma;
+      const relBeta = beta - centerBeta;
+
+      px = Math.max(-1, Math.min(1, relGamma / 25));
+      py = Math.max(-1, Math.min(1, relBeta / 30));
+    }
+
+    async function enableMotionTilt() {
+      try {
+        if (typeof DeviceOrientationEvent === 'undefined') {
+          statusEl.textContent = 'Phone motion not supported in this browser.';
+          gyro.checked = false;
+          return;
+        }
+
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          const p = await DeviceOrientationEvent.requestPermission();
+          if (p !== 'granted') {
+            statusEl.textContent = 'Motion permission denied.';
+            gyro.checked = false;
+            return;
+          }
+        }
+
+        centerGamma = null;
+        centerBeta = null;
+
+        if (!motionEnabled) {
+          window.addEventListener('deviceorientation', onDeviceOrientation, true);
+          motionEnabled = true;
+        }
+
+        gyro.checked = true;
+        statusEl.textContent = 'Motion tilt enabled — hold phone naturally to calibrate.';
+      } catch {
+        statusEl.textContent = 'Could not enable motion tilt.';
+        gyro.checked = false;
+      }
+    }
+
+    function disableMotionTilt() {
+      gyro.checked = false;
+      if (motionEnabled) {
+        window.removeEventListener('deviceorientation', onDeviceOrientation, true);
+        motionEnabled = false;
+      }
+      px = 0;
+      py = 0;
+      statusEl.textContent = 'Motion tilt off.';
+    }
+
+    gyro.addEventListener('change', async () => {
+      if (gyro.checked) await enableMotionTilt();
+      else disableMotionTilt();
+    });
+
+    enableMotionBtn.addEventListener('click', async () => {
+      await enableMotionTilt();
+    });
+
+    openStandaloneBtn.addEventListener('click', () => {
+      if (!img.src) return;
+      const src = img.src;
+      const u = new URL('/parallax-viewer.html', location.origin);
+      u.searchParams.set('img', src);
+      window.open(u.toString(), '_blank');
+    });
+
+    if ('ontouchstart' in window) {
+      statusEl.textContent = 'Tap “Enable Motion Tilt” on phone for tilt control.';
+    }
+
+    requestAnimationFrame(apply);
+  </script>
+</body>
+</html>

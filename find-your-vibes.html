@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Your Vibes — Color Palettes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html {
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 0;
+      min-height: 100vh;
+      text-transform: lowercase;
+    }
+    
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-align: left;
+      margin-bottom: 2rem;
+      padding: 6rem 1rem 0 1rem;
+      letter-spacing: -0.5px;
+    }
+    
+    .subtitle {
+      text-align: center;
+      opacity: 0.6;
+      margin-bottom: 2rem;
+    }
+    
+    .menu-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .dropdown-btn {
+      background: #333;
+      color: #fff;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      border: 2px solid #444;
+      border-radius: 100px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s;
+    }
+    
+    .dropdown-btn:hover {
+      background: #444;
+      border-color: #555;
+    }
+    
+    .dropdown-btn svg {
+      transition: transform 0.2s;
+    }
+    
+    .dropdown.open .dropdown-btn svg {
+      transform: rotate(180deg);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      border: 2px solid #444;
+      border-radius: 16px;
+      overflow: hidden;
+      min-width: 220px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+      z-index: 100;
+    }
+    
+    .dropdown.open .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .dropdown-item {
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .dropdown-item:hover {
+      background: #444;
+    }
+    
+    .dropdown-item.active {
+      background: #555;
+    }
+    
+    .dropdown-item .icon {
+      font-size: 1.25rem;
+    }
+    
+    .palettes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .palette {
+      background: #222;
+      border-radius: 0;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    
+    .palette:hover {
+      transform: scale(1.02);
+    }
+    
+    .palette-header {
+      padding: 1.5rem;
+      text-align: center;
+    }
+    
+    .palette-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .palette-vibe {
+      font-size: 0.875rem;
+      opacity: 0.6;
+    }
+    
+    .color-row {
+      display: flex;
+      height: 100px;
+    }
+    
+    .color-swatch {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .color-swatch span {
+      margin-top: 0.25rem;
+      opacity: 0.8;
+    }
+    
+    .preview {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .googly-preview {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .googly-eye {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: white;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .googly-eye::before {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: #111;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-30%, -50%);
+    }
+    
+    .mock-screen {
+      width: 100%;
+      max-width: 200px;
+      aspect-ratio: 9/16;
+      border-radius: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .mock-header {
+      padding: 1rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    .mock-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mock-buttons {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem;
+      justify-content: center;
+    }
+    
+    .mock-button {
+      padding: 0.6rem 1.25rem;
+      border-radius: 0;
+      font-size: 0.65rem;
+      font-weight: 700;
+      flex: 1;
+      text-align: center;
+    }
+    
+    .mock-button.outline {
+      background: transparent !important;
+      border: 2px solid;
+    }
+    
+    .content-lines .line {
+      opacity: 0.5;
+    }
+    
+    /* Color swatches inside phone */
+    .phone-swatches {
+      display: flex;
+      width: 100%;
+    }
+    
+    .phone-swatch {
+      flex: 1;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    
+    .phone-swatch span {
+      font-size: 0.55rem;
+      opacity: 0.8;
+    }
+    
+    .content-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 60%;
+    }
+    
+    .content-lines .line {
+      height: 8px;
+      background: currentColor;
+      opacity: 0.3;
+      border-radius: 4px;
+    }
+    
+    .content-lines .line:last-child {
+      width: 70%;
+    }
+    
+    .page-section {
+      display: none;
+    }
+    
+    .page-section.active {
+      display: block;
+    }
+    
+    .year-row {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1rem 0;
+      margin-bottom: 0.75rem;
+    }
+    
+    .year-label {
+      font-size: 1.5rem;
+      font-weight: 700;
+      padding-left: 4px;
+    }
+    
+    /* Side Navigation */
+    .side-nav {
+      position: fixed;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 100;
+    }
+    
+    .side-nav.visible {
+      opacity: 1;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: #fff;
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+    }
+    
+    .nav-item:hover {
+      opacity: 1;
+    }
+    
+    .nav-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .nav-year {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+      .side-nav {
+        right: 0.5rem;
+      }
+      .nav-year {
+        display: none;
+      }
+    }
+    
+    .year-vibe {
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+    
+    .palette {
+      margin-bottom: 4rem;
+      scroll-snap-align: start;
+      scroll-margin-top: 2rem;
+    }
+    
+    .year-row {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .preview {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      background: transparent !important;
+    }
+    
+    /* Pantone Card Header */
+    .pantone-card {
+      border-radius: 0;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    
+    .pantone-swatch {
+      height: 100px;
+      width: 100%;
+    }
+    
+    .pantone-info {
+      background: white;
+      padding: 0.75rem 1rem;
+      color: #1a1a1a;
+    }
+    
+    .pantone-logo {
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+    }
+    
+    .pantone-code {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+    }
+    
+    .pantone-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>Find Your Vibes</h1>
+  
+  <!-- Side Navigation -->
+  <nav class="side-nav" id="sideNav">
+    <a href="#y2025" class="nav-item"><span class="nav-dot" style="background: #A47764;"></span><span class="nav-year">2025</span></a>
+    <a href="#y2024" class="nav-item"><span class="nav-dot" style="background: #FFBE98;"></span><span class="nav-year">2024</span></a>
+    <a href="#y2023" class="nav-item"><span class="nav-dot" style="background: #BB2649;"></span><span class="nav-year">2023</span></a>
+    <a href="#y2022" class="nav-item"><span class="nav-dot" style="background: #6667AB;"></span><span class="nav-year">2022</span></a>
+    <a href="#y2021" class="nav-item"><span class="nav-dot" style="background: linear-gradient(90deg, #939597 50%, #F5DF4D 50%);"></span><span class="nav-year">2021</span></a>
+    <a href="#y2020" class="nav-item"><span class="nav-dot" style="background: #0F4C81;"></span><span class="nav-year">2020</span></a>
+    <a href="#y2019" class="nav-item"><span class="nav-dot" style="background: #FF6F61;"></span><span class="nav-year">2019</span></a>
+    <a href="#y2018" class="nav-item"><span class="nav-dot" style="background: #5F4B8B;"></span><span class="nav-year">2018</span></a>
+    <a href="#y2017" class="nav-item"><span class="nav-dot" style="background: #88B04B;"></span><span class="nav-year">2017</span></a>
+    <a href="#y2016" class="nav-item"><span class="nav-dot" style="background: linear-gradient(90deg, #F7CAC9 50%, #92A8D1 50%);"></span><span class="nav-year">2016</span></a>
+  </nav>
+  
+  <!-- Pantone Colors of the Year -->
+  <div class="page-section active" id="pantone">
+    <div class="palettes">
+      
+      <!-- 2025: Mocha Mousse -->
+      <div class="palette" id="y2025">
+        <div class="year-row">
+          <div class="year-label">2025</div>
+          <div class="year-vibe">warm, comforting, rich</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #A47764;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">17-1230 TCX</div>
+            <div class="pantone-name">Mocha Mousse</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #A47764; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #E8DDD4;"><div class="content-lines" style="color: #6B4D40;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #E8DDD4;">
+              <div class="mock-button" style="background: #A47764; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #A47764; border-color: #A47764;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #A47764; color: #fff;">primary<span>#A47764</span></div>
+              <div class="phone-swatch" style="background: #E8DDD4; color: #6B4D40;">secondary<span>#E8DDD4</span></div>
+              <div class="phone-swatch" style="background: #C4956C; color: #3D2B24;">tertiary<span>#C4956C</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2024: Peach Fuzz -->
+      <div class="palette" id="y2024">
+        <div class="year-row">
+          <div class="year-label">2024</div>
+          <div class="year-vibe">soft, nurturing, cozy</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #FFBE98;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">13-1023 TCX</div>
+            <div class="pantone-name">Peach Fuzz</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #FFBE98; color: #4A2C1A;">app preview</div>
+            <div class="mock-content" style="background: #FAE5D3;"><div class="content-lines" style="color: #8B5A3C;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #FAE5D3;">
+              <div class="mock-button" style="background: #D4856A; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #D4856A; border-color: #D4856A;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #FFBE98; color: #4A2C1A;">primary<span>#FFBE98</span></div>
+              <div class="phone-swatch" style="background: #FAE5D3; color: #4A2C1A;">secondary<span>#FAE5D3</span></div>
+              <div class="phone-swatch" style="background: #D4856A; color: #fff;">tertiary<span>#D4856A</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2023: Viva Magenta -->
+      <div class="palette" id="y2023">
+        <div class="year-row">
+          <div class="year-label">2023</div>
+          <div class="year-vibe">bold, fearless, vibrant</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #BB2649;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">18-1750 TCX</div>
+            <div class="pantone-name">Viva Magenta</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #BB2649; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #F5D6DC;"><div class="content-lines" style="color: #8B1E3F;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #F5D6DC;">
+              <div class="mock-button" style="background: #BB2649; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #BB2649; border-color: #BB2649;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #BB2649; color: #fff;">primary<span>#BB2649</span></div>
+              <div class="phone-swatch" style="background: #F5D6DC; color: #8B1E3F;">secondary<span>#F5D6DC</span></div>
+              <div class="phone-swatch" style="background: #8B1E3F; color: #fff;">tertiary<span>#8B1E3F</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2022: Very Peri -->
+      <div class="palette" id="y2022">
+        <div class="year-row">
+          <div class="year-label">2022</div>
+          <div class="year-vibe">creative, curious, playful</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #6667AB;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">17-3938 TCX</div>
+            <div class="pantone-name">Very Peri</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #6667AB; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #E0E0F0;"><div class="content-lines" style="color: #4A4B8F;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #E0E0F0;">
+              <div class="mock-button" style="background: #6667AB; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #6667AB; border-color: #6667AB;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #6667AB; color: #fff;">primary<span>#6667AB</span></div>
+              <div class="phone-swatch" style="background: #E0E0F0; color: #4A4B8F;">secondary<span>#E0E0F0</span></div>
+              <div class="phone-swatch" style="background: #4A4B8F; color: #fff;">tertiary<span>#4A4B8F</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2021: Ultimate Gray + Illuminating -->
+      <div class="palette" id="y2021">
+        <div class="year-row">
+          <div class="year-label">2021</div>
+          <div class="year-vibe">hopeful, resilient</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: linear-gradient(90deg, #939597 50%, #F5DF4D 50%);"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">17-5104 + 13-0647</div>
+            <div class="pantone-name">Ultimate Gray + Illuminating</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #939597; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #F5DF4D;"><div class="content-lines" style="color: #5C5C5C;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #F5DF4D;">
+              <div class="mock-button" style="background: #939597; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #5C5C5C; border-color: #5C5C5C;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #939597; color: #fff;">primary<span>#939597</span></div>
+              <div class="phone-swatch" style="background: #F5DF4D; color: #5C5C5C;">secondary<span>#F5DF4D</span></div>
+              <div class="phone-swatch" style="background: #2D2D2D; color: #F5DF4D;">tertiary<span>#2D2D2D</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2020: Classic Blue -->
+      <div class="palette" id="y2020">
+        <div class="year-row">
+          <div class="year-label">2020</div>
+          <div class="year-vibe">timeless, confident, calm</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #0F4C81;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">19-4052 TCX</div>
+            <div class="pantone-name">Classic Blue</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #0F4C81; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #B8D4E8;"><div class="content-lines" style="color: #0F4C81;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #B8D4E8;">
+              <div class="mock-button" style="background: #0F4C81; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #0F4C81; border-color: #0F4C81;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #0F4C81; color: #fff;">primary<span>#0F4C81</span></div>
+              <div class="phone-swatch" style="background: #B8D4E8; color: #0F4C81;">secondary<span>#B8D4E8</span></div>
+              <div class="phone-swatch" style="background: #1A365D; color: #fff;">tertiary<span>#1A365D</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2019: Living Coral -->
+      <div class="palette" id="y2019">
+        <div class="year-row">
+          <div class="year-label">2019</div>
+          <div class="year-vibe">warm, energizing, life-affirming</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #FF6F61;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">16-1546 TCX</div>
+            <div class="pantone-name">Living Coral</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #FF6F61; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #FFD9D4;"><div class="content-lines" style="color: #C04A3D;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #FFD9D4;">
+              <div class="mock-button" style="background: #E05A4D; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #E05A4D; border-color: #E05A4D;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #FF6F61; color: #fff;">primary<span>#FF6F61</span></div>
+              <div class="phone-swatch" style="background: #FFD9D4; color: #C04A3D;">secondary<span>#FFD9D4</span></div>
+              <div class="phone-swatch" style="background: #E05A4D; color: #fff;">tertiary<span>#E05A4D</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2018: Ultra Violet -->
+      <div class="palette" id="y2018">
+        <div class="year-row">
+          <div class="year-label">2018</div>
+          <div class="year-vibe">mystical, inventive, cosmic</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #5F4B8B;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">18-3838 TCX</div>
+            <div class="pantone-name">Ultra Violet</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #5F4B8B; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #D8D0E8;"><div class="content-lines" style="color: #5F4B8B;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #D8D0E8;">
+              <div class="mock-button" style="background: #5F4B8B; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #5F4B8B; border-color: #5F4B8B;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #5F4B8B; color: #fff;">primary<span>#5F4B8B</span></div>
+              <div class="phone-swatch" style="background: #D8D0E8; color: #5F4B8B;">secondary<span>#D8D0E8</span></div>
+              <div class="phone-swatch" style="background: #7B68A6; color: #fff;">tertiary<span>#7B68A6</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2017: Greenery -->
+      <div class="palette" id="y2017">
+        <div class="year-row">
+          <div class="year-label">2017</div>
+          <div class="year-vibe">fresh, zesty, revitalizing</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: #88B04B;"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">15-0343 TCX</div>
+            <div class="pantone-name">Greenery</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #88B04B; color: #fff;">app preview</div>
+            <div class="mock-content" style="background: #E8F0E0;"><div class="content-lines" style="color: #5A7A32;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #E8F0E0;">
+              <div class="mock-button" style="background: #6B8E3D; color: #fff;">cta</div>
+              <div class="mock-button outline" style="color: #6B8E3D; border-color: #6B8E3D;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #88B04B; color: #fff;">primary<span>#88B04B</span></div>
+              <div class="phone-swatch" style="background: #E8F0E0; color: #5A7A32;">secondary<span>#E8F0E0</span></div>
+              <div class="phone-swatch" style="background: #6B8E3D; color: #fff;">tertiary<span>#6B8E3D</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2016: Rose Quartz + Serenity -->
+      <div class="palette" id="y2016">
+        <div class="year-row">
+          <div class="year-label">2016</div>
+          <div class="year-vibe">gentle, balanced</div>
+        </div>
+        <div class="pantone-card">
+          <div class="pantone-swatch" style="background: linear-gradient(90deg, #F7CAC9 50%, #92A8D1 50%);"></div>
+          <div class="pantone-info">
+            <div class="pantone-logo">PANTONE®</div>
+            <div class="pantone-code">13-1520 + 15-3919</div>
+            <div class="pantone-name">Rose Quartz + Serenity</div>
+          </div>
+        </div>
+        <div class="preview">
+          <div class="mock-screen">
+            <div class="mock-header" style="background: #F7CAC9; color: #5A4A4A;">app preview</div>
+            <div class="mock-content" style="background: #92A8D1;"><div class="content-lines" style="color: #4A5568;"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+            <div class="mock-buttons" style="background: #92A8D1;">
+              <div class="mock-button" style="background: #E8B4B4; color: #5A4A4A;">cta</div>
+              <div class="mock-button outline" style="color: #5A4A4A; border-color: #5A4A4A;">cta</div>
+            </div>
+            <div class="phone-swatches">
+              <div class="phone-swatch" style="background: #F7CAC9; color: #5A4A4A;">primary<span>#F7CAC9</span></div>
+              <div class="phone-swatch" style="background: #92A8D1; color: #2D3748;">secondary<span>#92A8D1</span></div>
+              <div class="phone-swatch" style="background: #E8B4B4; color: #5A4A4A;">tertiary<span>#E8B4B4</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  <script>
+    // Show/hide side nav on scroll
+    let scrollTimeout;
+    const sideNav = document.getElementById('sideNav');
+    
+    window.addEventListener('scroll', () => {
+      sideNav.classList.add('visible');
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        sideNav.classList.remove('visible');
+      }, 1500);
+    });
+    
+    // Smooth scroll for nav links
+    document.querySelectorAll('.nav-item').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').slice(1);
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+  
+</body>
+</html>

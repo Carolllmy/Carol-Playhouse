@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carol's Playhouse</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3">
+  <link rel="shortcut icon" href="/favicon.svg?v=3">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Juniper Bay';
+      src: url('/fonts/JuniperBay-Regular.woff2') format('woff2'),
+           url('/fonts/JuniperBay-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+  <style>
+    * { 
+      box-sizing: border-box; 
+      cursor: none !important;
+    }
+    
+    /* Custom cursor */
+    .custom-cursor {
+      position: fixed;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      mix-blend-mode: exclusion;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                  height 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                  opacity 0.2s ease-out;
+    }
+    
+    .custom-cursor.hover {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .custom-cursor.clicking {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .custom-cursor.hidden {
+      opacity: 0;
+    }
+    
+    /* Crosshair for color picker - no outline, no blend mode */
+    .custom-cursor.crosshair {
+      width: 1px;
+      height: 1px;
+      background: transparent;
+      border: none;
+      mix-blend-mode: normal;
+    }
+    
+    .custom-cursor.crosshair::before,
+    .custom-cursor.crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(0, 0, 0, 0.7);
+    }
+    
+    .custom-cursor.crosshair::before {
+      width: 1px;
+      height: 16px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .custom-cursor.crosshair::after {
+      width: 16px;
+      height: 1px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    /* Mute toggle button */
+    .mute-toggle {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+    
+    .mute-toggle:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    
+    /* Hide on touch devices */
+    @media (hover: none) and (pointer: coarse) {
+      .custom-cursor {
+        display: none;
+      }
+      * {
+        cursor: auto !important;
+      }
+    }
+    
+    :root {
+      --bg-color: #0F0F0F;
+      --text-color: #7DD3FC;
+      --accent-color: #7DD3FC;
+      --hover-text: #0F0F0F;
+      --border-color: #7DD3FC;
+      --muted-opacity: 0.6;
+    }
+    
+    [data-theme="light"] {
+      --bg-color: #F0F9FF;
+      --text-color: #0F0F0F;
+      --accent-color: #BAE6FD;
+      --hover-text: #0F0F0F;
+      --border-color: #0F0F0F;
+    }
+    
+    body { 
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Space Grotesk', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    /* Row items - outline style, hover just scales */
+    .project-row {
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s ease-out, background-color 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .project-row:hover {
+      transform: scale(1.02);
+    }
+    
+    .project-row:active {
+      transform: scale(0.98);
+    }
+    
+    /* Active/selected row gets filled */
+    .project-row.active {
+      background-color: var(--accent-color);
+      color: var(--hover-text);
+    }
+    
+    .project-row.active .opacity-60 {
+      opacity: 0.7;
+    }
+    
+    .project-row.active .opacity-70 {
+      opacity: 0.8;
+    }
+    
+    /* Preview card - clickable */
+    .preview-card {
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s ease-out;
+      cursor: pointer;
+    }
+    
+    .preview-card:hover {
+      transform: scale(1.02);
+    }
+    
+    .preview-card:active {
+      transform: scale(0.98);
+    }
+    
+    /* Theme toggle button */
+    .theme-toggle {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      border: 2px solid var(--border-color);
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--text-color);
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s ease;
+    }
+    
+    [data-theme="light"] .theme-toggle::after {
+      transform: translateX(20px);
+    }
+    
+    .theme-icon {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.6;
+    }
+    
+    .moon-icon { left: 4px; }
+    .sun-icon { right: 4px; }
+    
+    /* Message preview for text-based project previews */
+    .message-preview {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .message-preview span {
+      font-family: 'Juniper Bay', cursive;
+      font-size: 1.5rem;
+      line-height: 1.4;
+      text-align: center;
+      color: var(--text-color);
+      opacity: 0.8;
+      /* Text bleeding effect - slight overflow */
+      margin: -10px;
+      padding: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .message-preview span {
+        font-size: 1.5rem;
+      }
+    }
+    
+    /* Password input for protected projects */
+    .password-container {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    .password-container.active {
+      display: flex;
+    }
+    
+    .password-input {
+      flex: 1;
+      height: 44px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-family: inherit;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .password-input::placeholder {
+      color: var(--text-color);
+      opacity: 0.4;
+    }
+    
+    .password-input:focus {
+      border-color: var(--accent-color);
+    }
+    
+    .view-btn-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    
+    /* Color picker button */
+    .color-picker-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      background: 
+        radial-gradient(ellipse at 20% 20%, #ff9a9e 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, #ffc796 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, #89f7fe 0%, transparent 50%),
+        radial-gradient(ellipse at 20% 80%, #a18cd1 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, #fbc2eb 0%, transparent 60%),
+        linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .color-picker-btn:hover {
+      transform: scale(1.1);
+    }
+    
+
+    
+    /* Color picker modal */
+    .color-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .color-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .color-modal-content {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 24px;
+      max-width: 720px;
+      width: 94%;
+    }
+    
+    .color-picker-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    
+    @media (max-width: 600px) {
+      .color-picker-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Color wheel */
+    .color-wheel-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 16px;
+    }
+    
+    .color-wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      cursor: crosshair !important;
+      position: relative;
+    }
+    
+    .color-wheel-container {
+      cursor: crosshair !important;
+    }
+    
+    .color-wheel canvas {
+      cursor: crosshair !important;
+    }
+    
+    .color-wheel canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+    
+    .color-wheel-picker {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 3px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(0,0,0,0.5);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    
+    /* Lightness slider */
+    .lightness-slider {
+      width: 100%;
+      height: 16px;
+      border-radius: 8px;
+      margin: 12px 0;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    .lightness-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #333;
+      cursor: pointer;
+    }
+    
+    /* Secondary color suggestions */
+    .secondary-options {
+      display: flex;
+      gap: 16px;
+      margin: 12px 0;
+      justify-content: center;
+    }
+    
+    .secondary-option {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .secondary-option:hover {
+      transform: scale(1.1);
+      border-color: rgba(255,255,255,0.5);
+    }
+    
+    .secondary-option.selected {
+      transform: scale(1.1);
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 2px #3B82F6;
+    }
+    
+    /* Simple vertical split */
+    .secondary-option::before,
+    .secondary-option::after {
+      content: '';
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      top: 0;
+    }
+    
+    .secondary-option::before {
+      left: 0;
+      background: var(--taiji-left);
+    }
+    
+    .secondary-option::after {
+      right: 0;
+      background: var(--taiji-right);
+    }
+    
+    /* Mini preview */
+    .mini-preview {
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      margin: 12px 0;
+    }
+    
+    .mini-preview-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .mini-preview-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .mini-preview-row {
+      height: 24px;
+      border: 1px solid;
+    }
+    
+    .mini-preview-row.active-preview {
+      /* filled state */
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  
+  <!-- Custom Cursor -->
+  <div class="custom-cursor" id="customCursor"></div>
+  
+  <!-- Color Picker Modal -->
+  <div id="colorModal" class="color-modal" onclick="if(event.target === this) closeColorPicker()">
+    <div class="color-modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-xl">Customize Colors</h3>
+        <button onclick="closeColorPicker()" class="text-2xl opacity-60 hover:opacity-100">&times;</button>
+      </div>
+      
+      <div class="color-picker-grid">
+        <!-- Left Column: Color Picker -->
+        <div>
+          <p class="text-sm opacity-60 mb-2">1. Pick your primary color</p>
+          <div class="color-wheel-container">
+            <div class="color-wheel" id="colorWheel">
+              <canvas id="wheelCanvas" width="160" height="160"></canvas>
+            </div>
+            <div class="color-wheel-picker" id="wheelPicker"></div>
+          </div>
+          
+          <!-- Lightness slider -->
+          <input type="range" id="lightnessSlider" class="lightness-slider" min="20" max="80" value="50">
+          
+          <!-- Hex input -->
+          <div class="flex gap-2 items-center">
+            <label class="text-sm opacity-60">Hex:</label>
+            <input type="text" id="hexInput" value="#7DD3FC" 
+                   class="flex-1 bg-transparent border px-3 py-2 text-sm font-mono"
+                   style="border-color: var(--border-color)"
+                   maxlength="7">
+            <div id="primaryPreview" class="w-8 h-8 rounded" style="background: #7DD3FC"></div>
+          </div>
+        </div>
+        
+        <!-- Right Column: Secondary + Preview + Actions -->
+        <div class="flex flex-col">
+          <p class="text-sm opacity-60 mb-2">2. Theme preview</p>
+          <div class="secondary-options" id="secondaryOptions">
+            <!-- Filled by JS -->
+          </div>
+          
+          <p class="text-sm opacity-60 mb-2">3. Preview</p>
+          <div class="mini-preview flex-1" id="miniPreview">
+            <div class="mini-preview-header">
+              <span class="font-bold text-sm">Title</span>
+              <span class="text-xs opacity-60">Theme</span>
+            </div>
+            <div class="mini-preview-rows">
+              <div class="mini-preview-row active-preview"></div>
+              <div class="mini-preview-row"></div>
+              <div class="mini-preview-row"></div>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex gap-3 mt-4">
+            <button onclick="resetColors()" class="flex-1 py-2 border text-sm font-bold hover:opacity-80" style="border-color: var(--border-color)">
+              Reset
+            </button>
+            <button onclick="saveColors()" class="flex-1 py-2 text-sm font-bold hover:opacity-80" style="background: var(--accent-color); color: var(--hover-text)">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Header -->
+  <header class="w-full px-6 md:px-16 py-8">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <h1 class="font-bold text-2xl md:text-4xl leading-none">
+        Carol's<br/>Playhouse
+      </h1>
+      
+      <div class="flex items-center gap-4">
+        <!-- Color Picker Button -->
+        <button class="color-picker-btn" onclick="openColorPicker()" aria-label="Customize colors"></button>
+        
+        <!-- Theme Toggle -->
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+          <svg class="theme-icon moon-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col items-center px-6 md:px-16 pt-8 pb-16 gap-32">
+    
+    <!-- Hero Section -->
+    <section class="w-full max-w-6xl">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 py-2">
+        
+        <!-- Project List (Left) - with padding for hover overflow -->
+        <div class="flex flex-col gap-2 -mx-2 px-2 order-2 lg:order-1">
+          
+          <div class="project-row active px-5 py-4 flex flex-col justify-center"
+               data-href="/weggy.html"
+               data-label="STORY"
+               data-title="The Born of Weggie"
+               data-headline="The<br/>Origin<br/>Story"
+               data-video="/images/weggy-preview.mp4"
+               data-cta="See the story"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#01</p>
+            <p class="text-base md:text-lg"><span class="font-bold">The Born of Weggie</span><span class="font-normal opacity-70"> · Origin Story</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/paws-mail.html"
+               data-label="DESKTOP PET"
+               data-title="Paws Mail"
+               data-headline="5 Animals<br/>5 Colors<br/>Desktop Pets"
+               data-video="/images/paws-mail-preview.mp4"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#02</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Paws Mail</span><span class="font-normal opacity-70"> · Desktop Pets</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center" 
+               data-href="/immersive-ui-effects-lab"
+               data-label="UI EFFECTS"
+               data-title="Immersive UI Effects Lab"
+               data-headline="Interactive<br/>Premium UI<br/>Effects"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#03</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Immersive UI Effects Lab</span><span class="font-normal opacity-70"> · 22 Effects</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/saoqing-niang/styles.html"
+               data-label="iOS APP"
+               data-title="掃晴娘 Weather Doll"
+               data-headline="Saoqing<br/>Niang<br/>Weather App"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#04</p>
+            <p class="text-base md:text-lg"><span class="font-bold">掃晴娘 Weather Doll</span><span class="font-normal opacity-70"> · Style Exploration</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/find-your-vibes.html"
+               data-label="TOOLS"
+               data-title="Find Your Vibes"
+               data-headline="Color<br/>Palette<br/>Picker"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#05</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Find Your Vibes</span><span class="font-normal opacity-70"> · Color Palettes</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/depthflow-parallax.html"
+               data-label="VISUAL FX"
+               data-title="DepthFlow Parallax"
+               data-headline="Shader-Based<br/>Depth<br/>Reprojection"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#06</p>
+            <p class="text-base md:text-lg"><span class="font-bold">DepthFlow Parallax</span><span class="font-normal opacity-70"> · Depth + Tilt</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/bonnies-pet-house.html"
+               data-label="GAMES FOR BONNIE"
+               data-title="Bonnie's Pet House"
+               data-headline="Math &<br/>Spelling<br/>Kawaii Pets"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#07</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Bonnie's Pet House</span><span class="font-normal opacity-70"> · Math + Spelling</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/note-master.html"
+               data-label="MUSIC GAME"
+               data-title="Note Master"
+               data-headline="Piano<br/>Memory<br/>Game"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#08</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Note Master</span><span class="font-normal opacity-70"> · Yamaha C5 Grand</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/lunch-royale.html"
+               data-label="GAMES FOR BONNIE"
+               data-title="Lunch Royale"
+               data-headline="Fortnite<br/>Lunchbox<br/>Packing"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#09</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Lunch Royale</span><span class="font-normal opacity-70"> · Fortnite Lunchbox</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="https://github.com/Carolllmy/copy-raccoon"
+               data-label="DEV TOOL"
+               data-title="Copy Raccoon"
+               data-headline="Clone &<br/>Edit Any<br/>Webpage"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#10</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Copy Raccoon</span><span class="font-normal opacity-70"> · Web Cloner</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/perler-beads.html"
+               data-label="CREATIVE"
+               data-title="Perler Beads"
+               data-headline="Digital<br/>拼豆 Bead<br/>Studio"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#11</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Perler Beads</span><span class="font-normal opacity-70"> · Digital 拼豆</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="https://drive.google.com/drive/folders/1-_N_Ub1Qe-36SsUhOsvqO9IX3t2g-Fuo?usp=sharing"
+               data-label="WORK"
+               data-title="My 9-5 Work Stuff"
+               data-headline="UX Design<br/>Portfolio<br/>& Projects"
+               data-protected="true"
+               data-message="This is the more serious side of me.<br>I design at Audible by day."
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#12</p>
+            <p class="text-base md:text-lg"><span class="font-bold">My 9-5 Work Stuff</span><span class="font-normal opacity-70"> · Protected</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/archives"
+               data-label="ARCHIVES"
+               data-title="Carol's Playhouse"
+               data-headline="Original<br/>Playhouse<br/>Design"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">ARCHIVES</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Carol's Playhouse</span><span class="font-normal opacity-70"> · Original Design</span></p>
+          </div>
+
+        </div>
+        
+        <!-- Preview Card (Right) - Sticky follows scroll, hidden on mobile -->
+        <div class="preview-card p-6 md:p-8 flex flex-col h-[320px] md:h-[442px] overflow-hidden order-1 lg:order-2 lg:sticky lg:top-8 self-start hidden lg:flex">
+          <p id="preview-label-desktop" class="text-xs md:text-sm tracking-[2px] opacity-60"></p>
+          <p id="preview-title-desktop" class="text-lg md:text-2xl font-bold mt-1"></p>
+          
+          <!-- Image placeholder -->
+          <div id="preview-image-desktop" class="flex-1 my-4 border border-dashed flex items-center justify-center opacity-40 overflow-hidden" style="border-color: var(--border-color); min-height: 0;">
+            <span class="text-sm">Image Preview</span>
+          </div>
+          
+          <!-- Normal view button (shown for non-protected projects) -->
+          <a id="preview-link-desktop" href="#" class="self-end inline-flex items-center gap-2 px-5 py-3 text-sm font-bold border transition-opacity hover:opacity-70" style="border-color: var(--border-color);">
+            View Project
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          
+          <!-- Password protected container (shown for protected projects) -->
+          <div id="password-container-desktop" class="password-container self-end">
+            <input type="password" id="password-input-desktop" class="password-input" placeholder="Enter password" oninput="checkPassword('desktop')">
+            <a id="protected-link-desktop" href="#" class="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold border transition-opacity view-btn-disabled" style="border-color: var(--border-color);">
+              View Project
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Mobile Sticky Preview Bar - sticks to top while in project section -->
+        <div id="mobilePreview" class="sticky top-0 z-40 lg:hidden order-first -mx-6 px-6 py-3" style="background: var(--bg-color); border-bottom: 1px solid var(--border-color);">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <p id="preview-label-mobile" class="text-xs tracking-[2px] opacity-60 truncate"></p>
+              <p id="preview-title-mobile" class="text-base font-bold truncate"></p>
+            </div>
+            <a id="preview-link-mobile" href="#" class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold border shrink-0 hover:opacity-80 transition-opacity" style="border-color: var(--border-color)">
+              View
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+            
+            <!-- Password protected (mobile) -->
+            <div id="password-container-mobile" class="password-container">
+              <input type="password" id="password-input-mobile" class="password-input" placeholder="Password" oninput="checkPassword('mobile')" style="height: 36px;">
+              <a id="protected-link-mobile" href="#" class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold border shrink-0 view-btn-disabled" style="border-color: var(--border-color)">
+                View
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="w-full max-w-3xl px-6 md:px-24 py-8 flex flex-col items-center gap-12">
+      <h3 class="font-bold text-3xl md:text-5xl leading-none text-left w-full">
+        A space for experiments
+      </h3>
+      <div class="text-2xl md:text-4xl leading-relaxed opacity-80 text-center" style="font-family: 'Juniper Bay', cursive;">
+        <p>I'm Carol, and this is my playhouse. I built it to have somewhere to tinker — a mini game here, a weird interface there, whatever I was curious about that week. There's no logical order to any of it, just a collection of things made with a lot of love and a little chaos. Nothing here is ever really finished either — I'm always tweaking when something sparks. I hope something here makes you smile :)</p>
+      </div>
+      
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="px-6 md:px-16 py-20">
+    <div class="max-w-6xl mx-auto flex flex-col gap-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h2 class="font-bold text-xl md:text-3xl leading-none">
+          Let's chat
+        </h2>
+        <div class="flex gap-3">
+          <a href="https://www.linkedin.com/in/carollmy/" target="_blank" class="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold border transition-opacity hover:opacity-70" style="border-color: var(--border-color);">
+            LinkedIn
+          </a>
+          <a href="mailto:carollmy828@gmail.com" class="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold border transition-opacity hover:opacity-70" style="border-color: var(--border-color);">
+            Email
+          </a>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <hr class="opacity-30" style="border-color: var(--border-color)">
+        <div class="flex justify-between items-center text-sm opacity-60">
+          <p>Made by Carol with love in NJ</p>
+          <p>Updated March · © 2026</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ============ COLOR SYSTEM ============
+    // All colors derived from primary + secondary
+    
+    let currentPrimary = '#7DD3FC';
+    let currentSecondary = '#0F0F0F';
+    let selectedSecondaryIndex = 0;
+    let currentHue = 195;
+    let currentSat = 96;
+    let currentLight = 50;
+    
+    // Convert HSL to Hex
+    function hslToHex(h, s, l) {
+      s /= 100;
+      l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    }
+    
+    // Convert Hex to HSL
+    function hexToHsl(hex) {
+      let r = parseInt(hex.slice(1, 3), 16) / 255;
+      let g = parseInt(hex.slice(3, 5), 16) / 255;
+      let b = parseInt(hex.slice(5, 7), 16) / 255;
+      
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+        h *= 360;
+      }
+      
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+    
+    // Get relative luminance for contrast calculation
+    function getLuminance(hex) {
+      const rgb = [
+        parseInt(hex.slice(1, 3), 16) / 255,
+        parseInt(hex.slice(3, 5), 16) / 255,
+        parseInt(hex.slice(5, 7), 16) / 255
+      ].map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+      return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+    }
+    
+    // Calculate contrast ratio
+    function getContrastRatio(hex1, hex2) {
+      const l1 = getLuminance(hex1);
+      const l2 = getLuminance(hex2);
+      const lighter = Math.max(l1, l2);
+      const darker = Math.min(l1, l2);
+      return (lighter + 0.05) / (darker + 0.05);
+    }
+    
+    // Generate contrasting secondary colors
+    function generateSecondaryOptions(primaryHex) {
+      const hsl = hexToHsl(primaryHex);
+      const options = [];
+      
+      // Option 1: Complementary (opposite hue)
+      const comp = hslToHex((hsl.h + 180) % 360, Math.min(hsl.s, 70), 15);
+      options.push(comp);
+      
+      // Option 2: Dark neutral (near black with slight hue tint)
+      const dark = hslToHex(hsl.h, 10, 8);
+      options.push(dark);
+      
+      // Option 3: Light (for dark mode where secondary is bg)
+      const light = hslToHex(hsl.h, 15, 96);
+      options.push(light);
+      
+      return options;
+    }
+    
+    // Derive all UI colors from primary + secondary
+    function deriveColorSystem(primary, secondary) {
+      const primaryHsl = hexToHsl(primary);
+      const secondaryHsl = hexToHsl(secondary);
+      const isDarkBg = secondaryHsl.l < 50;
+      
+      return {
+        bgColor: secondary,
+        textColor: isDarkBg ? primary : secondary === '#FFFFFF' || secondaryHsl.l > 90 ? '#0F0F0F' : primary,
+        accentColor: primary,
+        hoverText: isDarkBg ? secondary : (secondaryHsl.l > 90 ? '#0F0F0F' : secondary),
+        borderColor: isDarkBg ? primary : '#0F0F0F'
+      };
+    }
+    
+    // Apply colors to CSS variables
+    function applyColors(colors) {
+      document.documentElement.style.setProperty('--bg-color', colors.bgColor);
+      document.documentElement.style.setProperty('--text-color', colors.textColor);
+      document.documentElement.style.setProperty('--accent-color', colors.accentColor);
+      document.documentElement.style.setProperty('--hover-text', colors.hoverText);
+      document.documentElement.style.setProperty('--border-color', colors.borderColor);
+    }
+    
+    // Track which theme is being previewed
+    let previewTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    
+    // Update preview - shows both dark and light theme previews
+    function updatePreview() {
+      // Generate colors for preview theme
+      const colors = getThemeColors(currentPrimary, previewTheme);
+      
+      // Update mini preview
+      const preview = document.getElementById('miniPreview');
+      preview.style.background = colors.bgColor;
+      preview.style.borderColor = colors.borderColor;
+      preview.style.color = colors.textColor;
+      
+      const rows = preview.querySelectorAll('.mini-preview-row');
+      rows.forEach((row, i) => {
+        row.style.borderColor = colors.borderColor;
+        if (i === 0) {
+          row.style.background = colors.accentColor;
+          row.style.color = colors.hoverText;
+        } else {
+          row.style.background = 'transparent';
+        }
+      });
+      
+      // Update theme option swatches
+      const secondaryContainer = document.getElementById('secondaryOptions');
+      secondaryContainer.innerHTML = '';
+      
+      const themes = [
+        { id: 'dark', label: 'Dark' },
+        { id: 'light', label: 'Light' },
+        { id: 'contrast', label: 'Contrast' }
+      ];
+      
+      themes.forEach(t => {
+        const colors = getThemeColors(currentPrimary, t.id);
+        const div = document.createElement('div');
+        div.className = 'secondary-option' + (previewTheme === t.id ? ' selected' : '');
+        
+        // Set taiji colors via CSS variables
+        let leftColor, rightColor;
+        if (t.id === 'contrast' && colors.compColor) {
+          leftColor = colors.compColor;
+          rightColor = colors.accentColor;
+        } else {
+          leftColor = colors.bgColor;
+          rightColor = colors.accentColor;
+        }
+        
+        div.style.setProperty('--taiji-left', leftColor);
+        div.style.setProperty('--taiji-right', rightColor);
+        div.style.background = 'transparent';
+        
+        div.title = t.label + ' theme';
+        div.onclick = () => {
+          previewTheme = t.id;
+          updatePreview();
+        };
+        secondaryContainer.appendChild(div);
+      });
+      
+      // Update primary preview swatch
+      document.getElementById('primaryPreview').style.background = currentPrimary;
+      
+      // Update lightness slider background
+      const slider = document.getElementById('lightnessSlider');
+      const hsl = hexToHsl(currentPrimary);
+      slider.style.background = `linear-gradient(to right, 
+        ${hslToHex(hsl.h, hsl.s, 20)}, 
+        ${hslToHex(hsl.h, hsl.s, 50)}, 
+        ${hslToHex(hsl.h, hsl.s, 80)})`;
+    }
+    
+    // Color wheel interaction
+    function setupColorWheel() {
+      const wheel = document.getElementById('colorWheel');
+      const wheelCanvas = document.getElementById('wheelCanvas');
+      const wheelCtx = wheelCanvas.getContext('2d', { willReadFrequently: true });
+      const picker = document.getElementById('wheelPicker');
+      let isDragging = false;
+      
+      // Draw color wheel on canvas
+      function drawColorWheel() {
+        const size = 160;
+        const centerX = size / 2;
+        const centerY = size / 2;
+        const radius = size / 2;
+        
+        // Draw each pixel
+        const imageData = wheelCtx.createImageData(size, size);
+        
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x < size; x++) {
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance <= radius) {
+              // Calculate hue from angle (0° at right, going clockwise)
+              let angle = Math.atan2(dy, dx);
+              let hue = ((angle * 180 / Math.PI) + 360) % 360;
+              
+              // Saturation from distance (100% at edge, 0% at center)
+              let sat = (distance / radius) * 100;
+              
+              // Convert HSL to RGB
+              const rgb = hslToRgb(hue, sat, 50);
+              
+              const i = (y * size + x) * 4;
+              imageData.data[i] = rgb.r;
+              imageData.data[i + 1] = rgb.g;
+              imageData.data[i + 2] = rgb.b;
+              imageData.data[i + 3] = 255;
+            }
+          }
+        }
+        
+        wheelCtx.putImageData(imageData, 0, 0);
+      }
+      
+      // HSL to RGB helper
+      function hslToRgb(h, s, l) {
+        s /= 100;
+        l /= 100;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => {
+          const k = (n + h / 30) % 12;
+          const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+          return Math.round(255 * color);
+        };
+        return { r: f(0), g: f(8), b: f(4) };
+      }
+      
+      // RGB to Hex
+      function rgbToHex(r, g, b) {
+        return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+      }
+      
+      // Draw the wheel on load
+      drawColorWheel();
+      
+      function updateFromPosition(x, y) {
+        const rect = wheel.getBoundingClientRect();
+        const scaleX = 160 / rect.width;
+        const scaleY = 160 / rect.height;
+        
+        // Convert to canvas coordinates
+        const canvasX = Math.round(x * scaleX);
+        const canvasY = Math.round(y * scaleY);
+        
+        const centerX = 80;
+        const centerY = 80;
+        const dx = canvasX - centerX;
+        const dy = canvasY - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Clamp to wheel radius
+        if (distance > 80) {
+          const scale = 80 / distance;
+          x = (centerX + dx * scale) / scaleX;
+          y = (centerY + dy * scale) / scaleY;
+        }
+        
+        // Sample actual pixel color from canvas
+        const sampleX = Math.min(159, Math.max(0, Math.round(x * scaleX)));
+        const sampleY = Math.min(159, Math.max(0, Math.round(y * scaleY)));
+        const pixel = wheelCtx.getImageData(sampleX, sampleY, 1, 1).data;
+        
+        if (pixel[3] > 0) { // Only if pixel is visible
+          const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+          const hsl = hexToHsl(hex);
+          
+          currentHue = hsl.h;
+          currentSat = hsl.s;
+          currentPrimary = hslToHex(currentHue, currentSat, currentLight);
+          
+          // Update picker position
+          picker.style.left = x + 'px';
+          picker.style.top = y + 'px';
+          picker.style.background = currentPrimary;
+          
+          document.getElementById('hexInput').value = currentPrimary;
+          selectedSecondaryIndex = 0;
+          updatePreview();
+        }
+      }
+      
+      // Hide custom cursor over color wheel (shows system crosshair instead)
+      wheel.addEventListener('mouseenter', () => {
+        document.getElementById('customCursor').style.display = 'none';
+        document.body.style.cursor = 'crosshair';
+      });
+      wheel.addEventListener('mouseleave', () => {
+        document.body.style.cursor = '';
+        if (!isDragging) document.getElementById('customCursor').style.display = 'block';
+      });
+      
+      wheel.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        document.getElementById('customCursor').style.display = 'none';
+        const rect = wheel.getBoundingClientRect();
+        updateFromPosition(e.clientX - rect.left, e.clientY - rect.top);
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = wheel.getBoundingClientRect();
+        updateFromPosition(e.clientX - rect.left, e.clientY - rect.top);
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.getElementById('customCursor').style.display = 'block';
+      });
+      
+      // Touch support
+      wheel.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        const rect = wheel.getBoundingClientRect();
+        const touch = e.touches[0];
+        updateFromPosition(touch.clientX - rect.left, touch.clientY - rect.top);
+      });
+      
+      document.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        const rect = wheel.getBoundingClientRect();
+        const touch = e.touches[0];
+        updateFromPosition(touch.clientX - rect.left, touch.clientY - rect.top);
+      });
+      
+      document.addEventListener('touchend', () => isDragging = false);
+    }
+    
+    // Lightness slider
+    document.getElementById('lightnessSlider').addEventListener('input', (e) => {
+      currentLight = parseInt(e.target.value);
+      currentPrimary = hslToHex(currentHue, currentSat, currentLight);
+      document.getElementById('hexInput').value = currentPrimary;
+      document.getElementById('wheelPicker').style.background = currentPrimary;
+      selectedSecondaryIndex = 0;
+      updatePreview();
+    });
+    
+    // Hex input
+    document.getElementById('hexInput').addEventListener('input', (e) => {
+      let val = e.target.value;
+      if (!val.startsWith('#')) val = '#' + val;
+      if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+        currentPrimary = val.toUpperCase();
+        const hsl = hexToHsl(currentPrimary);
+        currentHue = hsl.h;
+        currentSat = hsl.s;
+        currentLight = hsl.l;
+        document.getElementById('lightnessSlider').value = currentLight;
+        selectedSecondaryIndex = 0;
+        updatePreview();
+      }
+    });
+    
+    // Modal controls
+    function openColorPicker() {
+      // Reset preview theme to current actual theme
+      previewTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      document.getElementById('colorModal').classList.add('open');
+      setupColorWheel();
+      updatePreview();
+    }
+    
+    function closeColorPicker() {
+      document.getElementById('colorModal').classList.remove('open');
+    }
+    
+    function saveColors() {
+      // Save primary color and selected theme variant
+      localStorage.setItem('customPrimary', currentPrimary);
+      localStorage.setItem('theme', previewTheme);
+      document.documentElement.setAttribute('data-theme', previewTheme);
+      applyThemeWithCustomColor();
+      closeColorPicker();
+    }
+    
+    function resetColors() {
+      localStorage.removeItem('customPrimary');
+      currentPrimary = '#7DD3FC';
+      currentSecondary = '#0F0F0F';
+      selectedSecondaryIndex = 0;
+      currentHue = 195;
+      currentSat = 96;
+      currentLight = 73;
+      document.getElementById('hexInput').value = currentPrimary;
+      document.getElementById('lightnessSlider').value = 50;
+      
+      // Reset to default theme colors
+      document.documentElement.style.removeProperty('--bg-color');
+      document.documentElement.style.removeProperty('--text-color');
+      document.documentElement.style.removeProperty('--accent-color');
+      document.documentElement.style.removeProperty('--hover-text');
+      document.documentElement.style.removeProperty('--border-color');
+      
+      updatePreview();
+      closeColorPicker();
+    }
+    
+    // ============ THEME TOGGLE ============
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Generate theme-appropriate colors from a primary color
+    function getThemeColors(primary, theme) {
+      const primaryHsl = hexToHsl(primary);
+      // Complementary color (opposite on color wheel)
+      const compHue = (primaryHsl.h + 180) % 360;
+      
+      if (theme === 'dark') {
+        // Dark theme: dark bg, primary as text/accent
+        const bgColor = '#0F0F0F';
+        return {
+          bgColor: bgColor,
+          textColor: primary,
+          accentColor: primary,
+          hoverText: bgColor,
+          borderColor: primary
+        };
+      } else if (theme === 'light') {
+        // Light theme: light bg, dark text, primary as accent
+        const bgColor = '#F8FAFC';
+        const lightAccent = hslToHex(primaryHsl.h, Math.min(primaryHsl.s, 60), 85);
+        return {
+          bgColor: bgColor,
+          textColor: '#0F0F0F',
+          accentColor: lightAccent,
+          hoverText: '#0F0F0F',
+          borderColor: '#0F0F0F'
+        };
+      } else if (theme === 'contrast') {
+        // Contrast theme: complementary color pairing with accessibility
+        // Start with complementary color
+        let compL = primaryHsl.l;
+        let compS = Math.min(primaryHsl.s, 85);
+        
+        // Ensure complementary is vibrant enough (not too faded)
+        if (compS < 50) compS = 50;
+        if (compL < 35) compL = 35;
+        if (compL > 65) compL = 65;
+        
+        let compColor = hslToHex(compHue, compS, compL);
+        
+        // Calculate accessible text color for comp background
+        // If comp is light, use dark text; if dark, use light text
+        const compLuminance = getLuminance(compColor);
+        let textOnComp = compLuminance > 0.4 ? '#0F0F0F' : '#FFFFFF';
+        
+        // Check contrast and adjust comp color if needed
+        let contrast = getContrastRatio(compColor, primary);
+        
+        // Adjust complementary lightness until we get good contrast with primary
+        let attempts = 0;
+        while (contrast < 3 && attempts < 20) {
+          // Move comp lightness away from primary lightness
+          if (primaryHsl.l > 50) {
+            compL = Math.max(compL - 5, 25);
+          } else {
+            compL = Math.min(compL + 5, 75);
+          }
+          compColor = hslToHex(compHue, compS, compL);
+          contrast = getContrastRatio(compColor, primary);
+          attempts++;
+        }
+        
+        // Recalculate text color for adjusted comp
+        const finalCompLuminance = getLuminance(compColor);
+        textOnComp = finalCompLuminance > 0.4 ? '#0F0F0F' : '#FFFFFF';
+        
+        // Ensure primary text is readable on comp background
+        const primaryContrast = getContrastRatio(compColor, primary);
+        let accessiblePrimary = primary;
+        
+        if (primaryContrast < 4.5) {
+          // Adjust primary for text use - make it lighter or darker
+          const primaryLum = getLuminance(primary);
+          if (finalCompLuminance > 0.5) {
+            // Dark text needed on light bg
+            accessiblePrimary = hslToHex(primaryHsl.h, primaryHsl.s, Math.min(primaryHsl.l - 20, 30));
+          } else {
+            // Light text needed on dark bg
+            accessiblePrimary = hslToHex(primaryHsl.h, primaryHsl.s, Math.max(primaryHsl.l + 20, 70));
+          }
+        }
+        
+        return {
+          bgColor: compColor,
+          textColor: accessiblePrimary,
+          accentColor: primary,
+          hoverText: compColor,
+          borderColor: accessiblePrimary,
+          compColor: compColor
+        };
+      }
+    }
+    
+    function applyThemeWithCustomColor() {
+      let theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const saved = localStorage.getItem('customPrimary');
+      
+      // Handle contrast theme (not a native CSS theme)
+      if (theme === 'contrast' && saved) {
+        const colors = getThemeColors(saved, theme);
+        applyColors(colors);
+      } else if (saved) {
+        const colors = getThemeColors(saved, theme);
+        applyColors(colors);
+      } else {
+        // Reset to CSS defaults
+        document.documentElement.style.removeProperty('--bg-color');
+        document.documentElement.style.removeProperty('--text-color');
+        document.documentElement.style.removeProperty('--accent-color');
+        document.documentElement.style.removeProperty('--hover-text');
+        document.documentElement.style.removeProperty('--border-color');
+      }
+    }
+    
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      
+      // Re-apply custom color for new theme
+      applyThemeWithCustomColor();
+    }
+    
+    // ============ MUTE TOGGLE ============
+    function toggleMute(event) {
+      event.stopPropagation();
+      const btn = event.currentTarget;
+      const video = btn.parentElement.querySelector('video');
+      const mutedIcon = btn.querySelector('.muted-icon');
+      const unmutedIcon = btn.querySelector('.unmuted-icon');
+      
+      if (video.muted) {
+        video.muted = false;
+        mutedIcon.style.display = 'none';
+        unmutedIcon.style.display = 'block';
+      } else {
+        video.muted = true;
+        mutedIcon.style.display = 'block';
+        unmutedIcon.style.display = 'none';
+      }
+    }
+    
+    // ============ PROJECT SELECTION ============
+    function selectProject(element) {
+      document.querySelectorAll('.project-row').forEach(row => {
+        row.classList.remove('active');
+      });
+      element.classList.add('active');
+      
+      // Update desktop preview
+      document.getElementById('preview-link-desktop').href = element.dataset.href;
+      document.getElementById('preview-label-desktop').textContent = element.dataset.label;
+      document.getElementById('preview-title-desktop').textContent = element.dataset.title;
+      
+      // Update button CTA text
+      const ctaText = element.dataset.cta || 'View Project';
+      document.getElementById('preview-link-desktop').innerHTML = `${ctaText}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+      
+      // Update preview image/video
+      const previewImage = document.getElementById('preview-image-desktop');
+      if (element.dataset.video) {
+        previewImage.innerHTML = `
+          <video src="${element.dataset.video}" class="w-full h-full object-cover" style="max-height: 100%;" autoplay loop muted playsinline></video>
+          <button class="mute-toggle" onclick="toggleMute(event)" aria-label="Toggle sound">
+            <svg class="muted-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+              <line x1="23" y1="9" x2="17" y2="15"/>
+              <line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+            <svg class="unmuted-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+              <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+          </button>
+        `;
+        previewImage.classList.remove('border-dashed', 'opacity-40');
+        previewImage.classList.add('border-solid');
+        previewImage.style.position = 'relative';
+      } else if (element.dataset.image) {
+        previewImage.innerHTML = `<img src="${element.dataset.image}" alt="${element.dataset.title}" class="w-full h-full object-cover" style="max-height: 100%;">`;
+        previewImage.classList.remove('border-dashed', 'opacity-40');
+        previewImage.classList.add('border-solid');
+        previewImage.style.position = '';
+      } else if (element.dataset.message) {
+        previewImage.innerHTML = `
+          <div class="message-preview">
+            <span>${element.dataset.message}</span>
+          </div>
+        `;
+        previewImage.classList.remove('border-dashed', 'opacity-40');
+        previewImage.classList.add('border-solid');
+        previewImage.style.position = '';
+      } else {
+        previewImage.innerHTML = '<span class="text-sm">Image Preview</span>';
+        previewImage.classList.add('border-dashed', 'opacity-40');
+        previewImage.classList.remove('border-solid');
+        previewImage.style.position = '';
+      }
+      
+      // Update mobile preview
+      document.getElementById('preview-link-mobile').href = element.dataset.href;
+      document.getElementById('preview-label-mobile').textContent = element.dataset.label;
+      document.getElementById('preview-title-mobile').textContent = element.dataset.title;
+      
+      // Handle password-protected projects
+      const isProtected = element.dataset.protected === 'true';
+      currentProtectedHref = isProtected ? element.dataset.href : null;
+      
+      // Desktop: Toggle between normal and password container
+      document.getElementById('preview-link-desktop').style.display = isProtected ? 'none' : 'inline-flex';
+      document.getElementById('password-container-desktop').classList.toggle('active', isProtected);
+      
+      // Mobile: Toggle between normal and password container
+      document.getElementById('preview-link-mobile').style.display = isProtected ? 'none' : 'flex';
+      document.getElementById('password-container-mobile').classList.toggle('active', isProtected);
+      
+      // Reset password inputs and buttons
+      if (isProtected) {
+        document.getElementById('password-input-desktop').value = '';
+        document.getElementById('password-input-mobile').value = '';
+        document.getElementById('protected-link-desktop').classList.add('view-btn-disabled');
+        document.getElementById('protected-link-mobile').classList.add('view-btn-disabled');
+        document.getElementById('protected-link-desktop').href = '#';
+        document.getElementById('protected-link-mobile').href = '#';
+      }
+    }
+    
+    // Password checking
+    let currentProtectedHref = null;
+    const PROTECTED_PASSWORD = 'Paradise_2';
+    
+    function checkPassword(device) {
+      const input = document.getElementById(`password-input-${device}`);
+      const btn = document.getElementById(`protected-link-${device}`);
+      const otherInput = document.getElementById(`password-input-${device === 'desktop' ? 'mobile' : 'desktop'}`);
+      const otherBtn = document.getElementById(`protected-link-${device === 'desktop' ? 'mobile' : 'desktop'}`);
+      
+      const isCorrect = input.value === PROTECTED_PASSWORD;
+      
+      // Update this device
+      btn.classList.toggle('view-btn-disabled', !isCorrect);
+      btn.style.pointerEvents = isCorrect ? 'auto' : 'none';
+      btn.href = isCorrect ? currentProtectedHref : '#';
+      
+      // Sync other device
+      otherInput.value = input.value;
+      otherBtn.classList.toggle('view-btn-disabled', !isCorrect);
+      otherBtn.style.pointerEvents = isCorrect ? 'auto' : 'none';
+      otherBtn.href = isCorrect ? currentProtectedHref : '#';
+    }
+    
+    // ============ INIT ============
+    // Initialize preview from first active project
+    const firstActiveProject = document.querySelector('.project-row.active');
+    if (firstActiveProject) {
+      selectProject(firstActiveProject);
+    }
+    
+    // Load saved custom primary color and apply for current theme
+    const savedPrimary = localStorage.getItem('customPrimary');
+    if (savedPrimary) {
+      currentPrimary = savedPrimary;
+      const hsl = hexToHsl(savedPrimary);
+      currentHue = hsl.h;
+      currentSat = hsl.s;
+      currentLight = hsl.l;
+      applyThemeWithCustomColor();
+    }
+    
+    // ============ CUSTOM CURSOR ============
+    const cursor = document.getElementById('customCursor');
+    let mouseX = 0, mouseY = 0;
+    let cursorX = 0, cursorY = 0;
+    
+    // Fast cursor following
+    function animateCursor() {
+      const ease = 0.35;
+      cursorX += (mouseX - cursorX) * ease;
+      cursorY += (mouseY - cursorY) * ease;
+      cursor.style.left = cursorX + 'px';
+      cursor.style.top = cursorY + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+    
+    // Track mouse position
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursor.classList.remove('hidden');
+    });
+    
+    // Hide when mouse leaves window
+    document.addEventListener('mouseleave', () => {
+      cursor.classList.add('hidden');
+    });
+    
+    document.addEventListener('mouseenter', () => {
+      cursor.classList.remove('hidden');
+    });
+    
+    // Hover effect on interactive elements
+    const interactiveSelectors = 'a, button, input, .project-row, .preview-card, .theme-toggle, .color-picker-btn, .secondary-option, [onclick]';
+    
+    document.addEventListener('mouseover', (e) => {
+      // Crosshair for color wheel
+      if (e.target.closest('.color-wheel')) {
+        cursor.classList.add('crosshair');
+        cursor.classList.remove('hover');
+        return;
+      }
+      
+      if (e.target.closest(interactiveSelectors)) {
+        cursor.classList.add('hover');
+      }
+    });
+    
+    document.addEventListener('mouseout', (e) => {
+      // Remove crosshair when leaving color wheel
+      if (e.target.closest('.color-wheel')) {
+        cursor.classList.remove('crosshair');
+      }
+      
+      if (e.target.closest(interactiveSelectors)) {
+        cursor.classList.remove('hover');
+      }
+    });
+    
+    // Click effect
+    document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
+    document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
+  </script>
+
+</body>
+</html>

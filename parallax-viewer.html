@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Parallax Viewer</title>
+  <style>
+    html,body{margin:0;height:100%;background:#060a13;color:#eaf0ff;font-family:Inter,system-ui,-apple-system,sans-serif;overflow:hidden}
+    .stage{position:fixed;inset:0;display:grid;place-items:center;padding:12px}
+    .card{width:min(96vw,980px);aspect-ratio:16/9;position:relative;border-radius:18px;overflow:hidden;background:#0d1322;transform-style:preserve-3d;box-shadow:0 24px 56px rgba(0,0,0,.52), inset 0 0 0 1px rgba(255,255,255,.12)}
+    .layer,.main{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;will-change:transform,filter,opacity}
+    .hud{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;gap:8px;align-items:center;justify-content:space-between;background:rgba(13,20,39,.72);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:8px 10px;z-index:8}
+    .left{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    button,input{border-radius:9px;border:1px solid rgba(255,255,255,.2);background:#162342;color:#eaf0ff;padding:7px 10px}
+    .status{font-size:12px;color:#9ed3ff}
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div class="left">
+      <button id="enable">Enable Motion</button>
+      <label>Intensity <input id="intensity" type="range" min="0" max="100" value="72"></label>
+    </div>
+    <div id="status" class="status">Loading image…</div>
+  </div>
+
+  <div class="stage">
+    <div class="card" id="card">
+      <img class="layer" id="back" alt="">
+      <img class="layer" id="midback" alt="">
+      <img class="layer" id="mid" alt="">
+      <img class="layer" id="midfront" alt="">
+      <img class="layer" id="front" alt="">
+      <img class="main" id="main" alt="">
+    </div>
+  </div>
+
+  <script>
+    const imgEl = document.getElementById('main');
+    const back = document.getElementById('back');
+    const midback = document.getElementById('midback');
+    const mid = document.getElementById('mid');
+    const midfront = document.getElementById('midfront');
+    const front = document.getElementById('front');
+    const statusEl = document.getElementById('status');
+    const enableBtn = document.getElementById('enable');
+    const intensityEl = document.getElementById('intensity');
+    const card = document.getElementById('card');
+
+    const params = new URLSearchParams(location.search);
+    const src = params.get('img') || '/phone-motion-mountain.jpg';
+
+    let px = 0, py = 0, tx = 0, ty = 0;
+    let centerGamma = null, centerBeta = null;
+    let motionOn = false;
+
+    function smoothstep(a,b,x){ const t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); }
+
+    async function estimateDepthDataUrl(imageDataUrl) {
+      const r = await fetch('/api/depth/estimate', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ imageDataUrl, blur: 1.0 })
+      });
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.error || 'Depth estimation failed');
+      return j.depthDataUrl;
+    }
+
+    function buildDepthLayers(sourceImg, depthImg = null) {
+      const maxW = 900;
+      const scale = Math.min(1, maxW / sourceImg.naturalWidth);
+      const w = Math.max(64, Math.round(sourceImg.naturalWidth * scale));
+      const h = Math.max(64, Math.round(sourceImg.naturalHeight * scale));
+
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const cx = c.getContext('2d', { willReadFrequently: true });
+      cx.drawImage(sourceImg, 0, 0, w, h);
+      const base = cx.getImageData(0, 0, w, h);
+
+      let depth = null;
+      if (depthImg) {
+        const dc = document.createElement('canvas'); dc.width = w; dc.height = h;
+        const dx = dc.getContext('2d', { willReadFrequently: true });
+        dx.drawImage(depthImg, 0, 0, w, h);
+        depth = dx.getImageData(0, 0, w, h);
+      }
+
+      const make = () => new ImageData(w,h);
+      const backData = make(), midBackData = make(), midData = make(), midFrontData = make(), frontData = make();
+
+      for (let i=0;i<base.data.length;i+=4) {
+        const r=base.data[i], g=base.data[i+1], b=base.data[i+2], a=base.data[i+3];
+        const luma=(0.2126*r+0.7152*g+0.0722*b)/255;
+        const dRaw = depth ? (0.2126*depth.data[i]+0.7152*depth.data[i+1]+0.0722*depth.data[i+2])/255 : luma;
+        const d = Math.pow(dRaw, 0.82);
+
+        const wBack = Math.max(0, 1 - Math.abs(d - 0.18) / 0.22);
+        const wMidBack = Math.max(0, 1 - Math.abs(d - 0.36) / 0.2);
+        const wMid = Math.max(0, 1 - Math.abs(d - 0.54) / 0.2);
+        const wMidFront = Math.max(0, 1 - Math.abs(d - 0.72) / 0.2);
+        const wFront = Math.max(0, 1 - Math.abs(d - 0.9) / 0.18);
+
+        backData.data[i]=r; backData.data[i+1]=g; backData.data[i+2]=b; backData.data[i+3]=Math.round(a*wBack*0.9);
+        midBackData.data[i]=r; midBackData.data[i+1]=g; midBackData.data[i+2]=b; midBackData.data[i+3]=Math.round(a*wMidBack*0.82);
+        midData.data[i]=r; midData.data[i+1]=g; midData.data[i+2]=b; midData.data[i+3]=Math.round(a*wMid*0.76);
+        midFrontData.data[i]=r; midFrontData.data[i+1]=g; midFrontData.data[i+2]=b; midFrontData.data[i+3]=Math.round(a*wMidFront*0.86);
+        frontData.data[i]=r; frontData.data[i+1]=g; frontData.data[i+2]=b; frontData.data[i+3]=Math.round(a*wFront);
+      }
+
+      const out = document.createElement('canvas'); out.width = w; out.height = h; const ox = out.getContext('2d');
+      ox.putImageData(backData,0,0); const backUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(midBackData,0,0); const midBackUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(midData,0,0); const midUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(midFrontData,0,0); const midFrontUrl=out.toDataURL('image/png');
+      ox.clearRect(0,0,w,h); ox.putImageData(frontData,0,0); const frontUrl=out.toDataURL('image/png');
+      return { backUrl, midBackUrl, midUrl, midFrontUrl, frontUrl };
+    }
+
+    function onOrientation(e){
+      const gamma = Number(e.gamma || 0), beta = Number(e.beta || 0);
+      if (centerGamma === null) centerGamma = gamma;
+      if (centerBeta === null) centerBeta = beta;
+      px = Math.max(-1, Math.min(1, (gamma - centerGamma) / 25));
+      py = Math.max(-1, Math.min(1, (beta - centerBeta) / 30));
+    }
+
+    async function enableMotion(){
+      try {
+        if (typeof DeviceOrientationEvent === 'undefined') return;
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          const p = await DeviceOrientationEvent.requestPermission();
+          if (p !== 'granted') return;
+        }
+        centerGamma = null; centerBeta = null;
+        if (!motionOn) { window.addEventListener('deviceorientation', onOrientation, true); motionOn = true; }
+        statusEl.textContent = 'Motion enabled';
+      } catch {}
+    }
+
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      px = ((e.clientX - r.left)/r.width - .5) * 2;
+      py = ((e.clientY - r.top)/r.height - .5) * 2;
+    });
+    card.addEventListener('pointerleave', () => { if (!motionOn) { px = 0; py = 0; } });
+    enableBtn.addEventListener('click', enableMotion);
+
+    // Subtle auto motion fallback so depth is visible before motion permission.
+    let autoT = 0;
+    setInterval(() => {
+      if (!motionOn) {
+        autoT += 0.08;
+        px = Math.sin(autoT) * 0.22;
+        py = Math.cos(autoT * 0.8) * 0.16;
+      }
+    }, 33);
+
+    function loop(){
+      const I = Number(intensityEl.value)/100;
+      tx += (px - tx) * 0.16;
+      ty += (py - ty) * 0.16;
+      const rx = -ty * 8 * I;
+      const ry = tx * 10 * I;
+
+      card.style.transform = `perspective(1050px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+      back.style.transform = `translate3d(${(-tx*30*I).toFixed(1)}px, ${(-ty*20*I).toFixed(1)}px, -40px) scale(1.23)`;
+      midback.style.transform = `translate3d(${(-tx*20*I).toFixed(1)}px, ${(-ty*13*I).toFixed(1)}px, -20px) scale(1.14)`;
+      mid.style.transform = `translate3d(${(-tx*11*I).toFixed(1)}px, ${(-ty*7*I).toFixed(1)}px, 0px) scale(1.08)`;
+      midfront.style.transform = `translate3d(${(tx*18*I).toFixed(1)}px, ${(ty*12*I).toFixed(1)}px, 20px) scale(1.05)`;
+      front.style.transform = `translate3d(${(tx*38*I).toFixed(1)}px, ${(ty*26*I).toFixed(1)}px, 44px) scale(1.03)`;
+      imgEl.style.opacity = '.15';
+
+      requestAnimationFrame(loop);
+    }
+
+    async function boot(){
+      imgEl.crossOrigin = 'anonymous';
+      imgEl.src = src;
+      await imgEl.decode().catch(()=>{});
+      statusEl.textContent = 'Estimating depth map…';
+
+      try {
+        const r = await fetch(src);
+        const b = await r.blob();
+        const dataUrl = await new Promise((resolve, reject)=>{
+          const fr = new FileReader();
+          fr.onload = ()=>resolve(String(fr.result||''));
+          fr.onerror = reject;
+          fr.readAsDataURL(b);
+        });
+
+        const depthDataUrl = await estimateDepthDataUrl(dataUrl);
+        const d = new Image(); d.src = depthDataUrl; await d.decode().catch(()=>{});
+
+        const layers = buildDepthLayers(imgEl, d);
+        back.src = layers.backUrl;
+        midback.src = layers.midBackUrl;
+        mid.src = layers.midUrl;
+        midfront.src = layers.midFrontUrl;
+        front.src = layers.frontUrl;
+
+        statusEl.textContent = 'Ready';
+      } catch {
+        // Keep parallax alive even when AI depth endpoint fails.
+        const layers = buildDepthLayers(imgEl, null);
+        back.src = layers.backUrl;
+        midback.src = layers.midBackUrl;
+        mid.src = layers.midUrl;
+        midfront.src = layers.midFrontUrl;
+        front.src = layers.frontUrl;
+        statusEl.textContent = 'Ready (depth fallback mode)';
+      }
+
+      loop();
+    }
+
+    boot();
+  </script>
+</body>
+</html>

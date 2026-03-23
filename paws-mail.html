@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paws Mail | Carol's Playhouse</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Juniper Bay';
+      src: url('/fonts/JuniperBay-Regular.woff2') format('woff2'),
+           url('/fonts/JuniperBay-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --bg-color: #0F0F0F;
+      --text-color: #FAFAFA;
+      --accent-color: #7DD3FC;
+      --border-color: rgba(250, 250, 250, 0.2);
+      --hover-text: #0F0F0F;
+    }
+    
+    [data-theme="light"] {
+      --bg-color: #FAFAFA;
+      --text-color: #0F0F0F;
+      --accent-color: #7DD3FC;
+      --hover-text: #0F0F0F;
+      --border-color: #0F0F0F;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    /* Header */
+    header {
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-color);
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    
+    .back-link:hover {
+      opacity: 1;
+    }
+    
+    /* Main Content */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      gap: 3rem;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 3rem;
+      }
+    }
+    
+    .idea-text {
+      font-family: 'Juniper Bay', cursive;
+      font-size: 1.5rem;
+      line-height: 1.6;
+      opacity: 0.8;
+      max-width: 768px;
+    }
+    
+    @media (min-width: 768px) {
+      .idea-text {
+        font-size: 2.25rem;
+      }
+    }
+    
+    /* Video Container */
+    .video-container {
+      width: 100%;
+      max-width: 700px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    
+    .video-container video {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    
+    /* GitHub Button */
+    .github-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-color);
+      text-decoration: none;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      transition: opacity 0.2s;
+    }
+    
+    .github-btn:hover {
+      opacity: 0.7;
+    }
+    
+    /* Footer */
+    footer {
+      padding: 2rem;
+      text-align: center;
+      opacity: 0.5;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="back-link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back
+    </a>
+  </header>
+  
+  <main>
+    <h1>The Idea</h1>
+    
+    <p class="idea-text">
+      I don't know where this idea came from, but the moment I had it I was already building. It's a digital pet that lives on my dock — I can pick from a cat, a dog, a pigeon, a fox, or a rabbit, each in a few colors — and when I send someone a message, my pet walks off my screen and into theirs to deliver it, and they can send their pet back to bring me a letter too. I forced the people I love to install it so our pets could visit each other over the same network. Mine's a pigeon, obviously. It's imperfect, a little crafty, and yes — we could just text. But seeing their pet wander into my screen every now and then just feels right.
+    </p>
+    
+    <div class="video-container">
+      <video src="/images/paws-mail-preview.mp4" autoplay loop muted playsinline></video>
+    </div>
+    
+    <a href="https://github.com/Carolllmy/paws-mail" target="_blank" class="github-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+      </svg>
+      GitHub
+    </a>
+  </main>
+  
+  <footer>
+    <p>Made by Carol with love in NJ</p>
+  </footer>
+  
+  <script>
+    // Color conversion utilities (same as homepage)
+    function hexToHsl(hex) {
+      hex = hex.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16) / 255;
+      const g = parseInt(hex.substr(2, 2), 16) / 255;
+      const b = parseInt(hex.substr(4, 2), 16) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+        h *= 360;
+      }
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+    
+    function hslToHex(h, s, l) {
+      s /= 100; l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    }
+    
+    function getThemeColors(primary, theme) {
+      const primaryHsl = hexToHsl(primary);
+      if (theme === 'dark') {
+        return {
+          bgColor: '#0F0F0F',
+          textColor: primary,
+          accentColor: primary,
+          hoverText: '#0F0F0F',
+          borderColor: primary
+        };
+      } else if (theme === 'light') {
+        const lightAccent = hslToHex(primaryHsl.h, Math.min(primaryHsl.s, 60), 85);
+        return {
+          bgColor: '#F8FAFC',
+          textColor: '#0F0F0F',
+          accentColor: lightAccent,
+          hoverText: '#0F0F0F',
+          borderColor: '#0F0F0F'
+        };
+      } else {
+        // contrast theme
+        const compHue = (primaryHsl.h + 180) % 360;
+        return {
+          bgColor: '#0F0F0F',
+          textColor: primary,
+          accentColor: hslToHex(compHue, 70, 60),
+          hoverText: '#0F0F0F',
+          borderColor: primary
+        };
+      }
+    }
+    
+    function applyColors(colors) {
+      document.documentElement.style.setProperty('--bg-color', colors.bgColor);
+      document.documentElement.style.setProperty('--text-color', colors.textColor);
+      document.documentElement.style.setProperty('--accent-color', colors.accentColor);
+      document.documentElement.style.setProperty('--hover-text', colors.hoverText);
+      document.documentElement.style.setProperty('--border-color', colors.borderColor);
+    }
+    
+    // Apply saved theme and custom color from homepage
+    function syncColors() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      
+      const savedPrimary = localStorage.getItem('customPrimary') || '#7DD3FC';
+      const colors = getThemeColors(savedPrimary, savedTheme);
+      applyColors(colors);
+    }
+    
+    // Initial sync
+    syncColors();
+    
+    // Listen for changes from other tabs/pages
+    window.addEventListener('storage', syncColors);
+  </script>
+</body>
+</html>

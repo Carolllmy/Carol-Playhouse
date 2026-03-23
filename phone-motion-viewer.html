@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Phone Motion Viewer</title>
+  <style>
+    :root {
+      --panel: rgba(15, 18, 24, 0.65);
+      --text: #eef2f7;
+      --muted: rgba(238,242,247,0.72);
+      --accent: #78c8ff;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #080b10;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      touch-action: pan-y;
+    }
+
+    .viewer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: #06080b;
+    }
+
+    .pano {
+      position: absolute;
+      inset: 0;
+      background-position: 50% 50%;
+      background-repeat: no-repeat;
+      background-size: auto 100%;
+      will-change: background-position;
+      transform: translateZ(0);
+      transition: filter .25s ease;
+      filter: saturate(1.05) contrast(1.03);
+    }
+
+    .vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at center, transparent 35%, rgba(0,0,0,0.28) 100%);
+    }
+
+    .hud {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      top: max(12px, env(safe-area-inset-top));
+      z-index: 20;
+      display: grid;
+      gap: 10px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      border-radius: 14px;
+      padding: 12px;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity .22s ease, transform .22s ease;
+    }
+
+    .hud.hidden {
+      opacity: 0;
+      transform: translateY(-12px);
+      pointer-events: none;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #2e8fff, #66d1ff);
+      color: white;
+      border: none;
+    }
+
+    input[type="range"] { width: 120px; }
+    .label { font-size: 12px; color: var(--muted); }
+    .status { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+  </style>
+</head>
+<body>
+  <div class="viewer">
+    <div id="pano" class="pano"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <div class="hud">
+    <div class="row">
+      <button id="enableBtn" class="primary">Enable Motion</button>
+      <button id="recenterBtn">Recenter</button>
+      <select id="imageSelect">
+        <option value="phone-motion-mountain.jpg">Mountain</option>
+        <option value="phone-motion-city.jpg">Dark City</option>
+        <option value="phone-motion-alien-world.jpg">Alien World</option>
+        <option value="phone-motion-horizon.jpg">Blue Horizon</option>
+        <option value="phone-motion-space-room.jpg">Space Room</option>
+      </select>
+      <span class="status" id="status">Waiting for motion permission</span>
+    </div>
+    <div class="row">
+      <span class="label">Sensitivity</span>
+      <input id="sensitivity" type="range" min="0.8" max="3.2" step="0.1" value="2.0" />
+      <span class="label">Smoothing</span>
+      <input id="smoothing" type="range" min="0.03" max="0.3" step="0.01" value="0.12" />
+    </div>
+  </div>
+
+  <script>
+    const pano = document.getElementById('pano');
+    const enableBtn = document.getElementById('enableBtn');
+    const params = new URLSearchParams(location.search);
+    const recenterBtn = document.getElementById('recenterBtn');
+    const imageSelect = document.getElementById('imageSelect');
+    const sensitivityInput = document.getElementById('sensitivity');
+    const smoothingInput = document.getElementById('smoothing');
+    const statusEl = document.getElementById('status');
+    const hud = document.querySelector('.hud');
+
+    let sensitivity = Number(sensitivityInput.value);
+    let smoothing = Number(smoothingInput.value);
+
+    let centerGamma = 0;
+    let target = 0;
+    let current = 0;
+    let hasMotion = false;
+    let lastGamma = 0;
+    let controlsHidden = false;
+
+    // Shake detection
+    let lastShakeAt = 0;
+    let lastMotionAt = 0;
+    const SHAKE_THRESHOLD = 18;   // acceleration delta
+    const SHAKE_COOLDOWN = 900;   // ms
+
+    function setImage(src) {
+      pano.style.backgroundImage = `url('${src}')`;
+      recenter();
+    }
+
+    function recenter() {
+      centerGamma = lastGamma || 0;
+      target = 0;
+      current = 0;
+      updateBackground();
+    }
+
+    function clamp(n, min, max) {
+      return Math.min(max, Math.max(min, n));
+    }
+
+    function updateBackground() {
+      // current maps to percent shift from center (-50..50)
+      const shift = clamp(current, -50, 50);
+      const x = 50 + shift;
+      pano.style.backgroundPosition = `${x}% 50%`;
+    }
+
+    function onOrientation(e) {
+      // gamma = left/right tilt in portrait, approx -90..90
+      if (typeof e.gamma !== 'number') return;
+      hasMotion = true;
+      lastGamma = e.gamma;
+      const delta = e.gamma - centerGamma;
+      target = clamp((delta / 30) * 30 * sensitivity, -50, 50);
+      if (!controlsHidden) statusEl.textContent = `Live tilt: ${e.gamma.toFixed(1)}°`;
+    }
+
+    function setControlsHidden(hidden) {
+      controlsHidden = hidden;
+      hud.classList.toggle('hidden', hidden);
+      statusEl.textContent = hidden
+        ? 'Full view mode (shake to show controls)'
+        : 'Controls shown (shake to hide controls)';
+    }
+
+    function toggleControls() {
+      setControlsHidden(!controlsHidden);
+    }
+
+    function onDeviceMotion(e) {
+      const acc = e.accelerationIncludingGravity;
+      if (!acc) return;
+
+      const x = Math.abs(acc.x || 0);
+      const y = Math.abs(acc.y || 0);
+      const z = Math.abs(acc.z || 0);
+      const magnitude = x + y + z;
+      const now = Date.now();
+
+      const delta = Math.abs(magnitude - lastMotionAt);
+      lastMotionAt = magnitude;
+
+      if (delta > SHAKE_THRESHOLD && now - lastShakeAt > SHAKE_COOLDOWN) {
+        lastShakeAt = now;
+        toggleControls();
+      }
+    }
+
+    function animate() {
+      current += (target - current) * smoothing;
+      updateBackground();
+      requestAnimationFrame(animate);
+    }
+
+    async function enableMotion() {
+      try {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if (perm !== 'granted') {
+            statusEl.textContent = 'Motion permission denied';
+            return;
+          }
+        }
+
+        window.addEventListener('deviceorientation', onOrientation, true);
+        window.addEventListener('devicemotion', onDeviceMotion, true);
+        statusEl.textContent = 'Motion enabled — tilt phone left/right (shake to hide/show controls)';
+        setTimeout(() => {
+          if (!hasMotion) {
+            statusEl.textContent = 'No motion data yet — move phone a bit';
+          }
+        }, 1800);
+      } catch (err) {
+        statusEl.textContent = 'Motion not available in this browser';
+      }
+    }
+
+    enableBtn.addEventListener('click', enableMotion);
+    recenterBtn.addEventListener('click', recenter);
+    imageSelect.addEventListener('change', () => setImage(imageSelect.value));
+    sensitivityInput.addEventListener('input', () => { sensitivity = Number(sensitivityInput.value); });
+    smoothingInput.addEventListener('input', () => { smoothing = Number(smoothingInput.value); });
+
+    const customImg = params.get('img');
+    if (customImg) {
+      const opt = document.createElement('option');
+      opt.value = customImg;
+      opt.textContent = 'Generated Image';
+      imageSelect.prepend(opt);
+      imageSelect.value = customImg;
+    }
+
+    setImage(imageSelect.value);
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

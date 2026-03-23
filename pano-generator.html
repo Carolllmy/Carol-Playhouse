@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Phone Motion Pano Generator</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#111831;--text:#edf3ff;--muted:#9fb0d0;--accent:#62b0ff}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:radial-gradient(circle at 20% 0%,#152447,#0a1021 45%,#070b16 100%);color:var(--text);min-height:100vh}
+    .wrap{max-width:960px;margin:0 auto;padding:20px}
+    .card{background:rgba(17,24,49,.82);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px;backdrop-filter:blur(8px)}
+    h1{margin:0 0 6px;font-size:1.25rem}
+    .sub{color:var(--muted);font-size:.92rem;margin-bottom:14px}
+    textarea{width:100%;min-height:110px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:#0d1530;color:#eaf1ff;padding:12px;font-size:15px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+    button,select,input{border-radius:10px;border:1px solid rgba(255,255,255,.2);background:#152347;color:var(--text);padding:9px 12px;font-weight:600}
+    button.primary{background:linear-gradient(135deg,#2f8fff,#66c7ff);border:none;color:white}
+    button:disabled{opacity:.6}
+    .status{margin-top:10px;color:#8ad0ff;font-size:.9rem;min-height:1.2em}
+    .preview{margin-top:14px;display:grid;gap:10px}
+    .preview img{width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.14)}
+    .links a{color:#9dd2ff;text-decoration:none}
+    .links a:hover{text-decoration:underline}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.1);font-size:.82rem;color:#d6e4ff;border:1px solid rgba(255,255,255,.12)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Phone Motion Pano Generator</h1>
+      <div class="sub">Speak or type what you want. It creates a panorama image tuned for your motion viewer.</div>
+
+      <textarea id="prompt" placeholder="Example: A dreamy cyberpunk Tokyo alley at night, neon rain, cinematic, rich reflections, ultra wide"></textarea>
+
+      <div class="row">
+        <button id="micBtn">🎤 Speak Prompt</button>
+        <button class="primary" id="genBtn">Generate Panorama</button>
+        <button id="useInViewerBtn" disabled>Open in Motion Viewer</button>
+      </div>
+
+      <div class="row">
+        <label>Style
+          <select id="style">
+            <option value="cinematic">Cinematic</option>
+            <option value="photoreal">Photoreal</option>
+            <option value="dreamy sci-fi">Dreamy Sci‑Fi</option>
+            <option value="anime background">Anime Background</option>
+            <option value="oil painting">Oil Painting</option>
+          </select>
+        </label>
+        <label>Scene Bias
+          <select id="scene">
+            <option value="wide environmental panorama">Environmental Wide</option>
+            <option value="fantasy landscape panorama">Fantasy Landscape</option>
+            <option value="futuristic city panorama">Futuristic City</option>
+            <option value="interior 360-like panorama">Interior 360-like</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="chips">
+        <div class="chip">Voice + text supported</div>
+        <div class="chip">Auto panorama prompt expansion</div>
+        <div class="chip">Direct open in motion viewer</div>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div class="preview" id="preview" style="display:none;">
+        <img id="resultImg" alt="Generated panorama" />
+        <div class="links">
+          <a id="rawLink" href="#" target="_blank" rel="noreferrer">Open image directly</a><br>
+          <a id="viewerLink" href="#" target="_blank" rel="noreferrer">Open in motion viewer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const promptEl = document.getElementById('prompt');
+    const micBtn = document.getElementById('micBtn');
+    const genBtn = document.getElementById('genBtn');
+    const useInViewerBtn = document.getElementById('useInViewerBtn');
+    const styleEl = document.getElementById('style');
+    const sceneEl = document.getElementById('scene');
+    const statusEl = document.getElementById('status');
+    const previewEl = document.getElementById('preview');
+    const resultImg = document.getElementById('resultImg');
+    const rawLink = document.getElementById('rawLink');
+    const viewerLink = document.getElementById('viewerLink');
+
+    let lastViewerUrl = '';
+
+    function setStatus(text) { statusEl.textContent = text || ''; }
+
+    micBtn.addEventListener('click', () => {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        setStatus('Voice input not supported in this browser.');
+        return;
+      }
+
+      const rec = new SR();
+      rec.lang = 'en-US';
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+      rec.continuous = false;
+
+      let finalText = '';
+      setStatus('Listening... describe the scene you want');
+
+      rec.onresult = (ev) => {
+        let interim = '';
+        for (let i = ev.resultIndex; i < ev.results.length; i++) {
+          const t = ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) finalText += t + ' ';
+          else interim += t;
+        }
+        promptEl.value = (finalText + interim).trim();
+      };
+
+      rec.onerror = () => setStatus('Voice input failed. Try again or type prompt.');
+      rec.onend = () => setStatus(promptEl.value ? 'Prompt captured.' : 'No speech captured.');
+      rec.start();
+    });
+
+    genBtn.addEventListener('click', async () => {
+      const prompt = promptEl.value.trim();
+      if (!prompt) {
+        setStatus('Please type or speak a prompt first.');
+        return;
+      }
+
+      genBtn.disabled = true;
+      useInViewerBtn.disabled = true;
+      setStatus('Generating panorama...');
+
+      try {
+        const r = await fetch('/api/pano/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt,
+            style: styleEl.value,
+            scene: sceneEl.value,
+            width: 2048,
+            height: 1024
+          })
+        });
+
+        const data = await r.json();
+        if (!r.ok || !data.ok) throw new Error(data.error || 'Failed to generate');
+
+        resultImg.src = data.imagePath;
+        rawLink.href = data.imagePath;
+        viewerLink.href = data.viewerUrl;
+        lastViewerUrl = data.viewerUrl;
+        previewEl.style.display = 'grid';
+        useInViewerBtn.disabled = false;
+        setStatus(`Done via ${data.provider}.`);
+      } catch (e) {
+        setStatus(`Error: ${e.message}`);
+      } finally {
+        genBtn.disabled = false;
+      }
+    });
+
+    useInViewerBtn.addEventListener('click', () => {
+      if (lastViewerUrl) location.href = lastViewerUrl;
+    });
+  </script>
+</body>
+</html>

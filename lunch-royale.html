@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bonnie's Lunch Royale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bungee&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Base ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --neon-blue: #00d4ff;
+  --neon-purple: #b44aff;
+  --neon-yellow: #ffe14d;
+  --neon-pink: #ff4aa1;
+  --bg-dark: #0b0e17;
+  --bg-card: #141825;
+  --steel-light: #d4d8de;
+  --steel-mid: #a8adb6;
+  --steel-dark: #7a8090;
+  --gold: #f5a623;
+  --green: #3cd070;
+  --blue: #3d9bff;
+  --purple: #b44aff;
+  --orange: #ff8c32;
+  --white-rarity: #c8ccd4;
+}
+
+/* ─── Calendar Button ─── */
+.title-bar {
+  position: relative;
+}
+.calendar-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: var(--bg-card);
+  border: 2px solid #333;
+  border-radius: 12px;
+  font-size: 24px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color .2s, transform .2s;
+}
+.calendar-btn:hover {
+  border-color: var(--neon-blue);
+  transform: scale(1.1);
+}
+
+/* ─── Lunchbox Trash ─── */
+.lunchbox-panel {
+  position: relative;
+}
+.lunchbox-trash {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(20,24,37,0.8);
+  border: 2px solid #333;
+  border-radius: 10px;
+  font-size: 18px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: border-color .2s, transform .2s;
+  z-index: 5;
+}
+.lunchbox-trash:hover {
+  border-color: #ff4a4a;
+  transform: scale(1.1);
+}
+
+/* ─── Gallery Overlay ─── */
+.gallery-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(6px);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.gallery-panel {
+  background: var(--bg-dark);
+  border: 2px solid var(--neon-blue);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(0,212,255,0.15);
+}
+.gallery-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.gallery-close-btn {
+  background: none;
+  border: 2px solid #555;
+  border-radius: 10px;
+  color: #aaa;
+  font-size: 18px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.gallery-close-btn:hover {
+  border-color: #ff4a4a;
+  color: #fff;
+}
+.gallery-empty {
+  font-family: system-ui, sans-serif;
+  color: var(--steel-dark);
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 0.9rem;
+}
+
+/* ─── Gallery Grid (inside overlay) ─── */
+.gallery-header {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px var(--neon-blue);
+  text-align: center;
+  letter-spacing: 3px;
+  margin-bottom: 16px;
+}
+.gallery-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 8px 4px 16px;
+  justify-content: center;
+}
+.gallery-card {
+  flex-shrink: 0;
+  width: 140px;
+  background: var(--bg-card);
+  border-radius: 14px;
+  border: 2px solid #222840;
+  overflow: hidden;
+  scroll-snap-align: start;
+  cursor: pointer;
+  transition: border-color .2s, transform .2s;
+}
+.gallery-card:hover {
+  border-color: var(--neon-blue);
+  transform: translateY(-3px);
+}
+.gallery-thumb {
+  width: 100%;
+  height: 100px;
+  background: #0d1020;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 2px;
+  padding: 4px;
+}
+.gallery-thumb-cell {
+  background: #1a1f35;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.gallery-thumb-cell.main {
+  grid-row: span 2;
+}
+.gallery-date {
+  padding: 6px 10px 2px;
+  font-family: 'Bungee', sans-serif;
+  font-size: 0.65rem;
+  color: var(--steel-light);
+  text-align: center;
+  letter-spacing: 1px;
+}
+.gallery-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px 8px;
+  gap: 6px;
+}
+.fav-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  filter: grayscale(1) opacity(0.4);
+  transition: filter .2s, transform .2s;
+  padding: 2px;
+}
+.fav-btn:hover {
+  filter: grayscale(0) opacity(0.8);
+  transform: scale(1.2);
+}
+.fav-btn.fav-active {
+  filter: grayscale(0) opacity(1);
+  transform: scale(1.1);
+}
+.gallery-label {
+  font-family: system-ui, sans-serif;
+  font-size: 0.6rem;
+  color: var(--steel-dark);
+  text-align: center;
+  padding: 0 8px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gallery-card.is-fav {
+  border-color: var(--neon-yellow);
+  box-shadow: 0 0 12px rgba(255,225,77,0.15);
+}
+.gallery-card .delete-btn {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255,70,70,0.85);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+.gallery-card:hover .delete-btn {
+  display: flex;
+}
+.gallery-card {
+  position: relative;
+}
+
+/* ─── Overwrite Dialog ─── */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.dialog-box {
+  background: var(--bg-card);
+  border: 2px solid var(--neon-blue);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,212,255,0.15);
+}
+.dialog-emoji {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+.dialog-title {
+  font-family: 'Bangers', sans-serif;
+  font-size: 1.5rem;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 6px var(--neon-yellow);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.dialog-body {
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  color: var(--steel-mid);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn-secondary {
+  background: transparent !important;
+  border: 2px solid var(--steel-dark) !important;
+  color: var(--steel-light) !important;
+  box-shadow: none !important;
+}
+.btn-secondary:hover {
+  border-color: var(--steel-light) !important;
+}
+.victory-date {
+  font-family: system-ui, sans-serif;
+  font-size: 0.85rem;
+  color: var(--steel-mid);
+  margin-top: 6px;
+}
+
+html { font-size: 16px; }
+
+body {
+  background: var(--bg-dark);
+  color: #e8ecf0;
+  font-family: 'Bungee', 'Bangers', Impact, sans-serif;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ─── Title ─── */
+.title-bar {
+  text-align: center;
+  padding: 18px 10px 8px;
+}
+
+.title-bar h1 {
+  font-family: 'Bangers', 'Bungee', Impact, sans-serif;
+  font-size: clamp(1.6rem, 5vw, 2.8rem);
+  letter-spacing: 3px;
+  color: var(--neon-yellow);
+  text-shadow:
+    0 0 8px var(--neon-yellow),
+    0 0 20px rgba(255,225,77,.45),
+    0 0 40px rgba(255,225,77,.2),
+    2px 2px 0 #000;
+}
+
+.title-bar .sub {
+  font-family: 'Bungee', sans-serif;
+  font-size: clamp(.65rem, 2vw, .9rem);
+  color: var(--neon-blue);
+  text-shadow: 0 0 6px var(--neon-blue);
+  margin-top: 2px;
+  margin-bottom: 24px;
+  letter-spacing: 2px;
+}
+
+/* ─── Layout ─── */
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 12px 30px;
+}
+
+/* Desktop: side-by-side — ingredients LEFT, lunchbox RIGHT */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 820px) {
+  .main-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .inventory-panel {
+    flex: 0 0 340px;
+    order: -1; /* ingredients on left */
+    max-height: calc(100vh - 120px);
+    overflow: hidden;
+    position: sticky;
+    top: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+  .inventory-panel .inventory-header,
+  .inventory-panel .category-filters,
+  .inventory-panel .tap-hint,
+  .inventory-panel .custom-input-row {
+    flex-shrink: 0;
+  }
+  .inventory-panel .inventory {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .lunchbox-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: flex-start;
+  }
+}
+
+/* ─── Lunchbox ─── */
+.lunchbox-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 10px;
+}
+
+.lunchbox {
+  /* PlanetBox Rover is landscape, roughly 1.35:1 */
+  width: min(92vw, 560px);
+  aspect-ratio: 1.35 / 1;
+  border-radius: 18px;
+  padding: 10px;
+  position: relative;
+
+  /* Brushed steel */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.03) 0px,
+      rgba(0,0,0,.02) 1px,
+      rgba(255,255,255,.04) 2px,
+      rgba(0,0,0,.01) 3px
+    ),
+    linear-gradient(160deg, #c0c4cc 0%, #9a9fa8 40%, #b0b5be 70%, #888e98 100%);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.25),
+    0 0 30px rgba(0,212,255,.12);
+  border: 2px solid #6a707a;
+}
+
+@media (min-width: 820px) {
+  .lunchbox { width: min(80vw, 520px); }
+}
+
+/* PlanetBox Rover — absolute positioning from wireframe reference
+   ┌──────────┬──────────────────────────────┐
+   │          │      wide bar (top)          │
+   │  tall    │                              │
+   │  left    ├────────────┬─────────────────┤
+   │          │   small    │                 │
+   │          │   center   │    LARGE        │
+   ├──────────┤            │    MAIN         │
+   │          ├────────────┤                 │
+   │  wide bottom-left     │                 │
+   │                       │                 │
+   └───────────────────────┴─────────────────┘
+*/
+.lunchbox-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.compartment {
+  position: absolute;
+  border-radius: 12px;
+  overflow: hidden;
+
+  /* Recessed well */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.015) 0px,
+      rgba(0,0,0,.015) 1px,
+      rgba(255,255,255,.02) 2px
+    ),
+    linear-gradient(180deg, #8a8f98 0%, #a0a5ae 50%, #93989f 100%);
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,.35),
+    inset 0 -1px 0 rgba(255,255,255,.15);
+  border: 1.5px solid #70757e;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow .2s, border-color .2s;
+  cursor: pointer;
+}
+
+.compartment.drag-over,
+.compartment.tap-target {
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,.35),
+    inset 0 -1px 0 rgba(255,255,255,.15),
+    0 0 14px var(--neon-blue),
+    0 0 28px rgba(0,212,255,.25);
+  border-color: var(--neon-blue);
+}
+
+/* ── Compartment positions (% of inner lunchbox) ── */
+.comp-tl    { left: 0;    top: 0;    width: 24%;  height: 56%; }
+.comp-bar   { left: 26%;  top: 0;    width: 74%;  height: 27%; }
+.comp-sm    { left: 26%;  top: 29%;  width: 24%;  height: 27%; }
+.comp-bl    { left: 0;    top: 58%;  width: 50%;  height: 42%; }
+.comp-large { left: 52%;  top: 29%;  width: 48%;  height: 71%; }
+
+.compartment .label {
+  position: absolute;
+  bottom: 4px; left: 0; right: 0;
+  text-align: center;
+  font-family: 'Bungee', sans-serif;
+  font-size: clamp(.42rem, 1.2vw, .55rem);
+  color: rgba(60,60,70,.55);
+  letter-spacing: 1px;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+/* Food item placed in compartment */
+.compartment .placed-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: grab;
+  touch-action: none;
+  animation: dropBounce .4s ease;
+}
+
+.placed-item .emoji {
+  font-size: clamp(1.2rem, 3.5vw, 2rem);
+  line-height: 1;
+}
+
+.placed-item .name {
+  font-family: 'Bungee', sans-serif;
+  font-size: clamp(.38rem, 1vw, .55rem);
+  color: #2a2d35;
+  text-align: center;
+  line-height: 1.1;
+}
+
+@keyframes dropBounce {
+  0%   { transform: scale(.5); opacity: .6; }
+  50%  { transform: scale(1.15); }
+  70%  { transform: scale(.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Toolbar ─── */
+.toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: 'Bangers', 'Bungee', sans-serif;
+  font-size: clamp(.85rem, 2.5vw, 1.1rem);
+  letter-spacing: 2px;
+  padding: 8px 22px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  color: #fff;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #3a7cff 0%, #1a4fd4 100%);
+  box-shadow: 0 4px 0 #0e2f7a, 0 0 12px rgba(58,124,255,.3);
+  transition: transform .1s, box-shadow .15s;
+}
+
+.btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #0e2f7a;
+}
+
+.btn-danger {
+  background: linear-gradient(180deg, #ff4a6a 0%, #c02040 100%);
+  box-shadow: 0 4px 0 #6a1020, 0 0 12px rgba(255,74,106,.3);
+}
+
+/* ─── Tap-select indicator on food cards ─── */
+.food-card.selected {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 0 20px var(--neon-blue), 0 0 40px rgba(0,212,255,.3) !important;
+  border-color: var(--neon-blue) !important;
+}
+
+.tap-hint {
+  text-align: center;
+  font-family: 'Bungee', sans-serif;
+  font-size: .6rem;
+  color: var(--neon-blue);
+  text-shadow: 0 0 4px var(--neon-blue);
+  letter-spacing: 1px;
+  padding: 4px;
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.tap-hint.visible { opacity: 1; }
+
+/* ─── Custom ingredient input ─── */
+.custom-input-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.custom-input-row input {
+  flex: 1;
+  font-family: 'Bungee', sans-serif;
+  font-size: .7rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid #333;
+  background: var(--bg-card);
+  color: #e8ecf0;
+  outline: none;
+  transition: border-color .2s;
+  letter-spacing: .5px;
+}
+
+.custom-input-row input::placeholder {
+  color: #555;
+  letter-spacing: .5px;
+}
+
+.custom-input-row input:focus {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 8px rgba(0,212,255,.2);
+}
+
+.custom-input-row button {
+  font-family: 'Bangers', sans-serif;
+  font-size: .85rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  letter-spacing: 1px;
+  background: linear-gradient(180deg, #3cd070 0%, #28a050 100%);
+  box-shadow: 0 3px 0 #186030, 0 0 10px rgba(60,208,112,.25);
+  white-space: nowrap;
+  transition: transform .1s;
+}
+
+.custom-input-row button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #186030;
+}
+
+/* Genmoji-style icon for custom items */
+.food-card .genmoji {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  line-height: 1;
+  background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.15);
+  position: relative;
+}
+
+.food-card .genmoji .genmoji-letter {
+  font-family: 'Bangers', sans-serif;
+  font-size: .9rem;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+
+.placed-item .genmoji {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 100%);
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+
+/* ─── Victory Overlay ─── */
+.victory-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  background: rgba(0,0,0,.75);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s;
+}
+
+.victory-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.victory-text {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(2.2rem, 8vw, 4.5rem);
+  color: var(--neon-yellow);
+  text-shadow:
+    0 0 14px var(--neon-yellow),
+    0 0 40px rgba(255,225,77,.5),
+    3px 3px 0 #000;
+  letter-spacing: 4px;
+  animation: victoryPulse 1.2s ease-in-out infinite alternate;
+}
+
+.victory-sub {
+  font-family: 'Bungee', sans-serif;
+  font-size: clamp(.9rem, 3vw, 1.3rem);
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px var(--neon-blue);
+  margin-top: 8px;
+}
+
+.victory-trophy {
+  font-size: clamp(3rem, 10vw, 5rem);
+  animation: trophySpin 2s ease-in-out infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes victoryPulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); text-shadow: 0 0 20px var(--neon-yellow), 0 0 60px rgba(255,225,77,.6), 3px 3px 0 #000; }
+}
+
+@keyframes trophySpin {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  50%      { transform: rotate(8deg) scale(1.1); }
+}
+
+/* ─── Inventory ─── */
+.inventory-header {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  color: var(--neon-purple);
+  text-shadow: 0 0 6px var(--neon-purple);
+  letter-spacing: 2px;
+  text-align: center;
+  margin: 14px 0 6px;
+}
+
+.category-filters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.filter-btn {
+  font-family: 'Bungee', sans-serif;
+  font-size: .6rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 2px solid;
+  cursor: pointer;
+  background: transparent;
+  color: #ccc;
+  letter-spacing: 1px;
+  transition: background .2s, color .2s;
+}
+
+.filter-btn.active { color: #fff; }
+
+.filter-btn[data-cat="all"]     { border-color: #888; }
+.filter-btn[data-cat="all"].active { background: #555; }
+.filter-btn[data-cat="protein"] { border-color: var(--gold); }
+.filter-btn[data-cat="protein"].active { background: var(--gold); color: #000; }
+.filter-btn[data-cat="veggie"]  { border-color: var(--green); }
+.filter-btn[data-cat="veggie"].active { background: var(--green); color: #000; }
+.filter-btn[data-cat="fruit"]   { border-color: var(--blue); }
+.filter-btn[data-cat="fruit"].active { background: var(--blue); color: #fff; }
+.filter-btn[data-cat="snack"]   { border-color: var(--purple); }
+.filter-btn[data-cat="snack"].active { background: var(--purple); color: #fff; }
+.filter-btn[data-cat="fiber"]   { border-color: var(--orange); }
+.filter-btn[data-cat="fiber"].active { background: var(--orange); color: #000; }
+.filter-btn[data-cat="treat"]   { border-color: var(--white-rarity); }
+.filter-btn[data-cat="treat"].active { background: var(--white-rarity); color: #000; }
+
+.inventory {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  padding: 0 2px 40px;
+}
+
+@media (min-width: 820px) {
+  .inventory {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Food card */
+.food-card {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 8px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+  border: 2px solid;
+  transition: transform .15s, box-shadow .2s, border-color .2s;
+}
+
+.food-card:hover {
+  transform: translateY(-3px) scale(1.04);
+}
+
+.food-card[data-cat="protein"] { border-color: var(--gold);   box-shadow: 0 0 8px rgba(245,166,35,.25); }
+.food-card[data-cat="veggie"]  { border-color: var(--green);  box-shadow: 0 0 8px rgba(60,208,112,.25); }
+.food-card[data-cat="fruit"]   { border-color: var(--blue);   box-shadow: 0 0 8px rgba(61,155,255,.25); }
+.food-card[data-cat="snack"]   { border-color: var(--purple); box-shadow: 0 0 8px rgba(180,74,255,.25); }
+.food-card[data-cat="fiber"]   { border-color: var(--orange); box-shadow: 0 0 8px rgba(255,140,50,.25); }
+.food-card[data-cat="treat"]   { border-color: var(--white-rarity); box-shadow: 0 0 8px rgba(200,204,212,.2); }
+
+.food-card:hover[data-cat="protein"] { box-shadow: 0 0 16px rgba(245,166,35,.5); }
+.food-card:hover[data-cat="veggie"]  { box-shadow: 0 0 16px rgba(60,208,112,.5); }
+.food-card:hover[data-cat="fruit"]   { box-shadow: 0 0 16px rgba(61,155,255,.5); }
+.food-card:hover[data-cat="snack"]   { box-shadow: 0 0 16px rgba(180,74,255,.5); }
+.food-card:hover[data-cat="fiber"]   { box-shadow: 0 0 16px rgba(255,140,50,.5); }
+.food-card:hover[data-cat="treat"]   { box-shadow: 0 0 16px rgba(200,204,212,.4); }
+
+.food-card.in-box { opacity: .3; pointer-events: none; }
+
+.food-card .emoji { font-size: 1.6rem; line-height: 1; }
+.food-card .name  { font-family: 'Bungee', sans-serif; font-size: .52rem; text-align: center; line-height: 1.15; color: #ccc; }
+
+.food-card .badge {
+  font-family: 'Bungee', sans-serif;
+  font-size: .4rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.food-card[data-cat="protein"] .badge { background: var(--gold);   color: #000; }
+.food-card[data-cat="veggie"]  .badge { background: var(--green);  color: #000; }
+.food-card[data-cat="fruit"]   .badge { background: var(--blue);   color: #fff; }
+.food-card[data-cat="snack"]   .badge { background: var(--purple); color: #fff; }
+.food-card[data-cat="fiber"]   .badge { background: var(--orange); color: #000; }
+.food-card[data-cat="treat"]   .badge { background: var(--white-rarity); color: #111; }
+
+/* ─── Drag ghost ─── */
+.drag-ghost {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(20,24,37,.9);
+  border-radius: 10px;
+  padding: 8px 10px 6px;
+  border: 2px solid var(--neon-blue);
+  box-shadow: 0 0 18px rgba(0,212,255,.45);
+  transform: translate(-50%, -50%) scale(1.1);
+  transition: none;
+}
+
+.drag-ghost .emoji { font-size: 1.8rem; }
+.drag-ghost .name  { font-family: 'Bungee', sans-serif; font-size: .55rem; color: #ddd; }
+
+/* ─── Responsive tweaks ─── */
+@media (min-width: 640px) and (max-width: 819px) {
+  .inventory {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+@media (max-width: 380px) {
+  .lunchbox { padding: 6px; }
+  .lunchbox-grid { gap: 5px; }
+  .inventory { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Title -->
+<div class="title-bar">
+  <h1>🎮 BONNIE'S LUNCH ROYALE 🍱</h1>
+  <div class="sub">CHOOSE YOUR LOOT — FILL THE BOX!</div>
+  <button class="calendar-btn" id="calendarBtn" title="Bonnie's Lunches">📅</button>
+</div>
+
+<div class="app">
+  <div class="main-layout">
+
+    <!-- Inventory Panel (left on desktop) -->
+    <div class="inventory-panel">
+      <div class="inventory-header">⬇️ DRAG OR TAP YOUR LOOT ⬇️</div>
+
+      <div class="category-filters">
+        <button class="filter-btn active" data-cat="all">ALL</button>
+        <button class="filter-btn" data-cat="protein">🟡 PROTEIN</button>
+        <button class="filter-btn" data-cat="veggie">🟢 VEGGIE</button>
+        <button class="filter-btn" data-cat="fruit">🔵 FRUIT</button>
+        <button class="filter-btn" data-cat="snack">🟣 SNACK</button>
+        <button class="filter-btn" data-cat="fiber">🟠 FIBER</button>
+        <button class="filter-btn" data-cat="treat">⚪ TREAT</button>
+      </div>
+
+      <div class="tap-hint" id="tapHint">TAP A COMPARTMENT TO PLACE</div>
+
+      <div class="custom-input-row">
+        <input type="text" id="customInput" placeholder="Add custom ingredient..." maxlength="30">
+        <button id="addCustomBtn">+ ADD</button>
+      </div>
+
+      <div class="inventory" id="inventory"></div>
+    </div>
+
+    <!-- Lunchbox Panel (right on desktop) -->
+    <div class="lunchbox-panel">
+      <div class="lunchbox-wrapper">
+        <div class="lunchbox">
+          <div class="lunchbox-grid">
+            <div class="compartment comp-tl" data-comp="tl">
+              <span class="label">Side</span>
+            </div>
+            <div class="compartment comp-bar" data-comp="bar">
+              <span class="label">Snack Bar</span>
+            </div>
+            <div class="compartment comp-sm" data-comp="sm">
+              <span class="label">Side</span>
+            </div>
+            <div class="compartment comp-bl" data-comp="bl">
+              <span class="label">Side</span>
+            </div>
+            <div class="compartment comp-large" data-comp="large">
+              <span class="label">Main</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trash icon on lunchbox -->
+      <button class="lunchbox-trash" id="clearBtn" title="Clear lunchbox">🗑️</button>
+    </div>
+
+  </div><!-- /main-layout -->
+
+
+</div><!-- /app -->
+
+<!-- Gallery Overlay -->
+<div class="gallery-overlay" id="galleryOverlay" style="display:none">
+  <div class="gallery-panel">
+    <div class="gallery-panel-header">
+      <span class="gallery-header">📸 BONNIE'S LUNCHES</span>
+      <button class="gallery-close-btn" onclick="closeGallery()">✕</button>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+    <div class="gallery-empty" id="galleryEmpty" style="display:none">No lunches saved yet! Fill the box to save one.</div>
+  </div>
+</div>
+
+
+
+<!-- Overwrite confirmation dialog -->
+<div class="dialog-overlay" id="overwriteDialog" style="display:none">
+  <div class="dialog-box">
+    <div class="dialog-emoji">🍱</div>
+    <div class="dialog-title">Already packed today!</div>
+    <div class="dialog-body" id="dialogBody">Bonnie already has a lunchbox for today. Want to swap it out for this new one?</div>
+    <div class="dialog-actions">
+      <button class="btn btn-secondary" onclick="cancelOverwrite()">Keep the old one</button>
+      <button class="btn" onclick="confirmOverwrite()">Pack the new one!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════ */
+const FOODS = [
+  // Protein (gold / legendary)
+  { id: 'chicken-nuggets', emoji: '🍗', name: 'Chicken Nuggets', cat: 'protein' },
+  { id: 'hard-boiled-egg', emoji: '🥚', name: 'Hard Boiled Egg', cat: 'protein' },
+  { id: 'cheese-cubes',    emoji: '🧀', name: 'Cheese Cubes',    cat: 'protein' },
+  { id: 'string-cheese',   emoji: '🧀', name: 'String Cheese',   cat: 'protein' },
+  { id: 'yogurt-cup',      emoji: '🥛', name: 'Yogurt Cup',      cat: 'protein' },
+
+  // Veggie (green / uncommon)
+  { id: 'carrot-sticks',   emoji: '🥕', name: 'Carrot Sticks',   cat: 'veggie' },
+  { id: 'broccoli',        emoji: '🥦', name: 'Broccoli',        cat: 'veggie' },
+  { id: 'cucumber-slices', emoji: '🥒', name: 'Cucumber Slices', cat: 'veggie' },
+  { id: 'cherry-tomatoes', emoji: '🍅', name: 'Cherry Tomatoes', cat: 'veggie' },
+
+  // Fruit (blue / rare)
+  { id: 'apple-slices',  emoji: '🍎', name: 'Apple Slices',  cat: 'fruit' },
+  { id: 'orange',        emoji: '🍊', name: 'Orange',        cat: 'fruit' },
+  { id: 'grapes',        emoji: '🍇', name: 'Grapes',        cat: 'fruit' },
+  { id: 'strawberries',  emoji: '🍓', name: 'Strawberries',  cat: 'fruit' },
+  { id: 'banana',        emoji: '🍌', name: 'Banana',        cat: 'fruit' },
+
+  // Snack (purple / epic)
+  { id: 'goldfish-crackers', emoji: '🐟', name: 'Goldfish Crackers', cat: 'snack' },
+  { id: 'pretzels',          emoji: '🥨', name: 'Pretzels',          cat: 'snack' },
+  { id: 'granola-bar',       emoji: '🍫', name: 'Granola Bar',       cat: 'snack' },
+
+  // Fiber (orange)
+  { id: 'sandwich',  emoji: '🥪', name: 'Sandwich',  cat: 'fiber' },
+  { id: 'rice-ball', emoji: '🍙', name: 'Rice Ball', cat: 'fiber' },
+
+  // Treat (white / common)
+  { id: 'cookie',          emoji: '🍪', name: 'Cookie',          cat: 'treat' },
+  { id: 'chocolate-square', emoji: '🍫', name: 'Chocolate Square', cat: 'treat' },
+];
+
+const CAT_LABELS = {
+  protein: 'Legendary',
+  veggie:  'Uncommon',
+  fruit:   'Rare',
+  snack:   'Epic',
+  fiber:   'Fiber',
+  treat:   'Common',
+};
+
+/* ═══════════════════════════════════════
+   AUTO-CATEGORIZE + EMOJI LOOKUP
+   ═══════════════════════════════════════ */
+const EMOJI_MAP = {
+  // protein
+  chicken:'🍗',turkey:'🦃',egg:'🥚',cheese:'🧀',yogurt:'🥛',milk:'🥛',
+  meat:'🥩',steak:'🥩',beef:'🥩',ham:'🍖',bacon:'🥓',fish:'🐟',salmon:'🐟',
+  tuna:'🐟',shrimp:'🦐',tofu:'🫘',beans:'🫘',sausage:'🌭',hotdog:'🌭',
+  // veggie
+  carrot:'🥕',broccoli:'🥦',cucumber:'🥒',tomato:'🍅',lettuce:'🥬',salad:'🥗',
+  corn:'🌽',potato:'🥔',pepper:'🫑',onion:'🧅',garlic:'🧄',mushroom:'🍄',
+  celery:'🥬',pea:'🫛',spinach:'🥬',avocado:'🥑',eggplant:'🍆',edamame:'🫛',
+  // fruit
+  apple:'🍎',orange:'🍊',grape:'🍇',strawberry:'🍓',banana:'🍌',cherry:'🍒',
+  peach:'🍑',pear:'🍐',watermelon:'🍉',melon:'🍈',lemon:'🍋',lime:'🍋',
+  blueberry:'🫐',raspberry:'🫐',kiwi:'🥝',pineapple:'🍍',mango:'🥭',coconut:'🥥',plum:'🍑',
+  // snack
+  pretzel:'🥨',cracker:'🍘',chip:'🍟',popcorn:'🍿',nut:'🥜',peanut:'🥜',
+  almond:'🥜',goldfish:'🐟',trail:'🥜',granola:'🍫',cereal:'🥣',
+  // fiber / carbs
+  bread:'🍞',sandwich:'🥪',wrap:'🌯',rice:'🍚',pasta:'🍝',noodle:'🍜',
+  tortilla:'🌮',taco:'🌮',bagel:'🥯',croissant:'🥐',waffle:'🧇',pancake:'🥞',
+  pizza:'🍕',burrito:'🌯',oat:'🥣',muffin:'🧁',roll:'🍞',pita:'🫓',
+  // treat
+  cookie:'🍪',chocolate:'🍫',candy:'🍬',cake:'🎂',ice:'🍦',icecream:'🍦',
+  donut:'🍩',cupcake:'🧁',brownie:'🍫',gummy:'🍬',marshmallow:'🍡',
+  pie:'🥧',pudding:'🍮',jelly:'🍮',lollipop:'🍭',fudge:'🍫',
+};
+
+const CAT_KEYWORDS = {
+  protein: ['chicken','turkey','egg','cheese','yogurt','milk','meat','steak','beef','ham',
+            'bacon','fish','salmon','tuna','shrimp','tofu','beans','sausage','hotdog',
+            'protein','jerky','pepperoni','salami','hummus','cottage','mozzarella','cheddar'],
+  veggie:  ['carrot','broccoli','cucumber','tomato','lettuce','salad','corn','potato',
+            'pepper','onion','garlic','mushroom','celery','pea','spinach','avocado',
+            'eggplant','edamame','zucchini','cauliflower','radish','beet','cabbage','kale','veggie','vegetable'],
+  fruit:   ['apple','orange','grape','strawberry','banana','cherry','peach','pear',
+            'watermelon','melon','lemon','lime','blueberry','raspberry','kiwi',
+            'pineapple','mango','coconut','plum','berry','fruit','raisin','fig','date','clementine','tangerine'],
+  snack:   ['pretzel','cracker','chip','popcorn','nut','peanut','almond','goldfish',
+            'trail','granola','cereal','snack','cashew','pistachio','sunflower','seed'],
+  fiber:   ['bread','sandwich','wrap','rice','pasta','noodle','tortilla','taco','bagel',
+            'croissant','waffle','pancake','pizza','burrito','oat','muffin','roll','pita',
+            'quinoa','couscous','grain','wheat','rye'],
+  treat:   ['cookie','chocolate','candy','cake','ice','icecream','donut','cupcake',
+            'brownie','gummy','marshmallow','pie','pudding','jelly','lollipop','fudge',
+            'treat','sweet','sugar','dessert','sprinkle','frosting','oreo','skittles','snickers'],
+};
+
+const CAT_COLORS = {
+  protein: '#f5a623', veggie: '#3cd070', fruit: '#3d9bff',
+  snack: '#b44aff', fiber: '#ff8c32', treat: '#c8ccd4',
+};
+
+function autoCategory(name) {
+  const lower = name.toLowerCase();
+  let best = null, bestScore = 0;
+  for (const [cat, keywords] of Object.entries(CAT_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (lower.includes(kw) && kw.length > bestScore) {
+        best = cat;
+        bestScore = kw.length;
+      }
+    }
+  }
+  return best || 'snack'; // default to snack if no match
+}
+
+function autoEmoji(name) {
+  const lower = name.toLowerCase();
+  let best = null, bestLen = 0;
+  for (const [kw, em] of Object.entries(EMOJI_MAP)) {
+    if (lower.includes(kw) && kw.length > bestLen) {
+      best = em;
+      bestLen = kw.length;
+    }
+  }
+  return best; // null if no match → use genmoji
+}
+
+function makeGenmojiSvg(name, cat) {
+  // Generate a colorful circle with the first letter(s) — genmoji style
+  const color = CAT_COLORS[cat] || '#888';
+  const initial = name.trim().charAt(0).toUpperCase();
+  return `<div class="genmoji" style="background: linear-gradient(135deg, ${color}88 0%, ${color}44 100%); border: 2px solid ${color};">` +
+         `<span class="genmoji-letter">${initial}</span></div>`;
+}
+
+/* ═══════════════════════════════════════
+   STATE  (5 compartments)
+   ═══════════════════════════════════════ */
+const boxState = { tl: null, bar: null, sm: null, bl: null, large: null };
+let activeFilter = 'all';
+let selectedFoodId = null; // for tap-to-place
+
+/* ═══════════════════════════════════════
+   RENDER INVENTORY
+   ═══════════════════════════════════════ */
+const inventoryEl = document.getElementById('inventory');
+
+function renderInventory() {
+  inventoryEl.innerHTML = '';
+  const items = activeFilter === 'all' ? FOODS : FOODS.filter(f => f.cat === activeFilter);
+  const placedIds = new Set(Object.values(boxState).filter(Boolean));
+
+  items.forEach(food => {
+    const card = document.createElement('div');
+    const isPlaced = placedIds.has(food.id);
+    card.className = 'food-card'
+      + (isPlaced ? ' in-box' : '')
+      + (food.id === selectedFoodId ? ' selected' : '');
+    card.dataset.cat = food.cat;
+    card.dataset.foodId = food.id;
+    const iconHtml = food.emoji
+      ? `<span class="emoji">${food.emoji}</span>`
+      : (food.genmoji || makeGenmojiSvg(food.name, food.cat));
+    card.innerHTML = `
+      ${iconHtml}
+      <span class="name">${food.name}</span>
+      <span class="badge">${CAT_LABELS[food.cat]}</span>
+    `;
+    if (!isPlaced) {
+      card.addEventListener('pointerdown', onPointerDown);
+      card.addEventListener('click', onFoodTap);
+    }
+    inventoryEl.appendChild(card);
+  });
+}
+
+/* ═══════════════════════════════════════
+   RENDER BOX
+   ═══════════════════════════════════════ */
+function renderBox() {
+  document.querySelectorAll('.compartment').forEach(comp => {
+    const key = comp.dataset.comp;
+    const existing = comp.querySelector('.placed-item');
+    if (existing) existing.remove();
+
+    const foodId = boxState[key];
+    if (foodId) {
+      const food = FOODS.find(f => f.id === foodId);
+      const el = document.createElement('div');
+      el.className = 'placed-item';
+      el.dataset.foodId = food.id;
+      el.dataset.compKey = key;
+      const placedIcon = food.emoji
+        ? `<span class="emoji">${food.emoji}</span>`
+        : (food.genmoji || makeGenmojiSvg(food.name, food.cat));
+      el.innerHTML = `${placedIcon}<span class="name">${food.name}</span>`;
+      el.addEventListener('pointerdown', onPointerDown);
+      comp.appendChild(el);
+    }
+  });
+  checkVictory();
+  if (typeof tryAutoSave === 'function') tryAutoSave();
+}
+
+/* ═══════════════════════════════════════
+   TAP-TO-PLACE
+   ═══════════════════════════════════════ */
+function onFoodTap(e) {
+  // Ignore if this was a drag
+  if (dragData) return;
+  const foodId = e.currentTarget.dataset.foodId;
+
+  if (selectedFoodId === foodId) {
+    // Deselect
+    clearSelection();
+    return;
+  }
+
+  selectedFoodId = foodId;
+  renderInventory();
+  document.getElementById('tapHint').classList.add('visible');
+
+  // Highlight empty compartments
+  document.querySelectorAll('.compartment').forEach(comp => {
+    if (!boxState[comp.dataset.comp]) {
+      comp.classList.add('tap-target');
+    }
+  });
+}
+
+function clearSelection() {
+  selectedFoodId = null;
+  document.getElementById('tapHint').classList.remove('visible');
+  document.querySelectorAll('.compartment').forEach(c => c.classList.remove('tap-target'));
+  renderInventory();
+}
+
+// Compartment tap handler
+document.querySelectorAll('.compartment').forEach(comp => {
+  comp.addEventListener('click', (e) => {
+    if (!selectedFoodId) return;
+    const key = comp.dataset.comp;
+    if (boxState[key]) return; // already occupied
+
+    boxState[key] = selectedFoodId;
+    clearSelection();
+    renderBox();
+    renderInventory();
+  });
+});
+
+/* ═══════════════════════════════════════
+   DRAG & DROP (pointer events)
+   ═══════════════════════════════════════ */
+let dragData = null;
+let dragStartPos = null;
+const DRAG_THRESHOLD = 6; // px before we commit to a drag
+
+function onPointerDown(e) {
+  e.preventDefault();
+  const target = e.currentTarget;
+  const foodId = target.dataset.foodId;
+  const food = FOODS.find(f => f.id === foodId);
+  if (!food) return;
+
+  const sourceComp = target.dataset.compKey || null;
+
+  dragStartPos = { x: e.clientX, y: e.clientY, foodId, sourceComp, target };
+
+  document.addEventListener('pointermove', onPointerMove);
+  document.addEventListener('pointerup', onPointerUp);
+}
+
+function startDrag() {
+  const { foodId, sourceComp } = dragStartPos;
+  const food = FOODS.find(f => f.id === foodId);
+
+  // Clear any tap selection
+  clearSelection();
+
+  // Create ghost
+  const ghost = document.createElement('div');
+  ghost.className = 'drag-ghost';
+  const ghostIcon = food.emoji
+    ? `<span class="emoji">${food.emoji}</span>`
+    : (food.genmoji || makeGenmojiSvg(food.name, food.cat));
+  ghost.innerHTML = `${ghostIcon}<span class="name">${food.name}</span>`;
+  document.body.appendChild(ghost);
+
+  ghost.style.left = dragStartPos.x + 'px';
+  ghost.style.top  = dragStartPos.y + 'px';
+
+  dragData = { foodId, sourceComp, ghost };
+
+  if (sourceComp) {
+    boxState[sourceComp] = null;
+    renderBox();
+    renderInventory();
+  }
+}
+
+function onPointerMove(e) {
+  if (!dragStartPos) return;
+
+  // Check if we've passed the drag threshold
+  if (!dragData) {
+    const dx = e.clientX - dragStartPos.x;
+    const dy = e.clientY - dragStartPos.y;
+    if (Math.sqrt(dx*dx + dy*dy) < DRAG_THRESHOLD) return;
+    startDrag();
+  }
+
+  dragData.ghost.style.left = e.clientX + 'px';
+  dragData.ghost.style.top  = e.clientY + 'px';
+
+  document.querySelectorAll('.compartment').forEach(comp => {
+    const rect = comp.getBoundingClientRect();
+    const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
+                   e.clientY >= rect.top  && e.clientY <= rect.bottom;
+    comp.classList.toggle('drag-over', inside && !boxState[comp.dataset.comp]);
+  });
+}
+
+function onPointerUp(e) {
+  document.removeEventListener('pointermove', onPointerMove);
+  document.removeEventListener('pointerup', onPointerUp);
+
+  if (!dragData) {
+    // Never crossed threshold — treat as tap (handled by click handler)
+    dragStartPos = null;
+    return;
+  }
+
+  dragData.ghost.remove();
+
+  let targetComp = null;
+  document.querySelectorAll('.compartment').forEach(comp => {
+    const rect = comp.getBoundingClientRect();
+    const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
+                   e.clientY >= rect.top  && e.clientY <= rect.bottom;
+    if (inside && !boxState[comp.dataset.comp]) {
+      targetComp = comp.dataset.comp;
+    }
+    comp.classList.remove('drag-over');
+  });
+
+  if (targetComp) {
+    boxState[targetComp] = dragData.foodId;
+  }
+
+  dragData = null;
+  dragStartPos = null;
+  renderBox();
+  renderInventory();
+}
+
+/* ═══════════════════════════════════════
+   CHECK COMPLETE
+   ═══════════════════════════════════════ */
+function checkVictory() {
+  // No-op — auto-save handles it now
+}
+
+/* ═══════════════════════════════════════
+   CLEAR
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   AUTO-SAVE (when all compartments filled)
+   ═══════════════════════════════════════ */
+function tryAutoSave() {
+  const allFilled = Object.values(boxState).every(v => v !== null);
+  if (allFilled) {
+    saveLunchbox();
+  }
+}
+
+/* ═══════════════════════════════════════
+   GALLERY OPEN / CLOSE
+   ═══════════════════════════════════════ */
+document.getElementById('calendarBtn').addEventListener('click', () => {
+  renderGallery();
+  document.getElementById('galleryOverlay').style.display = 'flex';
+});
+
+function closeGallery() {
+  document.getElementById('galleryOverlay').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════
+   CLEAR
+   ═══════════════════════════════════════ */
+document.getElementById('clearBtn').addEventListener('click', () => {
+  Object.keys(boxState).forEach(k => boxState[k] = null);
+  clearSelection();
+  renderBox();
+  renderInventory();
+});
+
+/* ═══════════════════════════════════════
+   FILTERS
+   ═══════════════════════════════════════ */
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.cat;
+    renderInventory();
+  });
+});
+
+/* ═══════════════════════════════════════
+   CUSTOM INGREDIENT
+   ═══════════════════════════════════════ */
+const customInput = document.getElementById('customInput');
+const addCustomBtn = document.getElementById('addCustomBtn');
+
+function addCustomIngredient() {
+  const raw = customInput.value.trim();
+  if (!raw) return;
+
+  // Generate a unique id
+  const id = 'custom-' + raw.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
+
+  // Auto-detect category
+  const cat = autoCategory(raw);
+
+  // Try to find a matching emoji, otherwise use genmoji
+  const emoji = autoEmoji(raw);
+  const genmoji = emoji ? null : makeGenmojiSvg(raw, cat);
+
+  // Capitalize nicely
+  const name = raw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+  FOODS.push({ id, emoji: emoji || null, genmoji, name, cat, custom: true });
+
+  customInput.value = '';
+  renderInventory();
+
+  // Brief flash to show which category it landed in
+  const newCard = inventoryEl.querySelector(`[data-food-id="${id}"]`);
+  if (newCard) {
+    newCard.style.animation = 'dropBounce .5s ease';
+    newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+addCustomBtn.addEventListener('click', addCustomIngredient);
+customInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addCustomIngredient();
+});
+
+/* ═══════════════════════════════════════
+   SAVE & GALLERY (localStorage)
+   ═══════════════════════════════════════ */
+const STORAGE_KEY = 'bonnie-lunches';
+let pendingSave = null;
+
+function formatDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]}.${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function loadLunches() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+}
+
+function saveLunches(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function saveLunchbox() {
+  const allFilled = Object.values(boxState).every(v => v !== null);
+  if (!allFilled) {
+    // Flash empty compartments
+    document.querySelectorAll('.compartment').forEach(comp => {
+      if (!boxState[comp.dataset.comp]) {
+        comp.classList.add('tap-target');
+        setTimeout(() => comp.classList.remove('tap-target'), 1200);
+      }
+    });
+    return;
+  }
+
+  const key = todayKey();
+  const lunches = loadLunches();
+
+  if (lunches[key]) {
+    // Already have one for today — ask to overwrite
+    pendingSave = { ...boxState };
+    document.getElementById('overwriteDialog').style.display = 'flex';
+    return;
+  }
+
+  doSave(key);
+}
+
+function doSave(key) {
+  const lunches = loadLunches();
+  const items = {};
+  for (const [comp, foodId] of Object.entries(boxState)) {
+    if (foodId) {
+      const food = FOODS.find(f => f.id === foodId);
+      items[comp] = { id: foodId, emoji: food?.emoji || null, name: food?.name || foodId, cat: food?.cat || 'snack' };
+    }
+  }
+  lunches[key] = { items, savedAt: Date.now() };
+  saveLunches(lunches);
+  renderGallery();
+}
+
+function confirmOverwrite() {
+  document.getElementById('overwriteDialog').style.display = 'none';
+  if (pendingSave) {
+    // Apply pending state
+    Object.assign(boxState, pendingSave);
+    pendingSave = null;
+  }
+  doSave(todayKey());
+}
+
+function cancelOverwrite() {
+  document.getElementById('overwriteDialog').style.display = 'none';
+  pendingSave = null;
+}
+
+function toggleFav(key) {
+  const lunches = loadLunches();
+  if (!lunches[key]) return;
+  lunches[key].favorite = !lunches[key].favorite;
+  if (lunches[key].favorite && !lunches[key].label) {
+    const label = prompt('Give this lunch a name! (or leave empty)');
+    if (label) lunches[key].label = label.trim();
+  }
+  saveLunches(lunches);
+  renderGallery();
+}
+
+function deleteLunch(key) {
+  const lunches = loadLunches();
+  delete lunches[key];
+  saveLunches(lunches);
+  renderGallery();
+}
+
+function loadLunchToBox(key) {
+  const lunches = loadLunches();
+  const lunch = lunches[key];
+  if (!lunch) return;
+
+  // Clear current box
+  Object.keys(boxState).forEach(k => boxState[k] = null);
+
+  // Load saved items — make sure custom foods exist
+  for (const [comp, item] of Object.entries(lunch.items)) {
+    if (!FOODS.find(f => f.id === item.id)) {
+      FOODS.push({ id: item.id, emoji: item.emoji, name: item.name, cat: item.cat, custom: true });
+    }
+    boxState[comp] = item.id;
+  }
+
+  renderBox();
+  renderInventory();
+}
+
+function renderGallery() {
+  const lunches = loadLunches();
+  const keys = Object.keys(lunches).sort((a,b) => {
+    // Favorites first, then by date descending
+    const fa = lunches[a].favorite ? 1 : 0;
+    const fb = lunches[b].favorite ? 1 : 0;
+    if (fa !== fb) return fb - fa;
+    return b.localeCompare(a);
+  });
+  const section = document.getElementById('gallerySection');
+  const grid = document.getElementById('galleryGrid');
+
+  const emptyEl = document.getElementById('galleryEmpty');
+  if (keys.length === 0) {
+    grid.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+
+  if (emptyEl) emptyEl.style.display = 'none';
+  grid.innerHTML = '';
+
+  keys.forEach(key => {
+    const lunch = lunches[key];
+    const d = new Date(key + 'T12:00:00');
+    const dateStr = formatDate(d);
+
+    const card = document.createElement('div');
+    card.className = 'gallery-card';
+    card.onclick = () => loadLunchToBox(key);
+
+    // Build thumbnail — 5 compartments in a mini grid
+    const compOrder = ['tl','bar','sm','bl','large'];
+    let thumbHtml = '<div class="gallery-thumb">';
+    compOrder.forEach(comp => {
+      const item = lunch.items[comp];
+      const isMain = comp === 'large';
+      const emoji = item?.emoji || '·';
+      thumbHtml += `<div class="gallery-thumb-cell${isMain?' main':''}">${emoji}</div>`;
+    });
+    thumbHtml += '</div>';
+
+    const isFav = !!lunch.favorite;
+    const label = lunch.label || '';
+    card.className = 'gallery-card' + (isFav ? ' is-fav' : '');
+
+    card.innerHTML = `
+      ${thumbHtml}
+      <div class="gallery-date">${dateStr}</div>
+      <div class="gallery-footer">
+        <button class="fav-btn ${isFav?'fav-active':''}" onclick="event.stopPropagation();toggleFav('${key}')" title="Favorite">⭐</button>
+      </div>
+      ${label ? `<div class="gallery-label">${label}</div>` : ''}
+      <button class="delete-btn" onclick="event.stopPropagation();deleteLunch('${key}')">✕</button>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+/* ═══════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════ */
+renderInventory();
+renderBox();
+renderGallery();
+</script>
+</body>
+</html>

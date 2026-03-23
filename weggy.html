@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Born of Weggie | Carol's Playhouse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --bg-color: #0F0F0F;
+      --text-color: #FAFAFA;
+      --accent-color: #7DD3FC;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, var(--bg-color) 0%, transparent 100%);
+    }
+    
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-color);
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    
+    .back-link:hover {
+      opacity: 1;
+    }
+    
+    .page-indicator {
+      font-size: 0.875rem;
+      opacity: 0.6;
+    }
+    
+    /* Coverflow Container */
+    .coverflow-container {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1200px;
+    }
+    
+    .coverflow {
+      position: relative;
+      width: 100%;
+      height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+      isolation: isolate;
+    }
+    
+    .slide {
+      position: absolute;
+      width: min(70vw, 600px);
+      height: auto;
+      max-height: 80vh;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: pointer;
+      border-radius: 8px;
+      overflow: visible;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      background: #000;
+    }
+    
+    .slide img {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      background: #000;
+      border-radius: 8px;
+    }
+    
+    /* Solid background panel behind active slide to block see-through */
+    .slide.active::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 200%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-color);
+      z-index: -1;
+    }
+    
+    .slide.active {
+      z-index: 10;
+      transform: translateX(0) scale(1.5) rotateY(0);
+      filter: none;
+      opacity: 1;
+    }
+    
+    .slide.prev {
+      z-index: 1;
+      transform: translateX(-75%) scale(0.55) rotateY(45deg);
+      opacity: 0.4;
+      filter: blur(12px);
+    }
+    
+    .slide.next {
+      z-index: 1;
+      transform: translateX(75%) scale(0.55) rotateY(-45deg);
+      opacity: 0.4;
+      filter: blur(12px);
+    }
+    
+    .slide.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(0) scale(0.5);
+      filter: blur(20px);
+    }
+    
+    /* Navigation */
+    .nav-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 50;
+      width: 60px;
+      height: 60px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      border-radius: 50%;
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.4);
+    }
+    
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    
+    .nav-btn.prev { left: 2rem; }
+    .nav-btn.next { right: 2rem; }
+    
+    
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      .slide {
+        width: 85vw;
+      }
+      
+      .slide.active {
+        transform: translateX(0) scale(1.3) rotateY(0);
+      }
+      
+
+      
+      .slide.prev {
+        transform: translateX(-45%) scale(0.6) rotateY(35deg);
+      }
+      
+      .slide.next {
+        transform: translateX(45%) scale(0.6) rotateY(-35deg);
+      }
+      
+      .nav-btn {
+        width: 44px;
+        height: 44px;
+      }
+      
+      .nav-btn.prev { left: 0.5rem; }
+      .nav-btn.next { right: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="back-link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back
+    </a>
+    <span class="page-indicator">
+      <span id="currentPage">1</span> / 53
+    </span>
+  </header>
+  
+  <div class="coverflow-container">
+    <div class="coverflow" id="coverflow">
+      <!-- Slides will be generated by JS -->
+    </div>
+  </div>
+  
+  <button class="nav-btn prev" id="prevBtn">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </button>
+  
+  <button class="nav-btn next" id="nextBtn">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+  </button>
+  
+
+  
+  <script>
+    const totalPages = 53;
+    let currentIndex = 0;
+    
+    const coverflow = document.getElementById('coverflow');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const currentPageEl = document.getElementById('currentPage');
+    
+    // Generate slides
+    for (let i = 1; i <= totalPages; i++) {
+      const num = String(i).padStart(2, '0');
+      const src = `/weggy-images/page-${num}.jpg`;
+      
+      const slide = document.createElement('div');
+      slide.className = 'slide hidden';
+      slide.dataset.index = i - 1;
+      slide.innerHTML = `<img src="${src}" alt="Page ${i}" loading="lazy">`;
+      slide.onclick = () => goTo(i - 1);
+      coverflow.appendChild(slide);
+    }
+    
+    const slides = document.querySelectorAll('.slide');
+    
+    function updateSlides() {
+      slides.forEach((slide, i) => {
+        slide.classList.remove('active', 'prev', 'next', 'hidden');
+        
+        const diff = i - currentIndex;
+        
+        if (diff === 0) slide.classList.add('active');
+        else if (diff === -1) slide.classList.add('prev');
+        else if (diff === 1) slide.classList.add('next');
+        else slide.classList.add('hidden');
+      });
+      
+      currentPageEl.textContent = currentIndex + 1;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === totalPages - 1;
+    }
+    
+    function goTo(index) {
+      if (index < 0 || index >= totalPages) return;
+      currentIndex = index;
+      updateSlides();
+    }
+    
+    function prev() {
+      goTo(currentIndex - 1);
+    }
+    
+    function next() {
+      goTo(currentIndex + 1);
+    }
+    
+    prevBtn.onclick = prev;
+    nextBtn.onclick = next;
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+    });
+    
+    // Touch swipe
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    });
+    
+    document.addEventListener('touchend', (e) => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) next();
+        else prev();
+      }
+    });
+    
+    // Initialize
+    updateSlides();
+    
+    // ============ COLOR SYNC ============
+    function hexToHsl(hex) {
+      hex = hex.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16) / 255;
+      const g = parseInt(hex.substr(2, 2), 16) / 255;
+      const b = parseInt(hex.substr(4, 2), 16) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+        h *= 360;
+      }
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+    
+    function hslToHex(h, s, l) {
+      s /= 100; l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    }
+    
+    function getThemeColors(primary, theme) {
+      const primaryHsl = hexToHsl(primary);
+      if (theme === 'dark') {
+        return {
+          bgColor: '#0F0F0F',
+          textColor: primary,
+          accentColor: primary,
+          hoverText: '#0F0F0F',
+          borderColor: primary
+        };
+      } else if (theme === 'light') {
+        const lightAccent = hslToHex(primaryHsl.h, Math.min(primaryHsl.s, 60), 85);
+        return {
+          bgColor: '#F8FAFC',
+          textColor: '#0F0F0F',
+          accentColor: lightAccent,
+          hoverText: '#0F0F0F',
+          borderColor: '#0F0F0F'
+        };
+      } else {
+        const compHue = (primaryHsl.h + 180) % 360;
+        return {
+          bgColor: '#0F0F0F',
+          textColor: primary,
+          accentColor: hslToHex(compHue, 70, 60),
+          hoverText: '#0F0F0F',
+          borderColor: primary
+        };
+      }
+    }
+    
+    function applyColors(colors) {
+      document.documentElement.style.setProperty('--bg-color', colors.bgColor);
+      document.documentElement.style.setProperty('--text-color', colors.textColor);
+      document.documentElement.style.setProperty('--accent-color', colors.accentColor);
+      document.documentElement.style.setProperty('--hover-text', colors.hoverText);
+      document.documentElement.style.setProperty('--border-color', colors.borderColor);
+    }
+    
+    // Apply saved theme and color
+    function syncColors() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      
+      const savedPrimary = localStorage.getItem('customPrimary') || '#7DD3FC';
+      const colors = getThemeColors(savedPrimary, savedTheme);
+      applyColors(colors);
+    }
+    
+    // Initial sync
+    syncColors();
+    
+    // Listen for changes from other tabs/pages
+    window.addEventListener('storage', syncColors);
+  </script>
+</body>
+</html>
