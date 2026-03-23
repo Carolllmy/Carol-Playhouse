@@ -1,0 +1,4 @@
+1:"$Sreact.fragment"
+2:I[53288,["/immersive-ui-effects-lab/_next/static/chunks/82a7a721638f825d.js","/immersive-ui-effects-lab/_next/static/chunks/cbb320e3dd9070b0.js"],"default"]
+3:I[81130,["/immersive-ui-effects-lab/_next/static/chunks/82a7a721638f825d.js","/immersive-ui-effects-lab/_next/static/chunks/cbb320e3dd9070b0.js"],"default"]
+0:{"buildId":"TiI0mahi8qSkc4fz3bO2q","rsc":["$","$1","c",{"children":[null,["$","$L2",null,{"parallelRouterKey":"children","template":["$","$L3",null,{}]}]]}],"loading":null,"isPartial":false}

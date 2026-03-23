@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:I[64399,["/immersive-ui-effects-lab/_next/static/chunks/b42bc008112b3765.js","/immersive-ui-effects-lab/_next/static/chunks/82fb87a729cfdb9b.js","/immersive-ui-effects-lab/_next/static/chunks/39f81ec15f8ab42f.js"],"default"]
+3:I[89981,["/immersive-ui-effects-lab/_next/static/chunks/82a7a721638f825d.js","/immersive-ui-effects-lab/_next/static/chunks/cbb320e3dd9070b0.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+0:{"buildId":"TiI0mahi8qSkc4fz3bO2q","rsc":["$","$1","c",{"children":[["$","$L2",null,{}],[["$","script","script-0",{"src":"/immersive-ui-effects-lab/_next/static/chunks/82fb87a729cfdb9b.js","async":true}],["$","script","script-1",{"src":"/immersive-ui-effects-lab/_next/static/chunks/39f81ec15f8ab42f.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"loading":null,"isPartial":false}
+5:null

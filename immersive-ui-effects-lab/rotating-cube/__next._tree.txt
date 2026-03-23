@@ -1,0 +1,2 @@
+:HL["/immersive-ui-effects-lab/_next/static/chunks/44394397f2ed8db4.css","style"]
+0:{"buildId":"TiI0mahi8qSkc4fz3bO2q","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"slug","paramType":"d","paramKey":"rotating-cube","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
