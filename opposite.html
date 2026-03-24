@@ -710,15 +710,47 @@ function fireTrick(t) {
     }
 
     case 'wrongColor': {
-      // Highlight a WRONG button with the arrow's color (looks like a hint but isn't)
-      const slot = wrongSlot();
-      const btn = document.getElementById('btn-' + slot);
-      btn.style.borderColor = THEMES[currentTheme].arrow;
-      btn.style.background = hexToRgba(THEMES[currentTheme].arrow, 0.25);
+      // Color 1-4 buttons randomly — any button including the correct one.
+      // Up to 2 different accent colors used. No logic — pure visual chaos.
+      const allSlots = [0,1,2,3];
+      // How many buttons to color: 1-4, weighted toward 2-3
+      const counts = [1,2,2,3,3,4];
+      const numToColor = counts[Math.floor(Math.random()*counts.length)];
+      // Shuffle slots and pick first numToColor
+      const shuffled = allSlots.sort(() => Math.random()-0.5).slice(0, numToColor);
+
+      // Pick 1 or 2 random accent colors
+      const colorPool = [
+        THEMES[currentTheme].arrow,
+        '#508CFF', '#FFD28C', '#FF6B9D', '#32E8A0',
+        '#DCA050', '#96141E', '#82B4FF', '#FFE066'
+      ].filter(c => c !== THEMES[currentTheme].bg);
+      const numColors = shuffled.length === 1 ? 1 : (Math.random() < 0.5 ? 1 : 2);
+      const colors = [];
+      const used = new Set();
+      while (colors.length < numColors) {
+        const c = colorPool[Math.floor(Math.random()*colorPool.length)];
+        if (!used.has(c)) { used.add(c); colors.push(c); }
+      }
+
+      const colored = [];
+      shuffled.forEach((slot, i) => {
+        const btn = document.getElementById('btn-' + slot);
+        const color = colors[i % colors.length];
+        btn.style.transition = 'background 0.25s, border-color 0.25s';
+        btn.style.borderColor = color;
+        btn.style.background = hexToRgba(color, 0.30);
+        colored.push(slot);
+      });
+
       trickTimer = setTimeout(() => {
-        btn.style.borderColor = '';
-        btn.style.background = '';
-      }, 1000);
+        colored.forEach(slot => {
+          const btn = document.getElementById('btn-' + slot);
+          btn.style.transition = 'background 0.3s, border-color 0.3s';
+          btn.style.borderColor = '';
+          btn.style.background = '';
+        });
+      }, streak >= 15 ? 700 : 1000);
       break;
     }
 
