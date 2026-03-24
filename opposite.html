@@ -189,29 +189,36 @@
   .dir-btn.nudged { z-index: 0; opacity: 0.7; }
   .dir-btn:active { transform: scale(0.88); }
   .dir-btn.decoy { animation: decoyShake 0.06s ease-in-out 8 alternate; }
-  /* Button structure */
-  .btn-label {
-    font-size: 52px;
+  /* Button label text */
+  .btn-label { font-size: 52px; pointer-events: none; }
+
+  /* During swap trick: this slot shows the Question (big colored arrow, no border/bg) */
+  .dir-btn.question-in-slot {
+    background: transparent !important;
+    border-color: transparent !important;
     pointer-events: none;
-  }
-  /* Slot arrow overlay: sits inside the button, covers it completely, pointer-events:none */
-  .slot-arrow-overlay {
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 52px;
-    pointer-events: none; /* taps go through to button */
-    background: rgba(0,0,0,0.88);
+    cursor: default;
+    font-size: 64px;
     color: var(--arrow-color);
-    text-shadow: 0 0 20px var(--arrow-color);
-    box-shadow: inset 0 0 0 2px var(--arrow-color), 0 0 20px var(--arrow-color);
-    z-index: 3;
-    transition: opacity 0.15s;
+    text-shadow: 0 0 24px var(--arrow-color);
+    box-shadow: none;
   }
-  .slot-arrow-overlay.hidden { display: none !important; }
+  .dir-btn.question-in-slot:active { transform: none !important; }
+
+  /* Center answer button: styled like a normal Answer, sits in the arrow-area center */
+  .center-answer-btn {
+    position: absolute;
+    width: min(200px, 44vw);
+    height: 120px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 52px;
+    z-index: 10;
+    animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .center-answer-btn.hidden { display: none !important; }
+  @keyframes popIn { from { transform: translate(-50%,-50%) scale(0.4); opacity:0; } to { transform: translate(-50%,-50%) scale(1); opacity:1; } }
   @keyframes decoyShake { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
   .dir-btn.wrong-cue { border-color: var(--arrow-color); background: rgba(255,40,50,0.2); }
 
@@ -397,15 +404,20 @@
     </div>
   </div>
 
+  <!-- Question zone: shows big arrow OR center-answer-btn during swap trick -->
   <div id="arrow-area">
     <div id="game-arrow">↑</div>
+    <!-- During swap trick: one answer moves here as a tappable button -->
+    <button id="center-answer-btn" class="dir-btn center-answer-btn hidden" onclick="tapDirByName(window._centerAnswerDir)"></button>
   </div>
 
+  <!-- Answer zone: 2x2 grid, always 4 slots -->
   <div id="btn-grid">
-    <button class="dir-btn" id="btn-0" onclick="tapDir(0)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
-    <button class="dir-btn" id="btn-1" onclick="tapDir(1)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
-    <button class="dir-btn" id="btn-2" onclick="tapDir(2)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
-    <button class="dir-btn" id="btn-3" onclick="tapDir(3)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
+    <!-- During swap trick: Question shows inside one slot (no border, just arrow) -->
+    <button class="dir-btn" id="btn-0" onclick="tapDir(0)"><span class="btn-label"></span></button>
+    <button class="dir-btn" id="btn-1" onclick="tapDir(1)"><span class="btn-label"></span></button>
+    <button class="dir-btn" id="btn-2" onclick="tapDir(2)"><span class="btn-label"></span></button>
+    <button class="dir-btn" id="btn-3" onclick="tapDir(3)"><span class="btn-label"></span></button>
   </div>
 </div>
 
@@ -686,22 +698,37 @@ function fireTrick(t) {
   switch(t) {
 
     case 'swap': {
-      // Visual overlay INSIDE a wrong-answer button slot.
-      // The button is untouched — still tappable.
-      // Correct answer slot is never targeted.
-      const slot = wrongSlot();
-      const btn = document.getElementById('btn-' + slot);
-      const overlay = btn.querySelector('.slot-arrow-overlay');
+      // SWAP TRICK — correct design:
+      // 1. Question moves into one Answer slot (big colored arrow, no border/bg)
+      //    The slot it occupies shows the Question style; its original Answer is displaced.
+      // 2. The displaced Answer moves to the center of the screen (where Question was).
+      // 3. The 2×2 grid stays fully filled — Question in one slot, 3 real Answers in others.
+      // 4. Correct answer is still tappable (either in grid or in center).
 
+      // Pick a random slot (can be any slot including correct answer — that's the trick)
+      const swapSlot = Math.floor(Math.random() * 4);
+      const swapBtn = document.getElementById('btn-' + swapSlot);
+      const swapDir = DIRS[layout[swapSlot]]; // the answer displaced from this slot
+
+      // Step 1: Turn that slot into the Question display
       const arrowChars = {up:'↑', right:'→', down:'↓', left:'←'};
-      overlay.textContent = arrowChars[currentDir];
-      overlay.style.setProperty('--arrow-color', THEMES[currentTheme].arrow);
-      overlay.classList.remove('hidden');
+      const label = swapBtn.querySelector('.btn-label');
+      label.textContent = arrowChars[currentDir];
+      swapBtn.classList.add('question-in-slot');
+      swapBtn.style.setProperty('--arrow-color', THEMES[currentTheme].arrow);
+      window._swapSlot = swapSlot;
+      window._swapOrigDir = swapDir;
 
-      // Hide the main center arrow while swap is active
+      // Step 2: Move displaced Answer to center
+      const cb = document.getElementById('center-answer-btn');
+      cb.textContent = ARROWS[swapDir];
+      window._centerAnswerDir = swapDir;
+      cb.classList.remove('hidden');
+
+      // Step 3: Hide the main Question arrow
       document.getElementById('game-arrow').style.opacity = '0';
 
-      trickTimer = setTimeout(clearSwapTrick, 2500);
+      trickTimer = setTimeout(clearSwapTrick, 3000);
       break;
     }
 
@@ -784,11 +811,33 @@ function fireTrick(t) {
 }
 
 function clearSwapTrick() {
-  // Hide all slot overlays (they live inside each button)
-  document.querySelectorAll('.slot-arrow-overlay').forEach(o => o.classList.add('hidden'));
-  // Restore main arrow
+  // Restore any question-in-slot back to normal Answer display
+  if (window._swapSlot !== undefined) {
+    const btn = document.getElementById('btn-' + window._swapSlot);
+    if (btn) {
+      btn.classList.remove('question-in-slot');
+      btn.style.removeProperty('--arrow-color');
+      // Restore the original answer label
+      const label = btn.querySelector('.btn-label');
+      if (label && window._swapOrigDir) label.textContent = ARROWS[window._swapOrigDir];
+    }
+    window._swapSlot = undefined;
+    window._swapOrigDir = undefined;
+  }
+  // Hide center answer button
+  const cb = document.getElementById('center-answer-btn');
+  if (cb) cb.classList.add('hidden');
+  window._centerAnswerDir = null;
+  // Restore main Question arrow
   const arrow = document.getElementById('game-arrow');
   if (arrow) arrow.style.opacity = '1';
+}
+
+function tapDirByName(dir) {
+  if (!dir) return;
+  // Find which slot has this direction and call tapDir
+  const slot = layout.findIndex(i => DIRS[i] === dir);
+  if (slot >= 0) tapDir(slot);
 }
 
 function tapDirByName(dir) {
@@ -817,7 +866,8 @@ function clearTricks() {
   document.getElementById('game-arrow').style.transform = '';
   [0,1,2,3].forEach(i => {
     const b = document.getElementById('btn-'+i);
-    b.classList.remove('decoy','wrong-cue','nudged');
+    b.classList.remove('decoy','wrong-cue','nudged','question-in-slot');
+    b.style.removeProperty('--arrow-color');
     b.style.borderColor = '';
     b.style.background = '';
   });
