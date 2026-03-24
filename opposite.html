@@ -140,9 +140,10 @@
   }
   #streak-num { color: #fff; }
 
-  /* Arrow area */
+  /* Arrow area — fixed height so it never collapses */
   #arrow-area {
     flex: 1;
+    min-height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -152,7 +153,7 @@
   #game-arrow {
     font-size: 160px;
     line-height: 1;
-    transition: color 0.4s, text-shadow 0.4s;
+    transition: color 0.4s, text-shadow 0.4s, opacity 0.1s;
     will-change: transform;
     color: var(--arrow-color);
     text-shadow: 0 0 32px var(--arrow-color);
@@ -189,15 +190,18 @@
   /* Nudged (evict) buttons go behind correct answer */
   .dir-btn.nudged { z-index: 0; opacity: 0.7; }
   .dir-btn:active { transform: scale(0.88); }
-  /* When a button is "swapped into center": arrow shows in that button slot */
-  .dir-btn.swapped-out { opacity: 0; pointer-events: none; }
-  /* The center swap button */
+  /* When the arrow occupies a button slot */
+  .dir-btn.arrow-in-slot:active { transform: none !important; }
+  /* The center swap button — absolutely centered in arrow-area */
   .swap-center-btn {
     position: absolute;
-    width: min(180px, 40vw);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(180px, 42vw);
     height: 110px;
     border: 2px solid var(--arrow-color) !important;
-    background: rgba(0,0,0,0.3) !important;
+    background: rgba(20,20,20,0.85) !important;
     border-radius: 22px;
     font-size: 52px;
     color: #fff;
@@ -205,8 +209,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10;
+    z-index: 20;
+    box-shadow: 0 0 24px var(--arrow-color);
   }
+  .swap-center-btn:active { opacity: 0.8; }
   .swap-center-btn.hidden { display: none; }
   /* Arrow slot indicator: arrow rendered inside a button-style card */
   .dir-btn.arrow-in-slot {
