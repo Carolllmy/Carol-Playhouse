@@ -476,7 +476,6 @@ let score = 0, streak = 0, currentDir = 'up', questionStart = 0;
 let layout = [0,1,2,3]; // which direction index maps to which slot
 let currentTheme = 0;
 let questionsSinceShuffle = 0, nextShuffleIn = 3;
-let trickTimer = null;
 const leaderboard = JSON.parse(localStorage.getItem('opposite_lb') || '[]');
 let pendingScore = 0;
 
@@ -667,25 +666,38 @@ function maybeTriggerTrick() {
   const prob = Math.min(0.25 + (streak - 5) * 0.04, 0.80);
   if (Math.random() > prob) return;
 
-  // At streak 15+ fire 2 tricks at once for chaos
-  fireTrick(pickTrick());
+  // At streak 15+ fire 2 DISTINCT tricks for chaos.
+  // Distinct selection avoids broken duplicate stacks like swap+swap.
+  const first = pickTrick();
+  fireTrick(first);
   if (streak >= 15 && Math.random() < 0.4) {
-    setTimeout(() => fireTrick(pickTrick()), 120);
+    const second = pickTrick([first]);
+    if (second) scheduleTrickTimer(() => fireTrick(second), 120);
   }
 }
 
-function pickTrick() {
+function pickTrick(exclude = []) {
   // NO button position tricks — only visual/arrow tricks
   // Never move buttons out of their grid slots
   const pool = ['wrongColor', 'arrowShift', 'decoyShake'];
   if (streak >= 8)  pool.push('flash', 'shrinkTiny');
-  if (streak >= 12) pool.push('swap'); // arrow ↔ button CENTER only — no grid moves
+  if (streak >= 12) pool.push('swap'); // question appears in one slot; displaced answer appears in center
   if (streak >= 18) pool.push('flash', 'shrinkTiny', 'arrowShift');
-  return pool[Math.floor(Math.random() * pool.length)];
+  const filtered = pool.filter(t => !exclude.includes(t));
+  const choices = filtered.length ? filtered : pool;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function scheduleTrickTimer(fn, delay) {
+  const id = setTimeout(() => {
+    trickTimers = trickTimers.filter(t => t !== id);
+    fn();
+  }, delay);
+  trickTimers.push(id);
+  return id;
 }
 
 function fireTrick(t) {
-  clearTrickTimers();
 
   // Helper: pick a WRONG button slot (never touches the correct answer)
   const correctDir = OPPOSITE[currentDir];
@@ -698,37 +710,35 @@ function fireTrick(t) {
   switch(t) {
 
     case 'swap': {
-      // SWAP TRICK — correct design:
-      // 1. Question moves into one Answer slot (big colored arrow, no border/bg)
-      //    The slot it occupies shows the Question style; its original Answer is displaced.
-      // 2. The displaced Answer moves to the center of the screen (where Question was).
-      // 3. The 2×2 grid stays fully filled — Question in one slot, 3 real Answers in others.
-      // 4. Correct answer is still tappable (either in grid or in center).
+      // SWAP TRICK — visual swap only:
+      // - One grid slot temporarily shows the Question arrow with no border/bg.
+      // - The displaced Answer is duplicated into the center as a tappable button.
+      // - The grid structure stays 2×2 the whole time.
+      // - Correct answer remains tappable whether it lives in the grid or in the center.
 
-      // Pick a random slot (can be any slot including correct answer — that's the trick)
+      // Never allow a second swap to stack on top of an active one.
+      clearSwapTrick();
+
+      // Pick a random slot (can be any slot including the correct answer — that's the trick).
       const swapSlot = Math.floor(Math.random() * 4);
       const swapBtn = document.getElementById('btn-' + swapSlot);
-      const swapDir = DIRS[layout[swapSlot]]; // the answer displaced from this slot
+      const swapDir = DIRS[layout[swapSlot]]; // answer visually displaced from this slot
 
-      // Step 1: Turn that slot into the Question display
-      const arrowChars = {up:'↑', right:'→', down:'↓', left:'←'};
       const label = swapBtn.querySelector('.btn-label');
-      label.textContent = arrowChars[currentDir];
+      if (label) label.textContent = ARROWS[currentDir];
       swapBtn.classList.add('question-in-slot');
       swapBtn.style.setProperty('--arrow-color', THEMES[currentTheme].arrow);
       window._swapSlot = swapSlot;
       window._swapOrigDir = swapDir;
 
-      // Step 2: Move displaced Answer to center
       const cb = document.getElementById('center-answer-btn');
       cb.textContent = ARROWS[swapDir];
       window._centerAnswerDir = swapDir;
       cb.classList.remove('hidden');
 
-      // Step 3: Hide the main Question arrow
       document.getElementById('game-arrow').style.opacity = '0';
 
-      trickTimer = setTimeout(clearSwapTrick, 3000);
+      scheduleTrickTimer(clearSwapTrick, 3000);
       break;
     }
 
@@ -766,7 +776,7 @@ function fireTrick(t) {
         colored.push(slot);
       });
 
-      trickTimer = setTimeout(() => {
+      scheduleTrickTimer(() => {
         colored.forEach(slot => {
           const btn = document.getElementById('btn-' + slot);
           btn.style.transition = 'background 0.3s, border-color 0.3s';
@@ -782,14 +792,14 @@ function fireTrick(t) {
       const decoys = ['#508CFF','#FFD28C','#96141E','#32E8A0','#FF6B9D'];
       const c = decoys[Math.floor(Math.random()*decoys.length)];
       setArrowColor(c);
-      trickTimer = setTimeout(() => setArrowColor(null), 900);
+      scheduleTrickTimer(() => setArrowColor(null), 900);
       break;
     }
 
     case 'shrinkTiny': {
       // Arrow becomes very small
       setArrowScale(0.12, true);
-      trickTimer = setTimeout(() => setArrowScale(1, true), 1200);
+      scheduleTrickTimer(() => setArrowScale(1, true), 1200);
       break;
     }
 
@@ -798,13 +808,13 @@ function fireTrick(t) {
       const slot = wrongSlot();
       const btn = document.getElementById('btn-' + slot);
       btn.classList.add('decoy');
-      trickTimer = setTimeout(() => btn.classList.remove('decoy'), 700);
+      scheduleTrickTimer(() => btn.classList.remove('decoy'), 700);
       break;
     }
 
     case 'flash': {
       // Arrow flashes then disappears — tap from memory
-      trickTimer = setTimeout(() => setArrowVisible(false), 200);
+      scheduleTrickTimer(() => setArrowVisible(false), 200);
       break;
     }
   }
@@ -835,14 +845,7 @@ function clearSwapTrick() {
 
 function tapDirByName(dir) {
   if (!dir) return;
-  // Find which slot has this direction and call tapDir
-  const slot = layout.findIndex(i => DIRS[i] === dir);
-  if (slot >= 0) tapDir(slot);
-}
-
-function tapDirByName(dir) {
-  if (!dir) return;
-  // Find the slot for this dir and delegate
+  // Find which slot currently maps to this answer direction and reuse tapDir's scoring logic.
   const slot = layout.findIndex(i => DIRS[i] === dir);
   if (slot >= 0) tapDir(slot);
 }
@@ -854,7 +857,8 @@ function hexToRgba(hex, a) {
 
 let trickTimers = [];
 function clearTrickTimers() {
-  if (trickTimer) { clearTimeout(trickTimer); trickTimer = null; }
+  trickTimers.forEach(id => clearTimeout(id));
+  trickTimers = [];
 }
 function clearTricks() {
   clearTrickTimers();
@@ -871,7 +875,6 @@ function clearTricks() {
     b.style.borderColor = '';
     b.style.background = '';
   });
-  layout = [0,1,2,3];
 }
 
 // ── FX ──
