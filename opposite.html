@@ -175,39 +175,43 @@
     background: var(--btn-fill);
     border: 1.5px solid var(--btn-border);
     border-radius: 22px;
-    font-size: 52px;
     color: #fff;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.55s, border-color 0.55s, transform 0.12s;
-    position: relative;
+    position: relative; /* needed for slot-arrow-overlay */
     z-index: 1;
-    overflow: visible;
+    overflow: hidden; /* overlay clips to button bounds */
     will-change: transform;
   }
   .dir-btn.nudged { z-index: 0; opacity: 0.7; }
   .dir-btn:active { transform: scale(0.88); }
   .dir-btn.decoy { animation: decoyShake 0.06s ease-in-out 8 alternate; }
-  /* Swap overlay: sits OVER a slot, pointer-events:none so button below is still tappable */
-  .swap-overlay {
+  /* Button structure */
+  .btn-label {
+    font-size: 52px;
+    pointer-events: none;
+  }
+  /* Slot arrow overlay: sits inside the button, covers it completely, pointer-events:none */
+  .slot-arrow-overlay {
     position: absolute;
-    border-radius: 22px;
+    inset: 0;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
-    z-index: 5;
-    background: rgba(0,0,0,0.82);
+    font-size: 52px;
+    pointer-events: none; /* taps go through to button */
+    background: rgba(0,0,0,0.88);
     color: var(--arrow-color);
     text-shadow: 0 0 20px var(--arrow-color);
-    box-shadow: 0 0 24px var(--arrow-color);
-    border: 2px solid var(--arrow-color);
-    font-size: 52px;
-    transition: opacity 0.2s;
+    box-shadow: inset 0 0 0 2px var(--arrow-color), 0 0 20px var(--arrow-color);
+    z-index: 3;
+    transition: opacity 0.15s;
   }
-  .swap-overlay.hidden { display: none !important; }
+  .slot-arrow-overlay.hidden { display: none !important; }
   @keyframes decoyShake { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
   .dir-btn.wrong-cue { border-color: var(--arrow-color); background: rgba(255,40,50,0.2); }
 
@@ -398,12 +402,10 @@
   </div>
 
   <div id="btn-grid">
-    <button class="dir-btn" id="btn-0" onclick="tapDir(0)"></button>
-    <button class="dir-btn" id="btn-1" onclick="tapDir(1)"></button>
-    <button class="dir-btn" id="btn-2" onclick="tapDir(2)"></button>
-    <button class="dir-btn" id="btn-3" onclick="tapDir(3)"></button>
-    <!-- Swap overlay: floats ON TOP of a slot, purely visual, does NOT replace or hide the button -->
-    <div id="swap-overlay" class="swap-overlay hidden"></div>
+    <button class="dir-btn" id="btn-0" onclick="tapDir(0)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
+    <button class="dir-btn" id="btn-1" onclick="tapDir(1)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
+    <button class="dir-btn" id="btn-2" onclick="tapDir(2)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
+    <button class="dir-btn" id="btn-3" onclick="tapDir(3)"><span class="btn-label"></span><div class="slot-arrow-overlay hidden"></div></button>
   </div>
 </div>
 
@@ -561,11 +563,15 @@ function renderButtons() {
   layout.forEach((dirIdx, slot) => {
     const dir = DIRS[dirIdx];
     const btn = document.getElementById('btn-' + slot);
-    btn.textContent = ARROWS[dir];
     btn.dataset.dir = dir;
     btn.className = 'dir-btn';
     btn.style.cssText = '';
-    btn.style.pointerEvents = '';
+    // Update the label span
+    const label = btn.querySelector('.btn-label');
+    if (label) label.textContent = ARROWS[dir];
+    // Hide any overlay
+    const overlay = btn.querySelector('.slot-arrow-overlay');
+    if (overlay) overlay.classList.add('hidden');
   });
 }
 
@@ -680,29 +686,19 @@ function fireTrick(t) {
   switch(t) {
 
     case 'swap': {
-      // VISUAL ONLY: show the puzzle arrow overlaid on a wrong-answer slot.
-      // The button underneath is NEVER hidden or moved — still fully tappable.
-      // The correct answer button is NEVER involved.
-      // We only hide the main arrow and show an overlay on a wrong slot.
+      // Visual overlay INSIDE a wrong-answer button slot.
+      // The button is untouched — still tappable.
+      // Correct answer slot is never targeted.
       const slot = wrongSlot();
       const btn = document.getElementById('btn-' + slot);
-      const grid = document.getElementById('btn-grid');
-      const gridRect = grid.getBoundingClientRect();
-      const btnRect = btn.getBoundingClientRect();
+      const overlay = btn.querySelector('.slot-arrow-overlay');
 
-      // Position overlay exactly over the button using absolute coords within grid
-      const overlay = document.getElementById('swap-overlay');
-      overlay.style.left   = (btnRect.left - gridRect.left) + 'px';
-      overlay.style.top    = (btnRect.top  - gridRect.top)  + 'px';
-      overlay.style.width  = btnRect.width  + 'px';
-      overlay.style.height = btnRect.height + 'px';
-      // Show puzzle arrow direction as unicode arrow
       const arrowChars = {up:'↑', right:'→', down:'↓', left:'←'};
       overlay.textContent = arrowChars[currentDir];
       overlay.style.setProperty('--arrow-color', THEMES[currentTheme].arrow);
       overlay.classList.remove('hidden');
 
-      // Hide the main center arrow
+      // Hide the main center arrow while swap is active
       document.getElementById('game-arrow').style.opacity = '0';
 
       trickTimer = setTimeout(clearSwapTrick, 2500);
@@ -788,9 +784,8 @@ function fireTrick(t) {
 }
 
 function clearSwapTrick() {
-  // Hide the overlay (button underneath was never touched)
-  const overlay = document.getElementById('swap-overlay');
-  if (overlay) overlay.classList.add('hidden');
+  // Hide all slot overlays (they live inside each button)
+  document.querySelectorAll('.slot-arrow-overlay').forEach(o => o.classList.add('hidden'));
   // Restore main arrow
   const arrow = document.getElementById('game-arrow');
   if (arrow) arrow.style.opacity = '1';
