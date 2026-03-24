@@ -168,7 +168,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    position: relative;
+    position: relative; /* required for swap-overlay absolute positioning */
   }
   .dir-btn {
     height: 130px;
@@ -187,43 +187,27 @@
     overflow: visible;
     will-change: transform;
   }
-  /* Nudged (evict) buttons go behind correct answer */
   .dir-btn.nudged { z-index: 0; opacity: 0.7; }
   .dir-btn:active { transform: scale(0.88); }
-  /* When the arrow occupies a button slot — no tap, no movement */
-  .dir-btn.arrow-in-slot { pointer-events: none; }
-  .dir-btn.arrow-in-slot:active { transform: none !important; }
-  /* The center swap button — absolutely centered in arrow-area */
-  .swap-center-btn {
+  .dir-btn.decoy { animation: decoyShake 0.06s ease-in-out 8 alternate; }
+  /* Swap overlay: sits OVER a slot, pointer-events:none so button below is still tappable */
+  .swap-overlay {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(180px, 42vw);
-    height: 110px;
-    border: 2px solid var(--arrow-color) !important;
-    background: rgba(20,20,20,0.85) !important;
     border-radius: 22px;
-    font-size: 52px;
-    color: #fff;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 20;
-    box-shadow: 0 0 24px var(--arrow-color);
-  }
-  .swap-center-btn:active { opacity: 0.8; }
-  .swap-center-btn.hidden { display: none; }
-  /* Arrow slot indicator: arrow rendered inside a button-style card */
-  .dir-btn.arrow-in-slot {
-    border-color: var(--arrow-color) !important;
-    background: rgba(0,0,0,0.2) !important;
+    pointer-events: none;
+    z-index: 5;
+    background: rgba(0,0,0,0.82);
     color: var(--arrow-color);
+    text-shadow: 0 0 20px var(--arrow-color);
+    box-shadow: 0 0 24px var(--arrow-color);
+    border: 2px solid var(--arrow-color);
     font-size: 52px;
-    pointer-events: none; /* can't tap the arrow slot, tap the center button */
+    transition: opacity 0.2s;
   }
-  .dir-btn.decoy { animation: decoyShake 0.06s ease-in-out 8 alternate; }
+  .swap-overlay.hidden { display: none !important; }
   @keyframes decoyShake { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
   .dir-btn.wrong-cue { border-color: var(--arrow-color); background: rgba(255,40,50,0.2); }
 
@@ -409,11 +393,8 @@
     </div>
   </div>
 
-  <!-- Arrow area: shows the puzzle arrow, OR a "swap button" when swap trick fires -->
   <div id="arrow-area">
     <div id="game-arrow">↑</div>
-    <!-- swap-center-btn: shown in center when a button is swapped here -->
-    <button class="dir-btn swap-center-btn hidden" id="swap-center-btn" onclick="tapDirByName(window._swapCenterDir)"></button>
   </div>
 
   <div id="btn-grid">
@@ -421,6 +402,8 @@
     <button class="dir-btn" id="btn-1" onclick="tapDir(1)"></button>
     <button class="dir-btn" id="btn-2" onclick="tapDir(2)"></button>
     <button class="dir-btn" id="btn-3" onclick="tapDir(3)"></button>
+    <!-- Swap overlay: floats ON TOP of a slot, purely visual, does NOT replace or hide the button -->
+    <div id="swap-overlay" class="swap-overlay hidden"></div>
   </div>
 </div>
 
@@ -697,33 +680,30 @@ function fireTrick(t) {
   switch(t) {
 
     case 'swap': {
-      // The center arrow disappears and reappears inside a WRONG button's slot.
-      // That button's label appears as a tappable button in the CENTER of the arrow area.
-      // Correct answer button is NEVER touched.
+      // VISUAL ONLY: show the puzzle arrow overlaid on a wrong-answer slot.
+      // The button underneath is NEVER hidden or moved — still fully tappable.
+      // The correct answer button is NEVER involved.
+      // We only hide the main arrow and show an overlay on a wrong slot.
       const slot = wrongSlot();
       const btn = document.getElementById('btn-' + slot);
-      const swappedDir = DIRS[layout[slot]];
+      const grid = document.getElementById('btn-grid');
+      const gridRect = grid.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
 
-      // 1. Show the puzzle arrow inside the button's slot
-      //    We do this by changing the button's appearance only (no position change)
-      btn.dataset.trickOrigText = btn.textContent;
-      btn.classList.add('arrow-in-slot');
-      // Display the puzzle arrow as text rotated
-      const arrowChars = {up:'↑',right:'→',down:'↓',left:'←'};
-      btn.textContent = arrowChars[currentDir];
-      btn.style.color = THEMES[currentTheme].arrow;
-      btn.style.textShadow = `0 0 20px ${THEMES[currentTheme].arrow}`;
-      btn.style.fontSize = '52px';
-      // IMPORTANT: no transform, no position change
+      // Position overlay exactly over the button using absolute coords within grid
+      const overlay = document.getElementById('swap-overlay');
+      overlay.style.left   = (btnRect.left - gridRect.left) + 'px';
+      overlay.style.top    = (btnRect.top  - gridRect.top)  + 'px';
+      overlay.style.width  = btnRect.width  + 'px';
+      overlay.style.height = btnRect.height + 'px';
+      // Show puzzle arrow direction as unicode arrow
+      const arrowChars = {up:'↑', right:'→', down:'↓', left:'←'};
+      overlay.textContent = arrowChars[currentDir];
+      overlay.style.setProperty('--arrow-color', THEMES[currentTheme].arrow);
+      overlay.classList.remove('hidden');
 
-      // 2. Hide the main arrow
+      // Hide the main center arrow
       document.getElementById('game-arrow').style.opacity = '0';
-
-      // 3. Show the center tappable button (in arrow-area center)
-      const cb = document.getElementById('swap-center-btn');
-      cb.textContent = ARROWS[swappedDir];
-      cb.classList.remove('hidden');
-      window._swapCenterDir = swappedDir;
 
       trickTimer = setTimeout(clearSwapTrick, 2500);
       break;
@@ -776,25 +756,12 @@ function fireTrick(t) {
 }
 
 function clearSwapTrick() {
-  // Restore any arrow-in-slot buttons
-  [0,1,2,3].forEach(i => {
-    const b = document.getElementById('btn-'+i);
-    if (b.classList.contains('arrow-in-slot')) {
-      b.classList.remove('arrow-in-slot');
-      b.style.transform = '';
-      b.style.color = '';
-      b.style.textShadow = '';
-    }
-  });
-  // Hide swap center button
-  const cb = document.getElementById('swap-center-btn');
-  cb.classList.add('hidden');
-  cb.textContent = '';
-  window._swapCenterDir = null;
-  // Restore main arrow visibility
-  if (document.getElementById('game') && !document.getElementById('game').classList.contains('hidden')) {
-    document.getElementById('game-arrow').style.opacity = '1';
-  }
+  // Hide the overlay (button underneath was never touched)
+  const overlay = document.getElementById('swap-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  // Restore main arrow
+  const arrow = document.getElementById('game-arrow');
+  if (arrow) arrow.style.opacity = '1';
 }
 
 function tapDirByName(dir) {
@@ -823,19 +790,9 @@ function clearTricks() {
   document.getElementById('game-arrow').style.transform = '';
   [0,1,2,3].forEach(i => {
     const b = document.getElementById('btn-'+i);
-    // Restore original text if this was swapped
-    if (b.dataset.trickOrigText !== undefined) {
-      b.textContent = b.dataset.trickOrigText;
-      delete b.dataset.trickOrigText;
-    }
-    b.classList.remove('decoy','wrong-cue','nudged','arrow-in-slot');
-    b.style.transform = '';
-    b.style.transition = '';
+    b.classList.remove('decoy','wrong-cue','nudged');
     b.style.borderColor = '';
     b.style.background = '';
-    b.style.color = '';
-    b.style.textShadow = '';
-    b.style.fontSize = '';
   });
   layout = [0,1,2,3];
 }
