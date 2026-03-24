@@ -190,7 +190,8 @@
   /* Nudged (evict) buttons go behind correct answer */
   .dir-btn.nudged { z-index: 0; opacity: 0.7; }
   .dir-btn:active { transform: scale(0.88); }
-  /* When the arrow occupies a button slot */
+  /* When the arrow occupies a button slot — no tap, no movement */
+  .dir-btn.arrow-in-slot { pointer-events: none; }
   .dir-btn.arrow-in-slot:active { transform: none !important; }
   /* The center swap button — absolutely centered in arrow-area */
   .swap-center-btn {
@@ -673,92 +674,101 @@ function maybeTriggerTrick() {
 }
 
 function pickTrick() {
-  // Weight: visual/easy tricks more common early; brutal tricks ramp up with streak
-  const pool = ['wrongColor','arrowShift','decoyShake'];
-  if (streak >= 8)  pool.push('flash','shrinkTiny');
-  if (streak >= 12) pool.push('evictWrong','evictWrong'); // extra weight
-  if (streak >= 18) pool.push('flash','shrinkTiny','arrowShift'); // extra weight at high streak
-  return pool[Math.floor(Math.random()*pool.length)];
+  // NO button position tricks — only visual/arrow tricks
+  // Never move buttons out of their grid slots
+  const pool = ['wrongColor', 'arrowShift', 'decoyShake'];
+  if (streak >= 8)  pool.push('flash', 'shrinkTiny');
+  if (streak >= 12) pool.push('swap'); // arrow ↔ button CENTER only — no grid moves
+  if (streak >= 18) pool.push('flash', 'shrinkTiny', 'arrowShift');
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function fireTrick(t) {
   clearTrickTimers();
-  // Helper: find slot of the CORRECT answer (to protect it)
+
+  // Helper: pick a WRONG button slot (never touches the correct answer)
   const correctDir = OPPOSITE[currentDir];
   const correctSlot = layout.findIndex(i => DIRS[i] === correctDir);
-
-  // Helper: pick a WRONG button slot
   function wrongSlot() {
     const slots = [0,1,2,3].filter(s => s !== correctSlot);
     return slots[Math.floor(Math.random()*slots.length)];
   }
 
   switch(t) {
-    case 'evictWrong': {
-      // SWAP: arrow moves into a random button's slot, that button moves to center
-      // Always picks a WRONG answer button to swap (so correct answer stays tappable)
+
+    case 'swap': {
+      // The center arrow disappears and reappears inside a WRONG button's slot.
+      // That button's label appears as a tappable button in the CENTER of the arrow area.
+      // Correct answer button is NEVER touched.
       const slot = wrongSlot();
       const btn = document.getElementById('btn-' + slot);
-      const dir = DIRS[layout[slot]]; // the direction shown on this button
+      const swappedDir = DIRS[layout[slot]];
 
-      // 1. Hide the real button, show arrow-in-slot style there
+      // 1. Show the puzzle arrow inside the button's slot
+      //    We do this by changing the button's appearance only (no position change)
+      btn.dataset.trickOrigText = btn.textContent;
       btn.classList.add('arrow-in-slot');
-      const angle = {up:0, right:90, down:180, left:270}[currentDir];
-      btn.textContent = '↑'; // always up, rotated by transform
-      btn.style.transform = `rotate(${angle}deg)`;
+      // Display the puzzle arrow as text rotated
+      const arrowChars = {up:'↑',right:'→',down:'↓',left:'←'};
+      btn.textContent = arrowChars[currentDir];
       btn.style.color = THEMES[currentTheme].arrow;
-      btn.style.textShadow = `0 0 16px ${THEMES[currentTheme].arrow}`;
+      btn.style.textShadow = `0 0 20px ${THEMES[currentTheme].arrow}`;
       btn.style.fontSize = '52px';
+      // IMPORTANT: no transform, no position change
 
-      // 2. Hide the main center arrow
+      // 2. Hide the main arrow
       document.getElementById('game-arrow').style.opacity = '0';
 
-      // 3. Show the swap center button with this button's direction
+      // 3. Show the center tappable button (in arrow-area center)
       const cb = document.getElementById('swap-center-btn');
-      cb.textContent = ARROWS[dir];
+      cb.textContent = ARROWS[swappedDir];
       cb.classList.remove('hidden');
-      window._swapCenterDir = dir;
+      window._swapCenterDir = swappedDir;
 
-      trickTimer = setTimeout(() => {
-        clearSwapTrick();
-      }, 2000);
+      trickTimer = setTimeout(clearSwapTrick, 2500);
       break;
     }
+
     case 'wrongColor': {
+      // Highlight a WRONG button with the arrow's color (looks like a hint but isn't)
       const slot = wrongSlot();
       const btn = document.getElementById('btn-' + slot);
-      btn.style.transition = 'background 0.3s, border-color 0.3s';
       btn.style.borderColor = THEMES[currentTheme].arrow;
       btn.style.background = hexToRgba(THEMES[currentTheme].arrow, 0.25);
       trickTimer = setTimeout(() => {
-        btn.style.transition = 'background 0.3s, border-color 0.3s';
         btn.style.borderColor = '';
         btn.style.background = '';
       }, 1000);
       break;
     }
+
     case 'arrowShift': {
+      // Arrow briefly changes to a misleading color
       const decoys = ['#508CFF','#FFD28C','#96141E','#32E8A0','#FF6B9D'];
       const c = decoys[Math.floor(Math.random()*decoys.length)];
       setArrowColor(c);
       trickTimer = setTimeout(() => setArrowColor(null), 900);
       break;
     }
+
     case 'shrinkTiny': {
+      // Arrow becomes very small
       setArrowScale(0.12, true);
-      // Auto-restore after 1.2s if player hasn't tapped
       trickTimer = setTimeout(() => setArrowScale(1, true), 1200);
       break;
     }
+
     case 'decoyShake': {
+      // A wrong button vibrates like it wants to be tapped
       const slot = wrongSlot();
       const btn = document.getElementById('btn-' + slot);
       btn.classList.add('decoy');
       trickTimer = setTimeout(() => btn.classList.remove('decoy'), 700);
       break;
     }
+
     case 'flash': {
-      // Show arrow briefly then hide
+      // Arrow flashes then disappears — tap from memory
       trickTimer = setTimeout(() => setArrowVisible(false), 200);
       break;
     }
@@ -813,6 +823,11 @@ function clearTricks() {
   document.getElementById('game-arrow').style.transform = '';
   [0,1,2,3].forEach(i => {
     const b = document.getElementById('btn-'+i);
+    // Restore original text if this was swapped
+    if (b.dataset.trickOrigText !== undefined) {
+      b.textContent = b.dataset.trickOrigText;
+      delete b.dataset.trickOrigText;
+    }
     b.classList.remove('decoy','wrong-cue','nudged','arrow-in-slot');
     b.style.transform = '';
     b.style.transition = '';
@@ -820,6 +835,7 @@ function clearTricks() {
     b.style.background = '';
     b.style.color = '';
     b.style.textShadow = '';
+    b.style.fontSize = '';
   });
   layout = [0,1,2,3];
 }
