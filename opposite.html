@@ -182,9 +182,12 @@
     justify-content: center;
     transition: background 0.55s, border-color 0.55s, transform 0.12s;
     position: relative;
-    overflow: hidden;
+    z-index: 1;
+    overflow: visible;
     will-change: transform;
   }
+  /* Nudged (evict) buttons go behind correct answer */
+  .dir-btn.nudged { z-index: 0; opacity: 0.7; }
   .dir-btn:active { transform: scale(0.88); }
   .dir-btn.decoy { animation: decoyShake 0.06s ease-in-out 8 alternate; }
   @keyframes decoyShake { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
@@ -617,98 +620,102 @@ function applyTheme(th) {
 }
 
 // ── Tricks ──
+// Unlock at streak 5; probability grows quickly. Multiple tricks can stack at high streaks.
 function maybeTriggerTrick() {
-  if (streak < 10) return;
-  const extraP = (streak - 10) * 0.015;
-  const prob = Math.min(0.125 + extraP, 0.35);
+  if (streak < 5) return;
+
+  // Aggressive ramp: starts at 25% at streak 5, caps at 80% at streak 20+
+  const prob = Math.min(0.25 + (streak - 5) * 0.04, 0.80);
   if (Math.random() > prob) return;
 
-  const tricks = ['swap','evict','wrongColor','arrowShift','shrinkTiny','decoyShake','flash'];
-  const t = tricks[Math.floor(Math.random()*tricks.length)];
-  fireTrick(t);
+  // At streak 15+ fire 2 tricks at once for chaos
+  fireTrick(pickTrick());
+  if (streak >= 15 && Math.random() < 0.4) {
+    setTimeout(() => fireTrick(pickTrick()), 120);
+  }
+}
+
+function pickTrick() {
+  // Weight: visual/easy tricks more common early; brutal tricks ramp up with streak
+  const pool = ['wrongColor','arrowShift','decoyShake'];
+  if (streak >= 8)  pool.push('flash','shrinkTiny');
+  if (streak >= 12) pool.push('evictWrong','evictWrong'); // extra weight
+  if (streak >= 18) pool.push('flash','shrinkTiny','arrowShift'); // extra weight at high streak
+  return pool[Math.floor(Math.random()*pool.length)];
 }
 
 function fireTrick(t) {
   clearTrickTimers();
+  // Helper: find slot of the CORRECT answer (to protect it)
+  const correctDir = OPPOSITE[currentDir];
+  const correctSlot = layout.findIndex(i => DIRS[i] === correctDir);
+
+  // Helper: pick a WRONG button slot
+  function wrongSlot() {
+    const slots = [0,1,2,3].filter(s => s !== correctSlot);
+    return slots[Math.floor(Math.random()*slots.length)];
+  }
+
   switch(t) {
-    case 'swap': {
-      // Arrow moves into a button slot visually, button moves to center
-      const targetSlot = Math.floor(Math.random()*4);
-      const btn = document.getElementById('btn-' + targetSlot);
-      const btnRect = btn.getBoundingClientRect();
-      const arrow = document.getElementById('game-arrow');
-      // Animate arrow to button position
-      const arrowArea = document.getElementById('arrow-area');
-      const aRect = arrowArea.getBoundingClientRect();
-      const dx = (btnRect.left + btnRect.width/2) - (aRect.left + aRect.width/2);
-      const dy = (btnRect.top + btnRect.height/2) - (aRect.top + aRect.height/2);
-      arrow.style.transition = 'transform 0.45s cubic-bezier(0.34,1.2,0.64,1)';
-      const angle = {up:0,right:90,down:180,left:270}[currentDir];
-      arrow.style.transform = `translateX(${dx}px) translateY(${dy}px) rotate(${angle}deg) scale(${currentArrowScale})`;
-      // Button to center
-      const gridRect = document.getElementById('btn-grid').getBoundingClientRect();
-      const cx = gridRect.left + gridRect.width/2 - btnRect.left - btnRect.width/2;
-      const cy = gridRect.top + gridRect.height/2 - btnRect.top - btnRect.height/2;
-      btn.style.transition = 'transform 0.45s cubic-bezier(0.34,1.2,0.64,1)';
-      btn.style.transform = `translate(${cx}px,${cy}px)`;
-      break;
-    }
-    case 'evict': {
-      const slot = Math.floor(Math.random()*4);
+    case 'evictWrong': {
+      // Move a WRONG-answer button sideways within the grid — correct stays in place
+      const slot = wrongSlot();
       const btn = document.getElementById('btn-' + slot);
-      const edges = [
-        'translate(-90px,-90px)',
-        'translate(90px,-90px)',
-        'translate(-90px,90px)',
-        'translate(90px,90px)',
-        'translate(0,-120px)',
+      btn.classList.add('nudged');
+      // Small nudges so it stays on screen but misaligns the grid
+      const nudges = [
+        'translate(0,-70px)',
+        'translate(0,70px)',
+        'translate(-60px,0)',
+        'translate(60px,0)',
+        'translate(-50px,-50px)',
+        'translate(50px,-50px)',
       ];
       btn.style.transition = 'transform 0.5s cubic-bezier(0.34,1.2,0.64,1)';
-      btn.style.transform = edges[Math.floor(Math.random()*edges.length)];
-      trickTimer = setTimeout(() => { btn.style.transform = ''; }, 1500);
+      btn.style.transform = nudges[Math.floor(Math.random()*nudges.length)];
+      trickTimer = setTimeout(() => {
+        btn.style.transition = 'transform 0.4s';
+        btn.style.transform = '';
+        btn.classList.remove('nudged');
+      }, 1600);
       break;
     }
     case 'wrongColor': {
-      const wrongDirs = DIRS.filter(d => d !== OPPOSITE[currentDir]);
-      const target = wrongDirs[Math.floor(Math.random()*wrongDirs.length)];
-      const slot = layout.findIndex(i => DIRS[i] === target);
-      if (slot >= 0) {
-        const btn = document.getElementById('btn-' + slot);
-        btn.classList.add('wrong-cue');
-        btn.style.borderColor = THEMES[currentTheme].arrow;
-        btn.style.background = hexToRgba(THEMES[currentTheme].arrow, 0.2);
-        trickTimer = setTimeout(() => {
-          btn.style.borderColor = '';
-          btn.style.background = '';
-          btn.classList.remove('wrong-cue');
-        }, 1200);
-      }
+      const slot = wrongSlot();
+      const btn = document.getElementById('btn-' + slot);
+      btn.style.transition = 'background 0.3s, border-color 0.3s';
+      btn.style.borderColor = THEMES[currentTheme].arrow;
+      btn.style.background = hexToRgba(THEMES[currentTheme].arrow, 0.25);
+      trickTimer = setTimeout(() => {
+        btn.style.transition = 'background 0.3s, border-color 0.3s';
+        btn.style.borderColor = '';
+        btn.style.background = '';
+      }, 1000);
       break;
     }
     case 'arrowShift': {
       const decoys = ['#508CFF','#FFD28C','#96141E','#32E8A0','#FF6B9D'];
       const c = decoys[Math.floor(Math.random()*decoys.length)];
       setArrowColor(c);
-      trickTimer = setTimeout(() => setArrowColor(null), 1000);
+      trickTimer = setTimeout(() => setArrowColor(null), 900);
       break;
     }
     case 'shrinkTiny': {
       setArrowScale(0.12, true);
+      // Auto-restore after 1.2s if player hasn't tapped
+      trickTimer = setTimeout(() => setArrowScale(1, true), 1200);
       break;
     }
     case 'decoyShake': {
-      const wrongDirs = DIRS.filter(d => d !== OPPOSITE[currentDir]);
-      const target = wrongDirs[Math.floor(Math.random()*wrongDirs.length)];
-      const slot = layout.findIndex(i => DIRS[i] === target);
-      if (slot >= 0) {
-        const btn = document.getElementById('btn-' + slot);
-        btn.classList.add('decoy');
-        trickTimer = setTimeout(() => btn.classList.remove('decoy'), 800);
-      }
+      const slot = wrongSlot();
+      const btn = document.getElementById('btn-' + slot);
+      btn.classList.add('decoy');
+      trickTimer = setTimeout(() => btn.classList.remove('decoy'), 700);
       break;
     }
     case 'flash': {
-      trickTimer = setTimeout(() => setArrowVisible(false), 150);
+      // Show arrow briefly then hide
+      trickTimer = setTimeout(() => setArrowVisible(false), 200);
       break;
     }
   }
@@ -732,7 +739,7 @@ function clearTricks() {
   document.getElementById('game-arrow').style.transform = '';
   [0,1,2,3].forEach(i => {
     const b = document.getElementById('btn-'+i);
-    b.classList.remove('decoy','wrong-cue');
+    b.classList.remove('decoy','wrong-cue','nudged');
     b.style.transform = '';
     b.style.transition = '';
     b.style.borderColor = '';
