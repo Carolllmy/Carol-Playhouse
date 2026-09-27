@@ -1,6 +1,6 @@
 import {DURATION,clamp,shotAt} from './georgie-timeline.js';
 const $=id=>document.getElementById(id),canvas=$('frame'),ctx=canvas.getContext('2d',{alpha:false});
-const names=['curb.png','curb.png','after.png'],images=[];let t=0,playing=false,started=false,ready=false,last=0,lastDraw=0,width=0,height=0,chapter=-1;
+const names=['curb.png','below.png','after.png'],images=[];let t=0,playing=false,started=false,ready=false,last=0,lastDraw=0,width=0,height=0,chapter=-1;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');$('motion').checked=reduced.matches;
 let audio,source,gain,filter,sound=false;
 async function toggleSound(){
