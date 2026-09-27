@@ -1,0 +1,7 @@
+{
+  "name": "Rig test fixture (not character art)",
+  "bones": { "neck": "Neck", "head": "Head", "jaw": "Jaw", "eyeL": "Eye.L", "eyeR": "Eye.R", "lidUpperL": "LidUpper.L", "lidUpperR": "LidUpper.R" },
+  "morphs": { "blinkL": "eyeBlinkLeft", "blinkR": "eyeBlinkRight", "jawOpen": "jawOpen" },
+  "axes": { "jawOpenAngle": 0.35, "lidCloseAngle": 2.15 },
+  "materials": { "skin": "skin", "eye": "eye", "teeth": "teeth", "mouth": "mouth" }
+}

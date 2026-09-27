@@ -1,0 +1,14 @@
+{
+  "name": "Lee Perry-Smith head scan (CC BY 3.0) — static geometry, no rig",
+  "attribution": "Infinite, 3D Head Scan by Lee Perry-Smith, CC BY 3.0 (www.ir-ltd.net). Adapted by Morgan McGuire and Guedis Cardenas; distributed with three.js r186 examples.",
+  "bones": {},
+  "defaultRole": "skin",
+  "normalize": { "height": 0.25 },
+  "textures": {
+    "skin": {
+      "map": { "path": "Map-COL.jpg", "flipY": false },
+      "normalMap": { "path": "Infinite-Level_02_Tangent_SmoothUV.jpg", "flipY": false },
+      "specularIntensityMap": { "path": "Map-SPEC.jpg", "flipY": false }
+    }
+  }
+}
