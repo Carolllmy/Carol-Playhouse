@@ -611,8 +611,65 @@
         
         <!-- Project List (Left) - with padding for hover overflow -->
         <div class="flex flex-col gap-2 -mx-2 px-2 order-2 lg:order-1">
+          
+          <div class="project-row active px-5 py-4 flex flex-col justify-center"
+               data-href="/weggy.html"
+               data-label="STORY"
+               data-title="The Born of Weggie"
+               data-headline="The<br/>Origin<br/>Story"
+               data-video="/images/weggy-preview.mp4"
+               data-cta="See the story"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#01</p>
+            <p class="text-base md:text-lg"><span class="font-bold">The Born of Weggie</span><span class="font-normal opacity-70"> · Origin Story</span></p>
+          </div>
 
-        </div>
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/paws-mail.html"
+               data-label="DESKTOP PET"
+               data-title="Paws Mail"
+               data-headline="5 Animals<br/>5 Colors<br/>Desktop Pets"
+               data-video="/images/paws-mail-preview.mp4"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#02</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Paws Mail</span><span class="font-normal opacity-70"> · Desktop Pets</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center" 
+               data-href="/lava-lamp.html"
+               data-label="EXPERIMENT"
+               data-title="Lava Lamp"
+               data-headline="Photorealistic<br/>Lava Lamp<br/>Simulation"
+               data-video="/images/lava-lamp-preview.mp4"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#03</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Lava Lamp</span><span class="font-normal opacity-70"> · WebGL Simulation</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="https://senko-design-strategy.dddzlmy.chatgpt.site"
+               data-label="WORK"
+               data-title="My 9-5 Work Stuff"
+               data-headline="UX Design<br/>Portfolio<br/>& Projects"
+               data-protected="true"
+               data-message="This is the more serious side of me.<br>I design at Audible by day."
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#04</p>
+            <p class="text-base md:text-lg"><span class="font-bold">My 9-5 Work Stuff</span><span class="font-normal opacity-70"> · Protected</span></p>
+          </div>
+
+          <div class="project-row px-5 py-4 flex flex-col justify-center"
+               data-href="/living-derry/"
+               data-label="HORROR STUDY"
+               data-title="Living Derry"
+               data-headline="A Town<br/>That<br/>Remembers"
+               data-cta="Walk the street"
+               onclick="selectProject(this)">
+            <p class="text-xs tracking-[2px] opacity-60 mb-1">#05</p>
+            <p class="text-base md:text-lg"><span class="font-bold">Living Derry</span><span class="font-normal opacity-70"> · WebGL Horror Study</span></p>
+          </div>
+
+          </div>
         
         <!-- Preview Card (Right) - Sticky follows scroll, hidden on mobile -->
         <div class="preview-card p-6 md:p-8 flex flex-col h-[320px] md:h-[442px] overflow-hidden order-1 lg:order-2 lg:sticky lg:top-8 self-start hidden lg:flex">
