@@ -5,6 +5,7 @@ import {RGBELoader} from './vendor/loaders/RGBELoader.js';
 import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';
 import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {createTown} from './npc-town.js';
+import {buildFarSide,placeProps} from './town-blocks.js';
 const $=id=>document.getElementById(id),canvas=$('world');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
@@ -21,7 +22,7 @@ function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMa
 const roadMaterials=[],roomMaterials=[];let gutterWater;
 try{const hdr=await new RGBELoader().loadAsync('./assets/overcast.hdr');hdr.mapping=THREE.EquirectangularReflectionMapping;scene.environment=hdr;scene.environmentIntensity=.45;scene.background=hdr;scene.backgroundIntensity=.7;scene.backgroundBlurriness=.04;}catch(e){console.warn('Sky lighting unavailable',e);}
 try{
- const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');const assetLoader=new GLTFLoader().setDRACOLoader(draco);const assets=await Promise.all(['authored-street','street-setting'].map(name=>assetLoader.loadAsync('./assets/'+name+'/model.gltf')));const gltf={scene:new THREE.Group()};for(const asset of assets)gltf.scene.add(asset.scene);gltf.scene.updateMatrixWorld(true);const groups=new Map();
+ const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');const assetLoader=new GLTFLoader().setDRACOLoader(draco);const assets=await Promise.all(['authored-street','street-setting'].map(name=>assetLoader.loadAsync('./assets/'+name+'/model.gltf')));const gltf={scene:new THREE.Group()};for(const asset of assets)gltf.scene.add(asset.scene);gltf.scene.updateMatrixWorld(true);try{buildFarSide(assets[1].scene,gltf.scene);}catch(e){console.warn('Far side unavailable',e);}const groups=new Map();
  gltf.scene.traverse(o=>{if(!o.isMesh)return;const mats=Array.isArray(o.material)?o.material:[o.material];
  for(const m of mats){if(m.name==='WhiteDiffuse')m.color.set('#a1b196');if(m.name==='WhitePaint')m.color.set('#e2d8b8');if(m.name==='RoofTiles'||m.name==='Cape slate')m.color.set('#68736c');if(m.name==='Road')roadMaterials.push(m);if(m.name==='Warm room backing'||m.name==='Window linen')roomMaterials.push(m);if(m.name.startsWith('Distant pine')){m.alphaTest=.32;m.transparent=false;m.side=THREE.DoubleSide;m.depthWrite=true;}if(/leaf|leaves|grass|shrub|Fallen maple/i.test(m.name)){m.alphaTest=.45;m.transparent=false;m.side=THREE.DoubleSide;}if(m.name==='Glass'){m.color.set('#71827e');m.metalness=.25;m.roughness=.22;m.transparent=true;m.opacity=.6;m.depthWrite=false;}if(m.map)m.map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());}
  // Authored architecture has baked contact shading; keep its indexed mesh and material groups.
@@ -38,7 +39,8 @@ try{
   if(unique.length){const geo=mergeGeometries(unique);if(!geo)throw new Error('Incompatible asset geometry');const mesh=mat.name==='Shallow gutter water'?(gutterWater=createGutterWater(geo,camera)):new THREE.Mesh(geo,mat);mesh.castShadow=!mat.name.startsWith('Distant pine');mesh.receiveShadow=true;scene.add(mesh);drawCount++;unique.forEach(g=>g.dispose());}
  }
  renderer.shadowMap.needsUpdate=true;loaded=true;$('loading').classList.add('done');
- try{town=await createTown({scene,camera,loader:new GLTFLoader()});if(/[?&]qa\b/.test(location.search))window.__ld={town,camera,setView(x,z,yw,pt){camera.position.set(x,1.4,z);yaw=yw;pitch=pt;}};}catch(e){console.warn('Residents unavailable',e);}
+placeProps(new GLTFLoader(),scene).then(()=>{renderer.shadowMap.needsUpdate=true;}).catch(e=>console.warn('Street props unavailable',e));
+ try{town=await createTown({scene,camera,loader:new GLTFLoader()});if(/[?&]qa\b/.test(location.search))window.__ld={town,camera,scene,setView(x,z,yw,pt){camera.position.set(x,1.4,z);yaw=yw;pitch=pt;}};}catch(e){console.warn('Residents unavailable',e);}
 }catch(e){console.error(e);$('loading').innerHTML='<p>The authored scene could not load. Please reload to try again.</p>';}
 const rainGeo=new THREE.BufferGeometry(),rainPos=new Float32Array(900*6);for(let i=0;i<900;i++){const x=Math.random()*45-25,y=Math.random()*17,z=Math.random()*30;rainPos.set([x,y,z,x-.045,y+.3,z],i*6);}rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPos,3));const drops=new THREE.LineSegments(rainGeo,new THREE.LineBasicMaterial({color:'#c4d5db',transparent:true,opacity:0,depthWrite:false}));scene.add(drops);
 function stop(){stroll=false;$('stroll').innerHTML='Take a stroll ↗';}
